@@ -1,5 +1,18 @@
 {
   "schema": 1,
+  "officialPermissionFollowUp20261118": {
+    "checkedAt": "2026-11-18",
+    "ref": "origin/dev",
+    "commit": "79bd2c6f11fd5ad011dbe5a1c31343c46e1e5294",
+    "previousReviewedCommit": "521ceac004e59fbbfca0929596107cd8430f2b26",
+    "version": "2.3.0",
+    "commitsSinceReview": 3,
+    "changedPathsSinceReview": 48,
+    "changedLiteralWatchedPaths": [],
+    "decision": "GUI icons, goal rendering and macOS file permission matching remain owned by OpenCode. The watched source paths and provider protocol implementations are unchanged.",
+    "runtimePort": false,
+    "freshClientExecuted": false
+  },
   "zenRetirementFollowUp20261118": {
     "checkedAt": "2026-11-18",
     "ref": "origin/dev",

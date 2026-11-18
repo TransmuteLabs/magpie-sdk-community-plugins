@@ -1,5 +1,14 @@
 # OpenCode module source provenance
 
+The November 18 follow-up advances the local OpenCode checkout from
+`521ceac004e59fbbfca0929596107cd8430f2b26` to
+`79bd2c6f11fd5ad011dbe5a1c31343c46e1e5294`. The three commits keep CLI
+version `2.3.0` and leave all 17 pinned OpenCode paths and provider
+protocol implementations unchanged. They change the harness's GUI plugin
+icons, goal indicator and macOS file permission matching. The module
+continues to let OpenCode handle these features. This comparison did not
+execute the updated client.
+
 On November 18, the local OpenCode checkout advanced to
 `521ceac004e59fbbfca0929596107cd8430f2b26` at version `2.3.0`.
 The 11 commits change 41 paths. All 17 pinned source paths and the
