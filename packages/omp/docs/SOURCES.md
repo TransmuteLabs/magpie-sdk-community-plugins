@@ -102,6 +102,30 @@ The converter reads captured session journals and assets. The journal
 serialization and replay policy are unchanged. `promptHistoryFollowUp`
 records the source comparison.
 
+### OMP 18.22.2 custom messages
+
+The native replay update checks `can1357/oh-my-pi` version `18.22.2` at
+`04a4c101ff5b56b6aa6647ffc7ca1019c1998759`, 41 commits after
+`7a53f0a2d36e160f9255d80626ed757f41280b76`. Commit
+`205dde09d756c0869da42e39fdc59351f485b678` persists the optional boolean
+`excludeFromContext` on top-level `custom_message` rows. The donor's
+`session-entries.ts`, `session-manager.ts`, `messages.ts` and
+`packages/agent/src/compaction/messages.ts` define its persisted and
+model-context meanings.
+
+Native Codex and Claude exports carry user-attributed `skill-prompt` and
+`collab-prompt` rows with their original text and images. The donor's
+`collab/host.ts` queues a peer prompt as steering while busy. Codex keeps a
+peer correction inside the open turn, and Claude retains its position
+after the native tool results. A peer prompt after a completed turn has
+its own turn because the persisted custom row carries no busy/idle marker.
+Excluded rows, other extension context and agent-authored prompts stay
+in the byte-exact archive. Native conversion acquires custom images from
+the retained prompts. Archive conversion requires all original custom images.
+Malformed flags, ambiguous block fields and unsupported prompt content
+in the selected context stop native export. `display` affects the OMP interface
+only. No OMP steering template or peer metadata enters the target history.
+
 ## Earlier source comparisons
 
 The November 16 source-watch packet is

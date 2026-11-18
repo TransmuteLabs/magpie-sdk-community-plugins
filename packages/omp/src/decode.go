@@ -14,24 +14,61 @@ import (
 // Decode preserves every journal byte. Items is the donor's portable active
 // conversation projection, not a replacement for the original journal.
 func Decode(ctx context.Context, journal []byte, assets []Asset) (Document, error) {
+	store, err := ompAssetStore(journal, assets)
+	if err != nil {
+		return Document{}, err
+	}
+	document, err := decodeOMPJournal(ctx, journal, store, true)
+	if err != nil {
+		return Document{}, err
+	}
+	document.Archive = &Archive{Journal: bytes.Clone(journal), JournalSHA256: hashBytes(journal)}
+	var hashes []string
+	for hash := range store {
+		hashes = append(hashes, hash)
+	}
+	sort.Strings(hashes)
+	for _, hash := range hashes {
+		document.Archive.Assets = append(document.Archive.Assets, Asset{SHA256: hash, Body: bytes.Clone(store[hash])})
+	}
+	document.Archive.ProjectionSHA256 = projectionHash(document)
+	return document, nil
+}
+
+func nativeOMPInputs(ctx context.Context, journal []byte, assets []Asset) (map[string][]byte, error) {
+	store, err := ompAssetStore(journal, assets)
+	if err != nil {
+		return nil, err
+	}
+	if _, err := decodeOMPJournal(ctx, journal, store, false); err != nil {
+		return nil, err
+	}
+	return store, nil
+}
+
+func ompAssetStore(journal []byte, assets []Asset) (map[string][]byte, error) {
 	if len(journal) == 0 || len(journal) > MaxBytes || len(assets) >= MaxFiles {
-		return Document{}, errors.New("OMP journal or asset count exceeds its budget")
+		return nil, errors.New("OMP journal or asset count exceeds its budget")
 	}
 	store := map[string][]byte{}
 	total := len(journal)
 	for _, asset := range assets {
 		if !validHash(asset.SHA256) || hashBytes(asset.Body) != asset.SHA256 {
-			return Document{}, errors.New("OMP asset digest mismatch")
+			return nil, errors.New("OMP asset digest mismatch")
 		}
 		if _, exists := store[asset.SHA256]; exists {
-			return Document{}, errors.New("duplicate OMP asset")
+			return nil, errors.New("duplicate OMP asset")
 		}
 		total += len(asset.Body)
 		if total > MaxBytes {
-			return Document{}, errors.New("OMP inputs exceed their byte budget")
+			return nil, errors.New("OMP inputs exceed their byte budget")
 		}
 		store[asset.SHA256] = asset.Body
 	}
+	return store, nil
+}
+
+func decodeOMPJournal(ctx context.Context, journal []byte, store map[string][]byte, archiveCustom bool) (Document, error) {
 	document := Document{Schema: 1, Items: []Item{}}
 	header := false
 	ids := map[string]bool{}
@@ -55,9 +92,15 @@ func Decode(ctx context.Context, journal []byte, assets []Asset) (Document, erro
 			parseErr = fmt.Errorf("invalid OMP record at line %d", lineNumber)
 			return
 		}
-		if err := checkAttachmentReferences(envelope.Type, envelope.Message, store); err != nil {
-			parseErr = fmt.Errorf("OMP line %d: %w", lineNumber, err)
-			return
+		attachmentBody := envelope.Message
+		if envelope.Type == "custom_message" {
+			attachmentBody = line
+		}
+		if envelope.Type != "custom_message" || archiveCustom {
+			if err := checkAttachmentReferences(envelope.Type, attachmentBody, store); err != nil {
+				parseErr = fmt.Errorf("OMP line %d: %w", lineNumber, err)
+				return
+			}
 		}
 		switch envelope.Type {
 		case "session":
@@ -106,16 +149,6 @@ func Decode(ctx context.Context, journal []byte, assets []Asset) (Document, erro
 	if items != nil {
 		document.Items = items
 	}
-	document.Archive = &Archive{Journal: bytes.Clone(journal), JournalSHA256: hashBytes(journal)}
-	var hashes []string
-	for hash := range store {
-		hashes = append(hashes, hash)
-	}
-	sort.Strings(hashes)
-	for _, hash := range hashes {
-		document.Archive.Assets = append(document.Archive.Assets, Asset{SHA256: hash, Body: bytes.Clone(store[hash])})
-	}
-	document.Archive.ProjectionSHA256 = projectionHash(document)
 	return document, nil
 }
 
@@ -133,7 +166,7 @@ func checkAttachmentReferences(kind string, body json.RawMessage, assets map[str
 }
 
 func visitAttachmentReferences(kind string, body json.RawMessage, visit func(string) error) error {
-	if kind != "message" {
+	if kind != "message" && kind != "custom_message" {
 		return nil
 	}
 	var message struct {
@@ -143,6 +176,9 @@ func visitAttachmentReferences(kind string, body json.RawMessage, visit func(str
 	}
 	if json.Unmarshal(body, &message) != nil {
 		return nil
+	}
+	if kind == "custom_message" {
+		message.Role = "user"
 	}
 	switch message.Role {
 	case "user", "assistant", "toolResult":

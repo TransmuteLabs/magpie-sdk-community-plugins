@@ -27,13 +27,9 @@ func convertToCodex(ctx context.Context, request sdk.SessionRequest) (sdk.Sessio
 	if err != nil {
 		return sdk.SessionResult{}, err
 	}
-	document, err := Decode(ctx, body, assets)
+	store, err := nativeOMPInputs(ctx, body, assets)
 	if err != nil {
 		return sdk.SessionResult{}, err
-	}
-	store := map[string][]byte{}
-	for _, asset := range document.Archive.Assets {
-		store[asset.SHA256] = asset.Body
 	}
 	items, err := codexHistory(ctx, body, store)
 	if err != nil {
@@ -161,7 +157,11 @@ func convertToCodex(ctx context.Context, request sdk.SessionRequest) (sdk.Sessio
 			return sdk.SessionResult{}, err
 		}
 		switch item.Kind {
-		case "user", "assistant":
+		case "user", "steering", "assistant":
+			role := item.Kind
+			if role == "steering" {
+				role = "user"
+			}
 			content, err := codexContent(item.Content)
 			if err != nil {
 				return sdk.SessionResult{}, err
@@ -176,7 +176,7 @@ func convertToCodex(ctx context.Context, request sdk.SessionRequest) (sdk.Sessio
 					fields["type"] = "output_text"
 				}
 			}
-			payload := map[string]any{"type": "message", "role": item.Kind, "content": content}
+			payload := map[string]any{"type": "message", "role": role, "content": content}
 			var nativeContent []any
 			for _, block := range content {
 				fields := block.(map[string]any)
@@ -187,7 +187,7 @@ func convertToCodex(ctx context.Context, request sdk.SessionRequest) (sdk.Sessio
 				}
 			}
 			event := map[string]any{"type": "UserMessage", "content": nativeContent}
-			hasUser = hasUser || item.Kind == "user"
+			hasUser = hasUser || role == "user"
 			if item.Kind == "assistant" {
 				event = map[string]any{"type": "AgentMessage", "content": []any{map[string]any{"type": "Text", "text": strings.Join(text, "\n")}}}
 				if item.phase != "" {

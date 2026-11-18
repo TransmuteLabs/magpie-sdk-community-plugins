@@ -1,6 +1,25 @@
 {
   "schema": 1,
   "plugin": {"id": "omp-sessions", "version": "0.1.0", "sdkMinimum": "1.10", "nativeABI": 1},
+  "customMessageFollowUp": {
+    "checkedAt": "2026-11-18",
+    "source": "omp",
+    "previousReviewedCommit": "7a53f0a2d36e160f9255d80626ed757f41280b76",
+    "comparedCommit": "04a4c101ff5b56b6aa6647ffc7ca1019c1998759",
+    "version": "18.22.2",
+    "commitsSinceReview": 41,
+    "behaviorCommit": "205dde09d756c0869da42e39fdc59351f485b678",
+    "paths": [
+      "packages/coding-agent/src/session/session-entries.ts",
+      "packages/coding-agent/src/session/session-manager.ts",
+      "packages/coding-agent/src/session/messages.ts",
+      "packages/coding-agent/src/collab/host.ts",
+      "packages/agent/src/compaction/messages.ts",
+      "packages/tui/src/chat/messages.ts"
+    ],
+    "runtimePort": true,
+    "freshClientExecuted": false
+  },
   "promptHistoryFollowUp": {
     "checkedAt": "2026-11-17",
     "source": "omp",
@@ -253,6 +272,12 @@
       "paths": ["packages/coding-agent/src/session/session-entries.ts", "packages/coding-agent/src/session/session-context.ts", "packages/coding-agent/src/session/session-storage.ts", "packages/coding-agent/src/session/session-title-slot.ts", "packages/coding-agent/src/session/session-listing.ts", "packages/coding-agent/src/session/session-index.ts", "packages/coding-agent/src/session/blob-store.ts", "packages/coding-agent/src/session/messages.ts", "packages/utils/src/dirs.ts", "packages/agent/src/compaction/entries.ts", "packages/agent/src/replay-policy.ts", "packages/agent/src/agent-loop.ts", "packages/ai/src/providers/openai-shared.ts", "packages/ai/src/types.ts"],
       "behaviors": ["OMP v3 title slot, parent-chain/reset/compaction projection", "Canonical home/temp buckets and attachment references", "Bounded Source summary/transcript and supplied artifact decoding", "Developer branch parents and private redactedThinking exclusion without fabricated user turns", "Default JSONL remains authoritative; index/cache and continuation resume stay harness-owned", "Native-only provider refusal filtering and paired tool placeholder normalization", "Versioned textSignature phase compatibility with target Codex"],
       "tests": ["src/source_watch_regression_test.go", "src/current_harness_test.go", "src/codec_test.go", "src/roundtrip_regression_test.go", "src/source_inputs_test.go", "src/native_routes_test.go", "src/source_preview_test.go", "src/source_preview_permission_test.go", "src/source_distribution_test.go"]
+    },
+    {
+      "source": "omp",
+      "paths": ["packages/coding-agent/src/session/session-entries.ts", "packages/coding-agent/src/session/session-manager.ts", "packages/coding-agent/src/session/messages.ts", "packages/coding-agent/src/collab/host.ts", "packages/agent/src/compaction/messages.ts", "packages/tui/src/chat/messages.ts"],
+      "behaviors": ["Custom-message exclusion and user attribution", "Steering within active Codex turns and Claude's native tool-result boundary", "Duplicate and case-variant consumed fields rejected", "Native planning acquires selected custom images, and byte-exact archives require all referenced custom images"],
+      "tests": ["src/custom_messages_test.go", "tests/verify_host.py"]
     },
     {
       "source": "codex-infinity",

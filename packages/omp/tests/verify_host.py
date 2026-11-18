@@ -5,6 +5,7 @@ No private Magpie packages or vendor commands are used.
 """
 
 import base64
+from datetime import datetime
 import hashlib
 import json
 import os
@@ -16,10 +17,10 @@ import tempfile
 import time
 
 
-def verify(binary, distribution):
+def verify(binary, distribution, fixture="omp-v3.jsonl"):
     source = Path(__file__).resolve().parents[1] / "src"
     binary, distribution = Path(binary).resolve(), Path(distribution).resolve()
-    journal = (source / "testdata/omp-v3.jsonl").read_bytes()
+    journal = (source / "testdata" / fixture).read_bytes()
     image = (source / "testdata/image.bin").read_bytes()
     digest = hashlib.sha256(image).hexdigest()
     with tempfile.TemporaryDirectory(prefix="omp-host-proof-") as temporary:
@@ -89,10 +90,9 @@ def verify(binary, distribution):
         value = json.loads(conversation)
         if base64.b64decode(value["ompArchive"]["journal"]) != journal:
             raise AssertionError("native conversion lost original journal bytes")
-        target = (
-            "sessions/--work-omp--/"
-            "2026-10-25T03-50-25-123Z_019a0000-0000-7000-8000-00000000000a.jsonl"
-        )
+        stamp = datetime.fromisoformat(value["timestamp"]).isoformat(timespec="milliseconds")
+        stamp = stamp.replace("+00:00", "Z").replace(":", "-").replace(".", "-")
+        target = f"sessions/--work-omp--/{stamp}_{value['id']}.jsonl"
         reverse = json.dumps({
             "id": "document-to-omp", "from": "omp-conversation-v1", "to": "omp",
             "files": [{"path": "conversation.json", "format": "omp-conversation-v1",
@@ -143,6 +143,7 @@ def verify(binary, distribution):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        raise SystemExit("usage: python3 verify_host.py MAGPIE_BINARY DISTRIBUTION")
-    print(json.dumps(verify(sys.argv[1], sys.argv[2]), indent=2))
+    if len(sys.argv) not in (3, 4) or (len(sys.argv) == 4 and sys.argv[3] != "--custom-messages"):
+        raise SystemExit("usage: python3 verify_host.py MAGPIE_BINARY DISTRIBUTION [--custom-messages]")
+    fixture = "omp-custom-v3.jsonl" if len(sys.argv) == 4 else "omp-v3.jsonl"
+    print(json.dumps(verify(sys.argv[1], sys.argv[2], fixture), indent=2))

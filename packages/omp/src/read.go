@@ -21,6 +21,7 @@ type ompCarryEntry struct {
 	ActiveLeafID                 json.RawMessage            `json:"activeLeafId"`
 	Timestamp                    string                     `json:"timestamp"`
 	Message                      json.RawMessage            `json:"message"`
+	CustomMessage                json.RawMessage            `json:"-"`
 	Summary                      string                     `json:"summary"`
 	FirstKeptEntryID             string                     `json:"firstKeptEntryId"`
 	ProviderReplayThroughEntryID string                     `json:"providerReplayThroughEntryId"`
@@ -73,79 +74,11 @@ func readItemsWithResultMedia(ctx context.Context, body []byte, assets map[strin
 }
 
 func readSelectedItems(ctx context.Context, body []byte, assets map[string][]byte, resultMedia bool, replay *ompNativeReplay) ([]Item, error) {
-	var entries []ompCarryEntry
-	byID := make(map[string]int)
-	if err := eachLine(ctx, body, func(line []byte) {
-		var envelope struct {
-			Type         string          `json:"type"`
-			ID           string          `json:"id"`
-			ParentID     *string         `json:"parentId"`
-			ActiveLeafID json.RawMessage `json:"activeLeafId"`
-			Timestamp    string          `json:"timestamp"`
-		}
-		if json.Unmarshal(line, &envelope) != nil || envelope.ID == "" || envelope.Type == "session" || envelope.Type == "title" {
-			return
-		}
-		entry := ompCarryEntry{Type: envelope.Type, ID: envelope.ID, ParentID: envelope.ParentID,
-			ActiveLeafID: envelope.ActiveLeafID, Timestamp: envelope.Timestamp}
-		if entry.Type == "message" || entry.Type == "compaction" || entry.Type == "branch_summary" {
-			var payload ompCarryEntry
-			if json.Unmarshal(line, &payload) == nil {
-				entry = payload
-			} else if entry.Type == "compaction" {
-				// An unreadable boundary cannot safely stand in for history.
-				entry.Unreadable = true
-			}
-		}
-		byID[entry.ID] = len(entries)
-		entries = append(entries, entry)
-	}); err != nil {
-		return nil, err
-	}
-	if len(entries) == 0 {
-		return nil, nil
-	}
-
-	branch, err := ompActiveBranch(entries, byID)
+	branch, err := ompJournalBranch(ctx, body, false)
 	if err != nil {
 		return nil, err
 	}
-
-	root, compact := 0, -1
-	for i := len(branch) - 1; i >= 0; i-- {
-		if branch[i].Type == "reset_boundary" {
-			root = i + 1
-			break
-		}
-	}
-	for i := len(branch) - 1; i >= root; i-- {
-		if branch[i].Type == "compaction" && ompCarryPortable(branch[i]) {
-			compact = i
-			break
-		}
-	}
-	retained := root
-	if compact >= 0 {
-		c := branch[compact]
-		retained = compact
-		for i := 0; i < compact; i++ {
-			if c.FirstKeptEntryID != "" && branch[i].ID == c.FirstKeptEntryID {
-				retained = i
-				break
-			}
-		}
-		if retained == compact && c.FirstKeptEntryID == "" && ompCarryPresent(c.PreserveData["anthropicCompaction"]) && c.ProviderReplayThroughEntryID != "" {
-			for i := 0; i < compact; i++ {
-				if branch[i].ID == c.ProviderReplayThroughEntryID {
-					retained = i + 1
-					break
-				}
-			}
-		}
-		if retained < root {
-			retained = root
-		}
-	}
+	retained, compact := ompReplayBounds(branch, false)
 
 	resolver := ompCarryBlobs{assets: assets, memo: make(map[string]string)}
 	var items []Item
@@ -159,6 +92,20 @@ func readSelectedItems(ctx context.Context, body []byte, assets map[string][]byt
 	for _, entry := range branch[retained:] {
 		at, stampErr := time.Parse(time.RFC3339Nano, entry.Timestamp)
 		switch entry.Type {
+		case "custom_message":
+			if replay == nil {
+				continue
+			}
+			item, err := ompCustomMessageItem(entry, at, &resolver)
+			if err != nil {
+				return nil, fmt.Errorf("omp entry %q: %w", entry.ID, err)
+			}
+			if item.Kind != "" {
+				if item.Kind == "user" {
+					clear(replay.pending)
+				}
+				items = append(items, item)
+			}
 		case "branch_summary":
 			if entry.Summary != "" && !strings.Contains(entry.Summary, "¶think:") {
 				items = append(items, ompCarryUserText(entry.Summary, at))

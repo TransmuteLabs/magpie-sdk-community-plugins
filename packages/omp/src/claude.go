@@ -51,15 +51,11 @@ func convertToClaude(ctx context.Context, request sdk.SessionRequest) (sdk.Sessi
 	if err != nil {
 		return sdk.SessionResult{}, err
 	}
-	document, err := Decode(ctx, source, assets)
+	store, err := nativeOMPInputs(ctx, source, assets)
 	if err != nil {
 		return sdk.SessionResult{}, err
 	}
-	store := map[string][]byte{}
-	for _, asset := range document.Archive.Assets {
-		store[asset.SHA256] = asset.Body
-	}
-	items, err := readSelectedItems(ctx, document.Archive.Journal, store, true, &ompNativeReplay{})
+	items, err := readSelectedItems(ctx, source, store, true, &ompNativeReplay{})
 	if err != nil {
 		return sdk.SessionResult{}, err
 	}
@@ -125,7 +121,10 @@ func convertToClaude(ctx context.Context, request sdk.SessionRequest) (sdk.Sessi
 		var content []any
 		kind, stop := "assistant", "end_turn"
 		switch item.Kind {
-		case "user":
+		case "user", "steering":
+			if item.Kind == "steering" && len(pending) != 0 {
+				return sdk.SessionResult{}, errors.New("steering before pending tool results cannot be carried into Claude Code")
+			}
 			kind = "user"
 			content, err = claudeContent(item.Content)
 		case "assistant":

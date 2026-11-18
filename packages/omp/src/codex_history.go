@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"time"
 )
 
@@ -14,58 +15,14 @@ type codexHistoryItem struct {
 }
 
 func codexHistory(ctx context.Context, body []byte, assets map[string][]byte) ([]codexHistoryItem, error) {
-	var entries []ompCarryEntry
-	byID := map[string]int{}
-	var parseErr error
-	if err := eachLine(ctx, body, func(line []byte) {
-		var entry ompCarryEntry
-		if json.Unmarshal(line, &entry) != nil {
-			parseErr = errors.New("invalid OMP native history entry")
-			return
-		}
-		if entry.Type != "session" && entry.Type != "title" && entry.ID != "" {
-			byID[entry.ID] = len(entries)
-			entries = append(entries, entry)
-		}
-	}); err != nil {
-		return nil, err
-	}
-	if parseErr != nil {
-		return nil, parseErr
-	}
-	branch, err := ompActiveBranch(entries, byID)
+	branch, err := ompJournalBranch(ctx, body, true)
 	if err != nil {
 		return nil, err
 	}
-	start, compact := 0, -1
-	for index := len(branch) - 1; index >= 0; index-- {
-		if branch[index].Type == "reset_boundary" {
-			start = index + 1
-			break
-		}
-	}
-	for index := len(branch) - 1; index >= start; index-- {
-		if branch[index].Type == "compaction" && ompCarryPortable(branch[index]) {
-			compact = index
-			break
-		}
-	}
-	retained := start
+	retained, compact := ompReplayBounds(branch, true)
 	var result []codexHistoryItem
 	if compact >= 0 {
 		entry := branch[compact]
-		retained = compact
-		for index := start; index < compact; index++ {
-			if entry.FirstKeptEntryID != "" && branch[index].ID == entry.FirstKeptEntryID {
-				retained = index
-				break
-			}
-			if entry.FirstKeptEntryID == "" && ompCarryPresent(entry.PreserveData["anthropicCompaction"]) &&
-				entry.ProviderReplayThroughEntryID == branch[index].ID {
-				retained = index + 1
-				break
-			}
-		}
 		at, _ := time.Parse(time.RFC3339Nano, entry.Timestamp)
 		result = append(result, codexHistoryItem{Item: Item{Kind: "context", Text: entry.Summary, Time: at}})
 	}
@@ -73,6 +30,19 @@ func codexHistory(ctx context.Context, body []byte, assets map[string][]byte) ([
 	var replay ompNativeReplay
 	for _, entry := range branch[retained:] {
 		at, _ := time.Parse(time.RFC3339Nano, entry.Timestamp)
+		if entry.Type == "custom_message" {
+			item, err := ompCustomMessageItem(entry, at, blobs)
+			if err != nil {
+				return nil, fmt.Errorf("omp entry %q: %w", entry.ID, err)
+			}
+			if item.Kind != "" {
+				if item.Kind == "user" {
+					clear(replay.pending)
+				}
+				result = append(result, codexHistoryItem{Item: item})
+			}
+			continue
+		}
 		if entry.Type == "branch_summary" {
 			if ompCarryPortable(entry) && entry.Summary != "" {
 				result = append(result, codexHistoryItem{Item: Item{Kind: "branch_context", Text: entry.Summary, Time: at}})

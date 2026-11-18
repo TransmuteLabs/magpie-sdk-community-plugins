@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"slices"
 
 	sdk "github.com/yetone/magpie/pkg/extension"
@@ -41,6 +42,15 @@ func PlanSourceInputs(ctx context.Context, request sdk.SessionRequest) (SourceIn
 		return SourceInputs{}, errors.New("source input planning requires one bounded OMP journal")
 	}
 	hashes := map[string]bool{}
+	visitHash := func(hash string) error {
+		hashes[hash] = true
+		if len(hashes) >= MaxFiles {
+			return errors.New("OMP attachment count exceeds the input budget")
+		}
+		return nil
+	}
+	archiveCustom := request.ID == "omp-to-document"
+	hasCustom := false
 	var parseErr error
 	err := eachLine(ctx, request.Files[0].Body, func(line []byte) {
 		if parseErr != nil {
@@ -54,19 +64,45 @@ func PlanSourceInputs(ctx context.Context, request sdk.SessionRequest) (SourceIn
 			parseErr = errors.New("invalid OMP record during attachment planning")
 			return
 		}
-		parseErr = visitAttachmentReferences(record.Type, record.Message, func(hash string) error {
-			hashes[hash] = true
-			if len(hashes) >= MaxFiles {
-				return errors.New("OMP attachment count exceeds the input budget")
+		attachmentBody := record.Message
+		if record.Type == "custom_message" {
+			hasCustom = true
+			if !archiveCustom {
+				return
 			}
-			return nil
-		})
+			attachmentBody = line
+		}
+		parseErr = visitAttachmentReferences(record.Type, attachmentBody, visitHash)
 	})
 	if err != nil {
 		return SourceInputs{}, err
 	}
 	if parseErr != nil {
 		return SourceInputs{}, parseErr
+	}
+	if !archiveCustom && hasCustom {
+		codex := request.To == "codex"
+		branch, err := ompJournalBranch(ctx, request.Files[0].Body, codex)
+		if err != nil {
+			return SourceInputs{}, err
+		}
+		retained, _ := ompReplayBounds(branch, codex)
+		for _, entry := range branch[retained:] {
+			if entry.Type != "custom_message" {
+				continue
+			}
+			_, blocks, err := ompCustomMessageContent(entry.CustomMessage)
+			if err != nil {
+				return SourceInputs{}, fmt.Errorf("omp entry %q: %w", entry.ID, err)
+			}
+			for _, block := range blocks {
+				if block.Type == "image" {
+					if err := visitImageReference(block.Data, visitHash); err != nil {
+						return SourceInputs{}, err
+					}
+				}
+			}
+		}
 	}
 	names := make([]string, 0, len(hashes))
 	for hash := range hashes {
