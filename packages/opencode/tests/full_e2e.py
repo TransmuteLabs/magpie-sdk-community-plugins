@@ -496,6 +496,10 @@ def main():
         }, indent=2) + "\n")
         initial_launch = json.loads(command("opencode-sdk", "run", "synthetic"))
         assert initial_launch["usedCheckedOverlay"] and initial_launch["ordinaryGateway"]
+        assert initial_launch["modelArgs"] == 0 and initial_launch["model"].endswith("/deepseek-v4.1-flash")
+        explicit_model = "magpie/" + provider + "/glm-5.2"
+        explicit_launch = json.loads(command("opencode-sdk", "run", "--model", explicit_model, "synthetic"))
+        assert explicit_launch["modelArgs"] == 1 and explicit_launch["model"] == explicit_model
         (output / "pre-library-result.json").write_text(json.dumps({
             "actualNative": True, "models": 4, "accountGeneration": account["generation"],
             "ordinaryLaunch": initial_launch, "libraryAcceptance": False,
@@ -579,12 +583,13 @@ def main():
             assert secret not in (output / "host.log").read_text(), "host log disclosed private credentials"
         with lock:
             assert state["starts"] == 3 and state["polls"] == 3 and not state["failures"], state
-            assert state["gemini"] == 2 and len(state["chat"]) == 12
+            assert state["gemini"] == 2 and len(state["chat"]) == 13, state
         report = {"hostSHA256": hashlib.sha256(args.host.read_bytes()).hexdigest(),
                   "librarySHA256": hashlib.sha256((fixture / "lib/opencode.so").read_bytes()).hexdigest(),
                   "actualNative": True, "models": 4, "ordinaryGatewayModels": 4,
                   "accountGeneration": 2, "initialOrganizationRetained": True,
-                  "ordinaryLaunch": launch, "libraryPreservedUserMCP": True, "offDenied": True, "reload": True,
+                  "ordinaryLaunch": launch, "explicitModelLaunch": explicit_launch,
+                  "libraryPreservedUserMCP": True, "offDenied": True, "reload": True,
                   "librarySkills": True, "libraryRemovedOwnedOnly": True,
                   "configGeneration": True, "packageReplacement": True, "onResumed": True, "restored": True,
                   "staleLaunchRefusedBeforeDispatch": True, "explicitReapplyRequired": True,

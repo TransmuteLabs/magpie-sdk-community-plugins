@@ -7,8 +7,10 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"maps"
 	"net/url"
 	"reflect"
+	"slices"
 	"strings"
 
 	sdk "github.com/yetone/magpie/pkg/extension"
@@ -129,7 +131,7 @@ func AgentManifest() sdk.Manifest {
 		ConfigFiles: []string{agentConfigPath},
 		Fields:      []sdk.AgentField{{Key: "model", Label: "Model"}, {Key: "small", Label: "Small model"}},
 		Launch: &sdk.AgentLaunch{
-			Env: map[string]string{"OPENCODE_CONFIG": "{config}"}, Model: "--model",
+			Env:   map[string]string{"OPENCODE_CONFIG": "{config}"},
 			Plain: []string{"help", "--help", "-h", "version", "--version", "-v", "auth", "upgrade"},
 		},
 	}}
@@ -196,39 +198,98 @@ func inspectAgent(ctx context.Context, call sdk.Call, _ *sdk.Stream) (any, error
 		if err != nil {
 			return nil, agentFailure()
 		}
-		model, _ := json.Marshal(request.Binding.Values["model"])
-		if !bytes.Equal(values["model"], model) {
-			return nil, agentFailure()
-		}
-		if small, owned := request.Binding.Values["small"]; owned {
-			actual := values["small_model"]
-			if agentFormat(ctx) != "v1" {
-				var agents, title map[string]json.RawMessage
-				json.Unmarshal(values["agents"], &agents)
-				json.Unmarshal(agents["title"], &title)
-				actual = title["model"]
-			}
-			expected, _ := json.Marshal(small)
-			if small == "" && len(actual) != 0 || small != "" && !bytes.Equal(actual, expected) {
-				return nil, agentFailure()
+		for _, field := range []string{"model", "small"} {
+			if expected, owned := request.Binding.Values[field]; owned {
+				actual, err := readAgentSelection(values, agentSelectionPath(ctx, field))
+				if err != nil || actual != expected {
+					return nil, agentFailure()
+				}
 			}
 		}
 		providerKey, optionKey := "providers", "settings"
 		if agentFormat(ctx) == "v1" {
 			providerKey, optionKey = "provider", "options"
 		}
-		var providers, block map[string]json.RawMessage
+		block, err := readAgentObjectAt(values, providerKey, "magpie")
+		if err != nil || checkAgentModelRows(block) != nil {
+			return nil, agentFailure()
+		}
 		var settings struct {
 			BaseURL string `json:"baseURL"`
 			Key     string `json:"apiKey"`
 		}
-		if json.Unmarshal(values[providerKey], &providers) != nil ||
-			json.Unmarshal(providers["magpie"], &block) != nil || json.Unmarshal(block[optionKey], &settings) != nil ||
+		if json.Unmarshal(block[optionKey], &settings) != nil ||
 			settings.BaseURL != strings.TrimRight(options.Gateway, "/")+"/v1" || settings.Key != options.Key || options.Key == "" {
 			return nil, agentFailure()
 		}
 	}
 	return sdk.AgentInspectResult{Connected: request.Binding.Connected, Values: request.Binding.Clone().Values}, nil
+}
+
+func readAgentObjectAt(values map[string]json.RawMessage, path ...string) (map[string]json.RawMessage, error) {
+	for _, key := range path {
+		raw, exists := values[key]
+		if !exists {
+			return nil, nil
+		}
+		var next map[string]json.RawMessage
+		if json.Unmarshal(raw, &next) != nil || next == nil {
+			return nil, agentFailure()
+		}
+		values = next
+	}
+	return values, nil
+}
+
+func checkAgentModelRows(block map[string]json.RawMessage) error {
+	rows, err := readAgentObjectAt(block, "models")
+	if err != nil {
+		return err
+	}
+	for id := range rows {
+		if _, err := readAgentObjectAt(rows, id); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func agentSelectionPath(ctx context.Context, field string) []string {
+	if field == "model" {
+		return []string{"model"}
+	}
+	if agentFormat(ctx) == "v1" {
+		return []string{"small_model"}
+	}
+	return []string{"agents", "title", "model"}
+}
+
+func readAgentSelection(values map[string]json.RawMessage, path []string) (string, error) {
+	parent, err := readAgentObjectAt(values, path[:len(path)-1]...)
+	if err != nil {
+		return "", err
+	}
+	raw, exists := parent[path[len(path)-1]]
+	if !exists {
+		return "", nil
+	}
+	var model *string
+	if json.Unmarshal(raw, &model) != nil || model == nil {
+		return "", agentFailure()
+	}
+	return *model, nil
+}
+
+func updateAgentSelection(values map[string]json.RawMessage, path []string, value string) error {
+	next := map[string]json.RawMessage{}
+	if value != "" {
+		next[path[len(path)-1]], _ = json.Marshal(value)
+		for index := len(path) - 2; index >= 0; index-- {
+			body, _ := json.Marshal(next)
+			next = map[string]json.RawMessage{path[index]: body}
+		}
+	}
+	return restoreAgentField(values, next, path...)
 }
 
 func agentCatalog(options agentOptions) (map[string]any, map[string]bool, error) {
@@ -436,6 +497,8 @@ func keepAgentObject(before json.RawMessage, fields map[string]any) (json.RawMes
 			if err != nil {
 				return nil, err
 			}
+		} else if existing, found := values[key]; found {
+			value = existing
 		}
 		values[key] = value
 	}
@@ -570,10 +633,23 @@ func trimAgentPriorVariants(current map[string]json.RawMessage, prior map[string
 	return nil
 }
 
+func removePriorAgentModelFields(current map[string]json.RawMessage, prior map[string]any) error {
+	generated := maps.Clone(prior)
+	delete(generated, "variants")
+	if err := restoreAgentGenerated(current, nil, generated); err != nil {
+		return err
+	}
+	return trimAgentPriorVariants(current, prior)
+}
+
 func keepAgentProvider(previous json.RawMessage, next map[string]any, prior agentModels) (map[string]json.RawMessage, error) {
 	before := map[string]json.RawMessage{}
 	if len(previous) != 0 && (json.Unmarshal(previous, &before) != nil || before == nil) {
 		return nil, agentFailure()
+	}
+	priorByID := make(map[string]map[string]any, len(prior))
+	for _, model := range prior {
+		priorByID[model.id] = model.value
 	}
 	for key, value := range next {
 		if key == "models" {
@@ -588,43 +664,9 @@ func keepAgentProvider(previous json.RawMessage, next map[string]any, prior agen
 				if raw, exists := oldModels[model.id]; exists && (json.Unmarshal(raw, &old) != nil || old == nil) {
 					return nil, agentFailure()
 				}
-				for _, candidate := range prior {
-					if candidate.id != model.id {
-						continue
-					}
-					generated := map[string]any{}
-					for name, field := range candidate.value {
-						if name != "variants" {
-							generated[name] = field
-						}
-					}
-					if restoreAgentGenerated(old, map[string]json.RawMessage{}, generated) != nil ||
-						trimAgentPriorVariants(old, candidate.value) != nil {
-						return nil, agentFailure()
-					}
-				}
-				optionKey := "settings"
-				if _, legacy := next["npm"]; legacy {
-					optionKey = "options"
-				}
-				var settings map[string]json.RawMessage
-				if body, exists := old[optionKey]; exists && (json.Unmarshal(body, &settings) != nil || settings == nil) {
+				delete(oldModels, model.id)
+				if existing := priorByID[model.id]; existing != nil && removePriorAgentModelFields(old, existing) != nil {
 					return nil, agentFailure()
-				}
-				effort := settings["reasoningEffort"]
-				var output json.RawMessage
-				if raw, exists := old["limit"]; exists {
-					var limit map[string]json.RawMessage
-					if json.Unmarshal(raw, &limit) != nil || limit == nil {
-						return nil, agentFailure()
-					}
-					output = limit["output"]
-					if len(output) != 0 {
-						var tokens int64
-						if json.Unmarshal(output, &tokens) != nil || tokens <= 0 {
-							return nil, agentFailure()
-						}
-					}
 				}
 				for name, field := range model.value {
 					generated, err := json.Marshal(field)
@@ -644,35 +686,51 @@ func keepAgentProvider(previous json.RawMessage, next map[string]any, prior agen
 							old[name], err = keepAgentLegacyVariants(old[name], generated, model.legacy && prior == nil)
 						}
 					} else {
-						old[name], err = json.Marshal(field)
+						if _, exists := old[name]; !exists {
+							old[name] = generated
+						}
 					}
 					if err != nil {
 						return nil, err
 					}
 				}
-				if len(effort) != 0 {
-					json.Unmarshal(old[optionKey], &settings)
-					if settings == nil {
-						settings = map[string]json.RawMessage{}
+				for _, object := range []string{"limit", "settings", "options"} {
+					fields, err := readAgentObjectAt(old, object)
+					if err != nil {
+						return nil, err
 					}
-					settings["reasoningEffort"] = effort
-					old[optionKey], _ = json.Marshal(settings)
-				}
-				if len(output) != 0 {
-					var limit map[string]json.RawMessage
-					json.Unmarshal(old["limit"], &limit)
-					if limit == nil {
-						limit = map[string]json.RawMessage{}
+					if output, exists := fields["output"]; object == "limit" && exists {
+						var tokens int64
+						if json.Unmarshal(output, &tokens) != nil || tokens <= 0 {
+							return nil, agentFailure()
+						}
 					}
-					limit["output"] = output
-					old["limit"], _ = json.Marshal(limit)
 				}
 				model.value = map[string]any{}
 				for name, field := range old {
 					model.value[name] = field
 				}
 			}
-			before[key], _ = json.Marshal(value)
+			for _, id := range slices.Sorted(maps.Keys(oldModels)) {
+				var fields map[string]json.RawMessage
+				if json.Unmarshal(oldModels[id], &fields) != nil || fields == nil {
+					return nil, agentFailure()
+				}
+				if existing := priorByID[id]; existing != nil {
+					if removePriorAgentModelFields(fields, existing) != nil {
+						return nil, agentFailure()
+					}
+					if len(fields) == 0 {
+						continue
+					}
+				}
+				model := agentModelEntry{id: id, value: make(map[string]any, len(fields))}
+				for name, field := range fields {
+					model.value[name] = field
+				}
+				models = append(models, model)
+			}
+			before[key], _ = json.Marshal(models)
 		} else if key == "settings" || key == "options" || key == "compatibility" {
 			options := map[string]json.RawMessage{}
 			if raw, exists := before[key]; exists && (json.Unmarshal(raw, &options) != nil || options == nil) {
@@ -722,7 +780,12 @@ func planAgent(ctx context.Context, call sdk.Call, _ *sdk.Stream) (any, error) {
 				return nil, err
 			}
 		}
-		paths := [][]string{{"model"}}
+		var paths [][]string
+		for _, field := range []string{"model", "small"} {
+			if _, owned := request.Binding.Values[field]; owned {
+				paths = append(paths, agentSelectionPath(ctx, field))
+			}
+		}
 		for _, providerKey := range []string{"provider", "providers"} {
 			optionKey := "options"
 			if providerKey == "providers" {
@@ -736,11 +799,18 @@ func planAgent(ctx context.Context, call sdk.Call, _ *sdk.Stream) (any, error) {
 			}
 		}
 		for _, providerKey := range []string{"provider", "providers"} {
-			var currentProviders, oldProviders, currentBlock, oldBlock map[string]json.RawMessage
-			json.Unmarshal(values[providerKey], &currentProviders)
-			json.Unmarshal(previousValues[providerKey], &oldProviders)
-			json.Unmarshal(currentProviders["magpie"], &currentBlock)
-			json.Unmarshal(oldProviders["magpie"], &oldBlock)
+			currentProviders, err := readAgentObjectAt(values, providerKey)
+			if err != nil {
+				return nil, err
+			}
+			currentBlock, err := readAgentObjectAt(currentProviders, "magpie")
+			if err != nil || checkAgentModelRows(currentBlock) != nil {
+				return nil, agentFailure()
+			}
+			oldBlock, err := readAgentObjectAt(previousValues, providerKey, "magpie")
+			if err != nil || checkAgentModelRows(oldBlock) != nil {
+				return nil, agentFailure()
+			}
 			if currentBlock == nil {
 				continue
 			}
@@ -757,9 +827,6 @@ func planAgent(ctx context.Context, call sdk.Call, _ *sdk.Stream) (any, error) {
 			}
 			currentProviders["magpie"], _ = json.Marshal(currentBlock)
 			values[providerKey], _ = json.Marshal(currentProviders)
-		}
-		if _, owned := request.Binding.Values["small"]; owned {
-			paths = append(paths, []string{"small_model"}, []string{"agents", "title", "model"})
 		}
 		for _, path := range paths {
 			if err := restoreAgentField(values, previousValues, path...); err != nil {
@@ -781,19 +848,30 @@ func planAgent(ctx context.Context, call sdk.Call, _ *sdk.Stream) (any, error) {
 			if options.Field != "model" && options.Field != "small" || options.Value != "" && !allowed[options.Value] {
 				return nil, agentFailure()
 			}
-			if options.Value == "" && options.Field != "small" {
-				delete(change.Values, options.Field)
-			} else {
-				change.Values[options.Field] = options.Value
-			}
+			change.Values[options.Field] = options.Value
 			change.Connected = true
 		case "connect":
+			if !allowed[change.Values["model"]] {
+				return nil, agentFailure()
+			}
 			change.Connected = true
 		case "sync":
+			for _, field := range []string{"model", "small"} {
+				selected, owned := change.Values[field]
+				if !owned {
+					continue
+				}
+				actual, err := readAgentSelection(values, agentSelectionPath(ctx, field))
+				if err != nil {
+					return nil, err
+				}
+				if actual != selected {
+					delete(change.Values, field)
+				} else if !allowed[selected] {
+					change.Values[field] = ""
+				}
+			}
 		default:
-			return nil, agentFailure()
-		}
-		if !allowed[change.Values["model"]] || change.Values["small"] != "" && !allowed[change.Values["small"]] {
 			return nil, agentFailure()
 		}
 		providerKey := "providers"
@@ -820,38 +898,13 @@ func planAgent(ctx context.Context, call sdk.Call, _ *sdk.Stream) (any, error) {
 		}
 		providers["magpie"], _ = json.Marshal(kept)
 		values[providerKey], _ = json.Marshal(providers)
-		values["model"], _ = json.Marshal(change.Values["model"])
-		_, ownsSmall := change.Values["small"]
-		if ownsSmall {
-			if agentFormat(ctx) == "v1" {
-				if change.Values["small"] == "" {
-					delete(values, "small_model")
-				} else {
-					values["small_model"], _ = json.Marshal(change.Values["small"])
-				}
-			} else {
-				agents := map[string]json.RawMessage{}
-				if value, exists := values["agents"]; exists && (json.Unmarshal(value, &agents) != nil || agents == nil) {
+		for _, field := range []string{"model", "small"} {
+			if selected, owned := change.Values[field]; owned {
+				if selected != "" && !allowed[selected] {
 					return nil, agentFailure()
 				}
-				title := map[string]json.RawMessage{}
-				if value, exists := agents["title"]; exists && (json.Unmarshal(value, &title) != nil || title == nil) {
-					return nil, agentFailure()
-				}
-				if change.Values["small"] != "" {
-					title["model"], _ = json.Marshal(change.Values["small"])
-				} else {
-					delete(title, "model")
-				}
-				if len(title) > 0 {
-					agents["title"], _ = json.Marshal(title)
-				} else {
-					delete(agents, "title")
-				}
-				if len(agents) > 0 {
-					values["agents"], _ = json.Marshal(agents)
-				} else {
-					delete(values, "agents")
+				if err := updateAgentSelection(values, agentSelectionPath(ctx, field), selected); err != nil {
+					return nil, err
 				}
 			}
 		}

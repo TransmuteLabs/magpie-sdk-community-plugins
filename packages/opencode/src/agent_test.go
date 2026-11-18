@@ -46,7 +46,7 @@ func TestAgentManifestKeepsProviderSliceAndAdoptsExplicitLibraryOwner(t *testing
 	}
 	descriptor := agent.Manifest.Agents[0]
 	if descriptor.ID == "opencode" || descriptor.Profile.Target != "opencode" || descriptor.Library != nil ||
-		descriptor.Launch.Env["OPENCODE_CONFIG"] != "{config}" || descriptor.Launch.Model != "--model" {
+		descriptor.Launch.Env["OPENCODE_CONFIG"] != "{config}" || descriptor.Launch.Model != "" {
 		t.Fatal("agent did not reuse explicit existing-agent and Library ownership")
 	}
 	old := agent.Manifest.Clone()

@@ -273,7 +273,25 @@ the existing OpenCode application, checked private `OPENCODE_CONFIG` overlay
 and model/small fields. They preserve user settings and request host-owned
 launch/Library behavior. The window uses the actual parent bridge and
 selected-account auth workflow; tokens and continuations stay server-side.
-The installed OpenCode binary remains the agent, not a companion auth package.
+The installed OpenCode binary remains the agent.
+
+SDK agent plans preserve custom model entries in the private overlay for both
+OpenCode config formats. When a host model leaves the catalog, the next plan
+removes its previously generated fields and retains local overrides. Sync
+updates unchanged generated fields and keeps manually edited fields within
+each model. An empty catalog clears stale owned model selections. An
+independent selection and local model entries remain in the configuration.
+Disconnect restores saved owned values and refuses a malformed model catalog.
+
+OpenCode uses the default model from the checked overlay. The launch descriptor
+sets `OPENCODE_CONFIG`, leaving the client's explicit `--model` arguments
+available. A binding written by an earlier development package with the
+`--model` launch descriptor must be disconnected using that package's
+descriptor before adopting this one.
+
+This profile still writes its model list during sync. Dynamic discovery in
+Magpie's built-in OpenCode wiring remains a separate path.
+
 Own plugin history uses the default API1.8 host-selected storage grant described
 in [MIGRATION.md](MIGRATION.md): the Unix reader consumes actual JSON/SQLite
 with WAL, ordered `session_part`, instruction epochs and media blobs.

@@ -2616,7 +2616,6 @@
         "env": {
           "OPENCODE_CONFIG": "{config}"
         },
-        "model": "--model",
         "plain": [
           "help",
           "--help",

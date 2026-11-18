@@ -86,6 +86,10 @@ const bridgeURL = new URL("_magpie/bridge.js", config.origin + config.page.url);
 const bridge = await (await fetch(bridgeURL)).text();
 vm.runInContext(bridge, context);
 const base = new URL(config.page.url, config.origin);
+function dependencyAddress(name, parent) {
+  assert(name.startsWith("./"), "bare or privileged browser dependency");
+  return new URL(name, parent.identifier).href;
+}
 async function load(address) {
   if (modules.has(address)) return modules.get(address);
   assert(address.startsWith(new URL(".", base).href));
@@ -94,13 +98,13 @@ async function load(address) {
   const source = await response.text();
   const module = new vm.SourceTextModule(source, { context, identifier: address });
   modules.set(address, module);
-  await module.link((name, parent) => {
-    assert(name.startsWith("./"), "bare or privileged browser dependency");
-    return load(new URL(name, parent.identifier).href);
-  });
+  for (const name of module.dependencySpecifiers) {
+    await load(dependencyAddress(name, module));
+  }
   return module;
 }
 const app = await load(new URL("./app.js", base).href);
+await app.link((name, parent) => modules.get(dependencyAddress(name, parent)));
 await app.evaluate();
 const sdk = modules.get(new URL("./sdk-ui.js", base).href).namespace;
 const click = id => { assert(!elements[id].disabled, id + " unexpectedly disabled"); elements[id].dispatch("click"); };

@@ -1,6 +1,7 @@
 package opencode
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
@@ -281,7 +282,8 @@ func TestAgentMetadataSyncUsesPriorModelsAndRetainsUserOverrides(t *testing.T) {
 			json.Unmarshal(root[providerKey], &providers)
 			json.Unmarshal(providers["magpie"], &provider)
 			json.Unmarshal(provider["models"], &models)
-			effective["limit"] = raw(map[string]any{"context": 65536, "output": 7000, "personal": json.Number("9007199254740993")})
+			effective["name"] = raw("My model")
+			effective["limit"] = raw(map[string]any{"context": 49152, "output": 7000, "personal": json.Number("9007199254740993")})
 			effective[optionKey] = raw(map[string]any{"reasoningEffort": "high", "personal": "keep"})
 			if format == "v2" {
 				effective["variants"] = raw([]any{
@@ -305,16 +307,168 @@ func TestAgentMetadataSyncUsesPriorModelsAndRetainsUserOverrides(t *testing.T) {
 			edited := invokeAgentMetadataPlan(t, host, "sync", options, body, binding)
 			effective = plannedAgentModel(t, format, edited.Files[0].Body, id)
 			json.Unmarshal(effective["limit"], &limit)
-			if limit.Context != 98304 || limit.Output != 7000 ||
+			if limit.Context != 49152 || limit.Output != 7000 || string(effective["name"]) != `"My model"` ||
 				!strings.Contains(string(effective["limit"]), "9007199254740993") ||
 				!strings.Contains(string(effective["variants"]), "personal") ||
 				!strings.Contains(string(effective[optionKey]), `"high"`) {
-				t.Fatal("host sync erased independent output, settings or variant edits")
+				t.Fatalf("host sync erased independent model edits: %s", edited.Files[0].Body)
 			}
 			noop = invokeAgentMetadataPlan(t, host, "sync", options, sync.Files[0].Body, binding)
 			effective = plannedAgentModel(t, format, noop.Files[0].Body, id)
 			if len(agentModelEfforts(t, format, effective)) != 0 || len(effective[optionKey]) != 0 {
 				t.Fatal("an invalidated generated default or effort survived an ordinary edit")
+			}
+		})
+	}
+}
+
+func TestAgentDisconnectRefusesMalformedModelCatalog(t *testing.T) {
+	for _, format := range []string{"v1", "v2"} {
+		t.Run(format, func(t *testing.T) {
+			host := serveHarness(t, NewAgentModule(ModuleOptions{}), raw(moduleConfig{ProjectID: "global", AgentFormat: format}))
+			providerKey := "providers"
+			if format == "v1" {
+				providerKey = "provider"
+			}
+			model := "magpie/group/active"
+			options := map[string]any{"gateway": "http://127.0.0.1:3425", "key": "synthetic-only",
+				"models":   []any{map[string]any{"value": model}},
+				"previous": []agentFile{{Path: agentConfigPath, BeforeHash: "missing"}},
+			}
+			binding := &sdk.AgentBindingSnapshot{Target: "opencode", Revision: "0", Values: map[string]string{"model": model}}
+			connected := invokeAgentMetadataPlan(t, host, "connect", options, nil, binding)
+			binding.Connected, binding.Revision, binding.Values = true, "1", connected.Binding.Values
+			var root, providers, block map[string]json.RawMessage
+			if json.Unmarshal(connected.Files[0].Body, &root) != nil ||
+				json.Unmarshal(root[providerKey], &providers) != nil || json.Unmarshal(providers["magpie"], &block) != nil {
+				t.Fatal("could not read the connected provider")
+			}
+			for _, malformed := range []string{`7`, `null`, `{"group/active":[]}`, `{"personal/model":false}`} {
+				block["models"] = json.RawMessage(malformed)
+				providers["magpie"] = raw(block)
+				root[providerKey] = raw(providers)
+				frame, _ := host.invoke(sdk.MethodAgentPlan, sdk.Scope{}, sdk.AgentPlanRequest{
+					ID: AgentID, Action: "disconnect", Options: raw(options), Settings: agentSettings(raw(root)), Binding: binding,
+				}, nil)
+				if frame.Error == nil || len(frame.Result) != 0 {
+					t.Errorf("disconnect produced a plan for malformed models %s", malformed)
+				}
+			}
+		})
+	}
+}
+
+func TestAgentSyncClearsStaleSelectionWhenCatalogIsEmpty(t *testing.T) {
+	for _, format := range []string{"v1", "v2"} {
+		t.Run(format, func(t *testing.T) {
+			host := serveHarness(t, NewAgentModule(ModuleOptions{}), raw(moduleConfig{ProjectID: "global", AgentFormat: format}))
+			providerKey := "providers"
+			if format == "v1" {
+				providerKey = "provider"
+			}
+			model := "magpie/group/active"
+			prior := []any{map[string]any{"value": model, "context": 4096}}
+			original := []byte(`{"` + providerKey + `":{"magpie":{"models":{"local/personal":{"name":"Personal"}}}}}`)
+			options := map[string]any{"gateway": "http://127.0.0.1:3425", "key": "synthetic-only", "models": prior}
+			binding := &sdk.AgentBindingSnapshot{Target: "opencode", Revision: "0", Values: map[string]string{"model": model, "small": model}}
+			connected := invokeAgentMetadataPlan(t, host, "connect", options, original, binding)
+			binding.Connected, binding.Revision, binding.Values = true, "1", connected.Binding.Values
+			options["priorModels"], options["models"] = prior, []any{}
+			for _, custom := range []bool{false, true} {
+				body := connected.Files[0].Body
+				if custom {
+					var config map[string]json.RawMessage
+					if err := json.Unmarshal(body, &config); err != nil {
+						t.Fatal(err)
+					}
+					config["model"] = raw("magpie/local/personal")
+					body = raw(config)
+				}
+				synced := invokeAgentMetadataPlan(t, host, "sync", options, body, binding)
+				body = synced.Files[0].Body
+				if !synced.Binding.Connected || synced.Binding.Values["model"] != "" || synced.Binding.Values["small"] != "" ||
+					bytes.Contains(body, []byte("group/active")) ||
+					len(plannedAgentModel(t, format, body, "local/personal")) == 0 {
+					t.Fatalf("empty sync retained stale ownership or lost user models: %s", body)
+				}
+				var config map[string]json.RawMessage
+				if err := json.Unmarshal(body, &config); err != nil {
+					t.Fatal(err)
+				}
+				if custom && string(config["model"]) != `"magpie/local/personal"` ||
+					!custom && len(config["model"]) != 0 {
+					t.Fatalf("unexpected selected model after empty sync: %s", body)
+				}
+				after := &sdk.AgentBindingSnapshot{Target: "opencode", Connected: true, Revision: "2", Values: synced.Binding.Values}
+				inspected, _ := host.invoke(sdk.MethodAgentInspect, sdk.Scope{}, sdk.AgentInspectRequest{
+					ID: AgentID, Binding: after, Options: raw(options), Settings: agentSettings(body),
+				}, nil)
+				if inspected.Error != nil {
+					t.Fatalf("inspection refused an empty checked catalog: %+v", inspected.Error)
+				}
+			}
+		})
+	}
+}
+
+func TestAgentCatalogRetainsUserModelsWhenGatewayRowsDisappear(t *testing.T) {
+	for _, format := range []string{"v1", "v2"} {
+		t.Run(format, func(t *testing.T) {
+			host := serveHarness(t, NewAgentModule(ModuleOptions{}), raw(moduleConfig{ProjectID: "global", AgentFormat: format}))
+			providerKey := "providers"
+			if format == "v1" {
+				providerKey = "provider"
+			}
+			prior := []any{
+				map[string]any{"value": "magpie/group/active", "label": "Active"},
+				map[string]any{"value": "magpie/group/obsolete", "label": "Obsolete", "context": 4096},
+				map[string]any{"value": "magpie/group/edited", "label": "Edited", "context": 8192},
+			}
+			options := map[string]any{"gateway": "http://127.0.0.1:3425", "key": "synthetic-only", "models": prior}
+			binding := &sdk.AgentBindingSnapshot{Target: "opencode", Revision: "0", Values: map[string]string{"model": "magpie/group/active"}}
+			original := []byte(`{"` + providerKey + `":{"magpie":{"models":{"local/own":{"name":"Personal model","personal":9007199254740993}}}}}`)
+			connected := invokeAgentMetadataPlan(t, host, "connect", options, original, binding)
+			own := plannedAgentModel(t, format, connected.Files[0].Body, "local/own")
+			if string(own["personal"]) != "9007199254740993" {
+				t.Fatal("connect removed a user model outside the gateway catalog")
+			}
+			var config map[string]any
+			decoder := json.NewDecoder(bytes.NewReader(connected.Files[0].Body))
+			decoder.UseNumber()
+			if err := decoder.Decode(&config); err != nil {
+				t.Fatal(err)
+			}
+			models := config[providerKey].(map[string]any)["magpie"].(map[string]any)["models"].(map[string]any)
+			models["local/added"] = map[string]any{"name": "Added after connect"}
+			models["group/edited"].(map[string]any)["limit"].(map[string]any)["output"] = 3500
+			binding.Connected, binding.Revision, binding.Values = true, "1", connected.Binding.Values
+			options["priorModels"] = prior
+			options["models"] = prior[:1]
+			synced := invokeAgentMetadataPlan(t, host, "sync", options, raw(config), binding)
+			body := synced.Files[0].Body
+			edited := plannedAgentModel(t, format, body, "group/edited")
+			var limit map[string]int
+			if strings.Contains(string(body), "group/obsolete") ||
+				len(plannedAgentModel(t, format, body, "local/added")) == 0 ||
+				len(edited) != 1 || json.Unmarshal(edited["limit"], &limit) != nil ||
+				!reflect.DeepEqual(limit, map[string]int{"output": 3500}) {
+				t.Fatalf("sync retained a retired generated model or lost a user override: %s", body)
+			}
+			binding.Revision, binding.Values = "2", synced.Binding.Values
+			var originalSnapshot struct{ Files []agentFile }
+			if err := json.Unmarshal(agentSettings(original), &originalSnapshot); err != nil {
+				t.Fatal(err)
+			}
+			options["previous"] = originalSnapshot.Files
+			options["priorModels"] = prior[:1]
+			off := invokeAgentMetadataPlan(t, host, "disconnect", options, body, binding)
+			body = off.Files[0].Body
+			if off.Binding.Connected || strings.Contains(string(body), "synthetic-only") ||
+				strings.Contains(string(body), "group/active") ||
+				len(plannedAgentModel(t, format, body, "local/added")) == 0 ||
+				len(plannedAgentModel(t, format, body, "local/own")) == 0 ||
+				len(plannedAgentModel(t, format, body, "group/edited")) == 0 {
+				t.Fatalf("disconnect lost user models or retained gateway config: %s", body)
 			}
 		})
 	}
