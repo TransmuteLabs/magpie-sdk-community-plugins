@@ -1,0 +1,75 @@
+package sessions
+
+import (
+	"context"
+	"encoding/json"
+	"reflect"
+	"strings"
+	"testing"
+)
+
+func TestInstalledZCodeHistoryOffersOwnedSourceResume(t *testing.T) {
+	zcodeAutomaticInstall(t)
+	selected := zcodeAutomaticSelected(t)
+	line := ResumeNow(selected)
+	if line == "" || !strings.Contains(line, " sessions resume ") ||
+		!strings.Contains(line, "ses_one") || !strings.Contains(line, " --expected ") {
+		t.Fatal("installed ZCode source has no ordinary checked resume command", line)
+	}
+	record := selected.source
+	plan, err := PlanExtensionSourceResume(t.Context(), "zcode", "ses_one", sourceResumeToken(record))
+	if err != nil {
+		t.Fatal("installed source recipe failed ordinary selection", err)
+	}
+	if plan.Plugin != "zcode" || plan.Agent != "zcode-native" || plan.Cwd != "/synthetic/workspace" ||
+		!reflect.DeepEqual(plan.Args, []string{"--resume", "ses_one"}) {
+		t.Fatalf("resume changed selected native ID, cwd or owned launch profile: %+v", plan)
+	}
+	if _, err := PlanExtensionSourceResume(t.Context(), "zcode", "other-session", sourceResumeToken(record)); err == nil {
+		t.Fatal("source resume accepted a foreign native session")
+	}
+	if _, err := PlanExtensionSourceResume(t.Context(), "zcode", "ses_one", strings.Repeat("0", 64)); err == nil {
+		t.Fatal("source resume accepted a stale selection identity")
+	}
+}
+
+func TestInstalledZCodeSourceResumeLosesRevokedAuthority(t *testing.T) {
+	for _, change := range []string{"reads", "consent", "config", "off", "cancel"} {
+		t.Run(change, func(t *testing.T) {
+			fixture := zcodeAutomaticInstall(t)
+			selected := zcodeAutomaticSelected(t)
+			plan, err := PlanExtensionSourceResume(t.Context(), "zcode", "ses_one", sourceResumeToken(selected.source))
+			if err != nil {
+				t.Fatal("installed ZCode lacks the owned source resume recipe", err)
+			}
+			ctx, cancel := context.WithCancel(t.Context())
+			defer cancel()
+			switch change {
+			case "reads":
+				err = SetReads(nil, map[string]bool{"zcode": false})
+			case "consent":
+				err = UnbindStorageSource(t.Context(), "zcode", fixture.consent.Identity)
+			case "config":
+				config, configErr := fixture.manager.ModuleConfig(t.Context(), "zcode")
+				if configErr != nil {
+					t.Fatal(configErr)
+				}
+				_, err = fixture.manager.CompareAndSwapModuleConfig(t.Context(), "zcode",
+					config.Version, json.RawMessage(`{"freeFirst":false}`))
+			case "off":
+				err = fixture.manager.SetEnabled(t.Context(), "zcode", false)
+			case "cancel":
+				cancel()
+			}
+			if err != nil {
+				t.Fatal(err)
+			}
+			if err := plan.Recheck(ctx); err == nil {
+				t.Fatal("installed source resume retained revoked selection authority", change)
+			}
+			if change != "cancel" && ResumeNow(selected) != "" {
+				t.Fatal("ordinary ResumeNow still offers a revoked source", change)
+			}
+		})
+	}
+}

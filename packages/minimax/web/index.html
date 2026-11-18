@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MiniMax sign-in</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <main>
+    <h1>MiniMax</h1>
+    <p>Sign in to MiniMax Code. Choose the region where your account is registered.</p>
+    <label for="region">Account region</label>
+    <select id="region">
+      <option value="">Choose a region</option>
+      <option value="minimax-code-global">Global</option>
+      <option value="minimax-code">China</option>
+    </select>
+    <button id="signin" type="button" disabled>Sign in</button>
+    <section aria-labelledby="device-heading">
+      <h2 id="device-heading">Device authorization</h2>
+      <p id="status" role="status" aria-live="polite">Choose a region to begin.</p>
+      <p id="user-code"></p>
+      <div id="auth-address" hidden>
+        <label for="auth-url">Open this address in your browser and enter the device code</label>
+        <input id="auth-url" type="text" readonly>
+        <button id="auth-select" type="button">Select address to copy</button>
+      </div>
+      <div class="actions">
+        <button id="finish" type="button" disabled>Check sign-in</button>
+        <button id="cancel" type="button" disabled>Cancel sign-in</button>
+      </div>
+    </section>
+  </main>
+  <script src="_magpie/bridge.js"></script>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

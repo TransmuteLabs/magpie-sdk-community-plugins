@@ -1,0 +1,2862 @@
+{
+  "schema": 1,
+  "id": "opencode",
+  "version": "0.8.0",
+  "runtime": "native",
+  "entry": "lib/opencode.so",
+  "contract": {
+    "version": {
+      "major": 1,
+      "minor": 12
+    },
+    "capabilities": [
+      "account-auth",
+      "model-discovery",
+      "outbound-executor",
+      "usage-reporter",
+      "request-policy",
+      "agent-wiring",
+      "module-rpc",
+      "session-storage-source"
+    ]
+  },
+  "providers": [
+    {
+      "id": "opencode-go",
+      "name": "OpenCode Go OAuth",
+      "protocols": [
+        "chat",
+        "gemini"
+      ],
+      "models": [
+        {
+          "id": "deepseek-v4.1-flash",
+          "name": "DeepSeek V4.1 Flash",
+          "protocols": [
+            "chat"
+          ],
+          "contextWindow": 1000000,
+          "maxOutput": 384000,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "low",
+            "high",
+            "max"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-09-10",
+          "temperature": true
+        },
+        {
+          "id": "glm-5.2",
+          "name": "GLM-5.2",
+          "protocols": [
+            "chat"
+          ],
+          "contextWindow": 1000000,
+          "maxOutput": 131072,
+          "tools": true,
+          "reasoning": true,
+          "efforts": [
+            "high",
+            "max"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-06-13",
+          "temperature": true
+        },
+        {
+          "id": "kimi-k3",
+          "name": "Kimi K3",
+          "protocols": [
+            "chat"
+          ],
+          "contextWindow": 1048576,
+          "maxOutput": 131072,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "max"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image",
+            "video"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-07-16",
+          "temperature": false,
+          "dynamicTools": true
+        },
+        {
+          "id": "gemini-4-argon",
+          "name": "Gemini 4 Argon",
+          "protocols": [
+            "gemini"
+          ],
+          "contextWindow": 1048576,
+          "maxOutput": 65536,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image",
+            "audio",
+            "video",
+            "pdf"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-10-13",
+          "temperature": false
+        }
+      ]
+    },
+    {
+      "id": "opencode-zen",
+      "name": "OpenCode Zen personal",
+      "protocols": [
+        "chat",
+        "responses",
+        "messages",
+        "gemini"
+      ],
+      "models": [
+        {
+          "id": "beam-free",
+          "name": "Beam Free",
+          "protocols": [
+            "chat"
+          ],
+          "contextWindow": 1048576,
+          "maxOutput": 131072,
+          "tools": true,
+          "reasoning": true,
+          "efforts": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-10-05",
+          "temperature": true,
+          "free": true
+        },
+        {
+          "id": "big-pickle",
+          "name": "Big Pickle",
+          "protocols": [
+            "chat"
+          ],
+          "contextWindow": 200000,
+          "maxOutput": 32000,
+          "tools": true,
+          "reasoning": true,
+          "kind": "chat",
+          "inputModalities": [
+            "text"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2025-10-17",
+          "temperature": true,
+          "free": true,
+          "efforts": null
+        },
+        {
+          "id": "claude-fable-5",
+          "name": "Claude Fable 5",
+          "protocols": [
+            "messages"
+          ],
+          "contextWindow": 1000000,
+          "maxOutput": 128000,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-06-09",
+          "temperature": false
+        },
+        {
+          "id": "claude-fable-5-1",
+          "name": "Claude Fable 5.1",
+          "protocols": [
+            "messages"
+          ],
+          "contextWindow": 1000000,
+          "maxOutput": 128000,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-09-01",
+          "temperature": false
+        },
+        {
+          "id": "claude-haiku-4-5",
+          "name": "Claude Haiku 4.5",
+          "protocols": [
+            "messages"
+          ],
+          "contextWindow": 200000,
+          "maxOutput": 64000,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2025-10-15",
+          "temperature": true,
+          "efforts": null
+        },
+        {
+          "id": "claude-haiku-5-5",
+          "name": "Claude Haiku 5.5",
+          "protocols": [
+            "messages"
+          ],
+          "contextWindow": 1000000,
+          "maxOutput": 128000,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-10-07",
+          "temperature": false
+        },
+        {
+          "id": "claude-opus-4-5",
+          "name": "Claude Opus 4.5",
+          "protocols": [
+            "messages"
+          ],
+          "contextWindow": 200000,
+          "maxOutput": 64000,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2025-11-24",
+          "temperature": true
+        },
+        {
+          "id": "claude-opus-4-6",
+          "name": "Claude Opus 4.6",
+          "protocols": [
+            "messages"
+          ],
+          "contextWindow": 1000000,
+          "maxOutput": 128000,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-02-05",
+          "temperature": true
+        },
+        {
+          "id": "claude-opus-4-7",
+          "name": "Claude Opus 4.7",
+          "protocols": [
+            "messages"
+          ],
+          "contextWindow": 1000000,
+          "maxOutput": 128000,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-04-16",
+          "temperature": false
+        },
+        {
+          "id": "claude-opus-4-8",
+          "name": "Claude Opus 4.8",
+          "protocols": [
+            "messages"
+          ],
+          "contextWindow": 1000000,
+          "maxOutput": 128000,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-05-28",
+          "temperature": false
+        },
+        {
+          "id": "claude-opus-5",
+          "name": "Claude Opus 5",
+          "protocols": [
+            "messages"
+          ],
+          "contextWindow": 1000000,
+          "maxOutput": 128000,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-07-24",
+          "temperature": false
+        },
+        {
+          "id": "claude-opus-5-5",
+          "name": "Claude Opus 5.5",
+          "protocols": [
+            "messages"
+          ],
+          "contextWindow": 1000000,
+          "maxOutput": 128000,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-09-22",
+          "temperature": false
+        },
+        {
+          "id": "claude-sonnet-4-5",
+          "name": "Claude Sonnet 4.5",
+          "protocols": [
+            "messages"
+          ],
+          "contextWindow": 1000000,
+          "maxOutput": 64000,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2025-09-29",
+          "temperature": true,
+          "efforts": null
+        },
+        {
+          "id": "claude-sonnet-4-6",
+          "name": "Claude Sonnet 4.6",
+          "protocols": [
+            "messages"
+          ],
+          "contextWindow": 1000000,
+          "maxOutput": 64000,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-02-17",
+          "temperature": true
+        },
+        {
+          "id": "claude-sonnet-5",
+          "name": "Claude Sonnet 5",
+          "protocols": [
+            "messages"
+          ],
+          "contextWindow": 1000000,
+          "maxOutput": 128000,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-06-30",
+          "temperature": false
+        },
+        {
+          "id": "claude-sonnet-5-5",
+          "name": "Claude Sonnet 5.5",
+          "protocols": [
+            "messages"
+          ],
+          "contextWindow": 1000000,
+          "maxOutput": 128000,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-09-28",
+          "temperature": false
+        },
+        {
+          "id": "deepseek-v4-pro",
+          "name": "DeepSeek V4 Pro",
+          "protocols": [
+            "chat"
+          ],
+          "contextWindow": 1000000,
+          "maxOutput": 384000,
+          "tools": true,
+          "reasoning": true,
+          "efforts": [
+            "high",
+            "max"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-04-24",
+          "temperature": true
+        },
+        {
+          "id": "deepseek-v4.1-flash",
+          "name": "DeepSeek V4.1 Flash",
+          "protocols": [
+            "chat"
+          ],
+          "contextWindow": 1000000,
+          "maxOutput": 384000,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "low",
+            "high",
+            "max"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-09-10",
+          "temperature": true
+        },
+        {
+          "id": "deepseek-v4.1-flash-free",
+          "name": "DeepSeek V4.1 Flash Free",
+          "protocols": [
+            "chat"
+          ],
+          "contextWindow": 258624,
+          "maxOutput": 32000,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "low",
+            "high",
+            "max"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-09-10",
+          "temperature": true,
+          "free": true
+        },
+        {
+          "id": "flint-40b-free",
+          "name": "Flint 40B Free",
+          "protocols": [
+            "chat"
+          ],
+          "contextWindow": 262144,
+          "maxOutput": 65536,
+          "tools": true,
+          "reasoning": true,
+          "efforts": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-10-21",
+          "temperature": true,
+          "free": true
+        },
+        {
+          "id": "gemini-3-flash",
+          "name": "Gemini 3 Flash",
+          "protocols": [
+            "gemini"
+          ],
+          "contextWindow": 1048576,
+          "maxOutput": 65536,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image",
+            "video",
+            "audio",
+            "pdf"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2025-12-17",
+          "temperature": true
+        },
+        {
+          "id": "gemini-3.1-pro",
+          "name": "Gemini 3.1 Pro Preview",
+          "protocols": [
+            "gemini"
+          ],
+          "contextWindow": 1048576,
+          "maxOutput": 65536,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image",
+            "video",
+            "audio",
+            "pdf"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-02-19",
+          "temperature": true
+        },
+        {
+          "id": "gemini-3.5-flash",
+          "name": "Gemini 3.5 Flash",
+          "protocols": [
+            "gemini"
+          ],
+          "contextWindow": 1048576,
+          "maxOutput": 65536,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image",
+            "video",
+            "audio",
+            "pdf"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-05-19",
+          "temperature": true
+        },
+        {
+          "id": "gemini-3.5-flash-lite",
+          "name": "Gemini 3.5 Flash Lite",
+          "protocols": [
+            "gemini"
+          ],
+          "contextWindow": 1048576,
+          "maxOutput": 65536,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image",
+            "video",
+            "audio",
+            "pdf"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-07-21",
+          "temperature": true
+        },
+        {
+          "id": "gemini-3.6-flash",
+          "name": "Gemini 3.6 Flash",
+          "protocols": [
+            "gemini"
+          ],
+          "contextWindow": 1048576,
+          "maxOutput": 65536,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image",
+            "video",
+            "audio",
+            "pdf"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-07-21",
+          "temperature": true
+        },
+        {
+          "id": "gemini-3.7-flash",
+          "name": "Gemini 3.7 Flash",
+          "protocols": [
+            "gemini"
+          ],
+          "contextWindow": 1048576,
+          "maxOutput": 65536,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image",
+            "video",
+            "audio",
+            "pdf"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-08-13",
+          "temperature": true
+        },
+        {
+          "id": "gemini-3.8-flash",
+          "name": "Gemini 3.8 Flash",
+          "protocols": [
+            "gemini"
+          ],
+          "contextWindow": 1048576,
+          "maxOutput": 65536,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image",
+            "video",
+            "audio",
+            "pdf"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-09-02",
+          "temperature": true
+        },
+        {
+          "id": "gemini-4-argon",
+          "name": "Gemini 4 Argon",
+          "protocols": [
+            "gemini"
+          ],
+          "contextWindow": 1048576,
+          "maxOutput": 65536,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image",
+            "video",
+            "audio",
+            "pdf"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-10-13",
+          "temperature": false
+        },
+        {
+          "id": "glm-5",
+          "name": "GLM-5",
+          "protocols": [
+            "chat"
+          ],
+          "contextWindow": 204800,
+          "maxOutput": 131072,
+          "tools": true,
+          "reasoning": true,
+          "kind": "chat",
+          "inputModalities": [
+            "text"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-02-12",
+          "temperature": true,
+          "efforts": null
+        },
+        {
+          "id": "glm-5.1",
+          "name": "GLM-5.1",
+          "protocols": [
+            "chat"
+          ],
+          "contextWindow": 204800,
+          "maxOutput": 131072,
+          "tools": true,
+          "reasoning": true,
+          "kind": "chat",
+          "inputModalities": [
+            "text"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-04-07",
+          "temperature": true,
+          "efforts": null
+        },
+        {
+          "id": "glm-5.2",
+          "name": "GLM-5.2",
+          "protocols": [
+            "chat"
+          ],
+          "contextWindow": 1000000,
+          "maxOutput": 131072,
+          "tools": true,
+          "reasoning": true,
+          "efforts": [
+            "high",
+            "max"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-06-13",
+          "temperature": true
+        },
+        {
+          "id": "glm-5.3",
+          "name": "GLM-5.3",
+          "protocols": [
+            "chat"
+          ],
+          "contextWindow": 1000000,
+          "maxOutput": 131072,
+          "tools": true,
+          "reasoning": true,
+          "efforts": [
+            "low",
+            "high",
+            "max"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-08-14",
+          "temperature": true
+        },
+        {
+          "id": "glm-5.3-flash",
+          "name": "GLM-5.3-Flash",
+          "protocols": [
+            "chat"
+          ],
+          "contextWindow": 1000000,
+          "maxOutput": 131072,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "low",
+            "high",
+            "max"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image",
+            "video"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-08-26",
+          "temperature": true
+        },
+        {
+          "id": "gpt-5",
+          "name": "GPT-5",
+          "protocols": [
+            "responses"
+          ],
+          "contextWindow": 400000,
+          "maxOutput": 128000,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2025-08-07",
+          "temperature": false
+        },
+        {
+          "id": "gpt-5-codex",
+          "name": "GPT-5 Codex",
+          "protocols": [
+            "responses"
+          ],
+          "contextWindow": 400000,
+          "maxOutput": 128000,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2025-09-15",
+          "temperature": false
+        },
+        {
+          "id": "gpt-5-nano",
+          "name": "GPT-5 Nano",
+          "protocols": [
+            "responses"
+          ],
+          "contextWindow": 400000,
+          "maxOutput": 128000,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2025-08-07",
+          "temperature": false
+        },
+        {
+          "id": "gpt-5.1",
+          "name": "GPT-5.1",
+          "protocols": [
+            "responses"
+          ],
+          "contextWindow": 400000,
+          "maxOutput": 128000,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2025-11-13",
+          "temperature": true
+        },
+        {
+          "id": "gpt-5.1-codex",
+          "name": "GPT-5.1 Codex",
+          "protocols": [
+            "responses"
+          ],
+          "contextWindow": 400000,
+          "maxOutput": 128000,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2025-11-13",
+          "temperature": false
+        },
+        {
+          "id": "gpt-5.1-codex-max",
+          "name": "GPT-5.1 Codex Max",
+          "protocols": [
+            "responses"
+          ],
+          "contextWindow": 400000,
+          "maxOutput": 128000,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2025-11-13",
+          "temperature": false
+        },
+        {
+          "id": "gpt-5.1-codex-mini",
+          "name": "GPT-5.1 Codex Mini",
+          "protocols": [
+            "responses"
+          ],
+          "contextWindow": 400000,
+          "maxOutput": 128000,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2025-11-13",
+          "temperature": false
+        },
+        {
+          "id": "gpt-5.2",
+          "name": "GPT-5.2",
+          "protocols": [
+            "responses"
+          ],
+          "contextWindow": 400000,
+          "maxOutput": 128000,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2025-12-11",
+          "temperature": true
+        },
+        {
+          "id": "gpt-5.2-codex",
+          "name": "GPT-5.2 Codex",
+          "protocols": [
+            "responses"
+          ],
+          "contextWindow": 400000,
+          "maxOutput": 128000,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2025-12-11",
+          "temperature": false
+        },
+        {
+          "id": "gpt-5.3-codex",
+          "name": "GPT-5.3 Codex",
+          "protocols": [
+            "responses"
+          ],
+          "contextWindow": 400000,
+          "maxOutput": 128000,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-02-05",
+          "temperature": true
+        },
+        {
+          "id": "gpt-5.3-codex-spark",
+          "name": "GPT-5.3 Codex Spark",
+          "protocols": [
+            "responses"
+          ],
+          "contextWindow": 128000,
+          "maxOutput": 128000,
+          "tools": true,
+          "reasoning": true,
+          "efforts": [
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-02-05",
+          "temperature": false
+        },
+        {
+          "id": "gpt-5.4",
+          "name": "GPT-5.4",
+          "protocols": [
+            "responses"
+          ],
+          "contextWindow": 1050000,
+          "maxOutput": 128000,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-03-05",
+          "temperature": true
+        },
+        {
+          "id": "gpt-5.4-mini",
+          "name": "GPT-5.4 Mini",
+          "protocols": [
+            "responses"
+          ],
+          "contextWindow": 400000,
+          "maxOutput": 128000,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-03-17",
+          "temperature": true
+        },
+        {
+          "id": "gpt-5.4-nano",
+          "name": "GPT-5.4 Nano",
+          "protocols": [
+            "responses"
+          ],
+          "contextWindow": 400000,
+          "maxOutput": 128000,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-03-17",
+          "temperature": true
+        },
+        {
+          "id": "gpt-5.4-pro",
+          "name": "GPT-5.4 Pro",
+          "protocols": [
+            "responses"
+          ],
+          "contextWindow": 1050000,
+          "maxOutput": 128000,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-03-05",
+          "temperature": false
+        },
+        {
+          "id": "gpt-5.5",
+          "name": "GPT-5.5",
+          "protocols": [
+            "responses"
+          ],
+          "contextWindow": 1050000,
+          "maxOutput": 128000,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-04-23",
+          "temperature": false
+        },
+        {
+          "id": "gpt-5.5-pro",
+          "name": "GPT-5.5 Pro",
+          "protocols": [
+            "responses"
+          ],
+          "contextWindow": 1050000,
+          "maxOutput": 128000,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-04-23",
+          "temperature": false
+        },
+        {
+          "id": "gpt-5.6-luna",
+          "name": "GPT-5.6 Luna",
+          "protocols": [
+            "responses"
+          ],
+          "contextWindow": 1050000,
+          "maxOutput": 128000,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-07-09",
+          "temperature": false
+        },
+        {
+          "id": "gpt-5.6-sol",
+          "name": "GPT-5.6 Sol",
+          "protocols": [
+            "responses"
+          ],
+          "contextWindow": 1050000,
+          "maxOutput": 128000,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-07-09",
+          "temperature": false
+        },
+        {
+          "id": "gpt-5.6-terra",
+          "name": "GPT-5.6 Terra",
+          "protocols": [
+            "responses"
+          ],
+          "contextWindow": 1050000,
+          "maxOutput": 128000,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-07-09",
+          "temperature": false
+        },
+        {
+          "id": "gpt-6-astra",
+          "name": "GPT-6 Astra",
+          "protocols": [
+            "responses"
+          ],
+          "contextWindow": 1050000,
+          "maxOutput": 128000,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-09-04",
+          "temperature": false
+        },
+        {
+          "id": "gpt-6-luna",
+          "name": "GPT-6 Luna",
+          "protocols": [
+            "responses"
+          ],
+          "contextWindow": 1050000,
+          "maxOutput": 128000,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-09-22",
+          "temperature": false
+        },
+        {
+          "id": "gpt-6-sol",
+          "name": "GPT-6 Sol",
+          "protocols": [
+            "responses"
+          ],
+          "contextWindow": 1050000,
+          "maxOutput": 128000,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-09-22",
+          "temperature": false
+        },
+        {
+          "id": "gpt-6.1-sol",
+          "name": "GPT-6.1 Sol",
+          "protocols": [
+            "responses"
+          ],
+          "contextWindow": 1050000,
+          "maxOutput": 128000,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-09-29",
+          "temperature": false
+        },
+        {
+          "id": "grok-4.5",
+          "name": "Grok 4.5",
+          "protocols": [
+            "responses"
+          ],
+          "contextWindow": 500000,
+          "maxOutput": 500000,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-07-08",
+          "temperature": true
+        },
+        {
+          "id": "grok-4.6",
+          "name": "Grok 4.6",
+          "protocols": [
+            "responses"
+          ],
+          "contextWindow": 500000,
+          "maxOutput": 500000,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-08-12",
+          "temperature": true
+        },
+        {
+          "id": "grok-4.7",
+          "name": "Grok 4.7",
+          "protocols": [
+            "responses"
+          ],
+          "contextWindow": 500000,
+          "maxOutput": 500000,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-09-21",
+          "temperature": true
+        },
+        {
+          "id": "grok-build-0.1",
+          "name": "Grok Build 0.1",
+          "protocols": [
+            "responses"
+          ],
+          "contextWindow": 256000,
+          "maxOutput": 256000,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-04-16",
+          "temperature": true,
+          "efforts": null
+        },
+        {
+          "id": "kimi-k2.5",
+          "name": "Kimi K2.5",
+          "protocols": [
+            "chat"
+          ],
+          "contextWindow": 262144,
+          "maxOutput": 65536,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image",
+            "video"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-01-27",
+          "temperature": false,
+          "efforts": null
+        },
+        {
+          "id": "kimi-k2.6",
+          "name": "Kimi K2.6",
+          "protocols": [
+            "chat"
+          ],
+          "contextWindow": 262144,
+          "maxOutput": 65536,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image",
+            "video"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-04-20",
+          "temperature": true,
+          "efforts": null
+        },
+        {
+          "id": "kimi-k2.7-code",
+          "name": "Kimi K2.7 Code",
+          "protocols": [
+            "chat"
+          ],
+          "contextWindow": 262144,
+          "maxOutput": 262144,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image",
+            "video"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-06-12",
+          "temperature": false,
+          "efforts": null
+        },
+        {
+          "id": "kimi-k3",
+          "name": "Kimi K3",
+          "protocols": [
+            "chat"
+          ],
+          "contextWindow": 1048576,
+          "maxOutput": 131072,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "low",
+            "high",
+            "max"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image",
+            "video"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-07-16",
+          "temperature": false
+        },
+        {
+          "id": "mimo-v2.6-flash-free",
+          "name": "MiMo-V2.6-Flash Free",
+          "protocols": [
+            "chat"
+          ],
+          "contextWindow": 200000,
+          "maxOutput": 32000,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image",
+            "audio",
+            "video"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-09-22",
+          "temperature": true,
+          "free": true,
+          "efforts": null
+        },
+        {
+          "id": "minimax-m2.5",
+          "name": "MiniMax-M2.5",
+          "protocols": [
+            "chat"
+          ],
+          "contextWindow": 204800,
+          "maxOutput": 131072,
+          "tools": true,
+          "reasoning": true,
+          "kind": "chat",
+          "inputModalities": [
+            "text"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-02-12",
+          "temperature": true,
+          "efforts": null
+        },
+        {
+          "id": "minimax-m2.7",
+          "name": "MiniMax-M2.7",
+          "protocols": [
+            "chat"
+          ],
+          "contextWindow": 204800,
+          "maxOutput": 131072,
+          "tools": true,
+          "reasoning": true,
+          "kind": "chat",
+          "inputModalities": [
+            "text"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-03-18",
+          "temperature": true,
+          "efforts": null
+        },
+        {
+          "id": "minimax-m3",
+          "name": "MiniMax-M3",
+          "protocols": [
+            "chat"
+          ],
+          "contextWindow": 512000,
+          "maxOutput": 128000,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image",
+            "video"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-06-01",
+          "temperature": true,
+          "efforts": null
+        },
+        {
+          "id": "mistral-large-4",
+          "name": "Mistral Large 4",
+          "protocols": [
+            "chat"
+          ],
+          "contextWindow": 524288,
+          "maxOutput": 262144,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "none",
+            "high"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-10-06",
+          "temperature": true
+        },
+        {
+          "id": "muse-spark-1.2",
+          "name": "Muse Spark 1.2",
+          "protocols": [
+            "responses"
+          ],
+          "contextWindow": 1048576,
+          "maxOutput": 131072,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image",
+            "video",
+            "pdf",
+            "audio"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-08-05",
+          "temperature": true
+        },
+        {
+          "id": "muse-spark-1.3",
+          "name": "Muse Spark 1.3",
+          "protocols": [
+            "responses"
+          ],
+          "contextWindow": 1048576,
+          "maxOutput": 131072,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image",
+            "video",
+            "pdf",
+            "audio"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-09-02",
+          "temperature": true
+        },
+        {
+          "id": "muse-wonder-1.0",
+          "name": "Muse Wonder",
+          "protocols": [
+            "responses"
+          ],
+          "contextWindow": 1048576,
+          "maxOutput": 131072,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image",
+            "video",
+            "pdf",
+            "audio"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-10-12",
+          "temperature": true
+        },
+        {
+          "id": "nemotron-3-ultra-free",
+          "name": "Nemotron 3 Ultra Free",
+          "protocols": [
+            "chat"
+          ],
+          "contextWindow": 1000000,
+          "maxOutput": 128000,
+          "tools": true,
+          "reasoning": true,
+          "kind": "chat",
+          "inputModalities": [
+            "text"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-06-04",
+          "temperature": true,
+          "free": true,
+          "efforts": null
+        },
+        {
+          "id": "nemotron-3.5-lightning-free",
+          "name": "Nemotron 3.5 Lightning Free",
+          "protocols": [
+            "chat"
+          ],
+          "contextWindow": 262144,
+          "maxOutput": 262144,
+          "tools": true,
+          "reasoning": true,
+          "kind": "chat",
+          "inputModalities": [
+            "text"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-08-11",
+          "temperature": true,
+          "free": true,
+          "efforts": null
+        },
+        {
+          "id": "nemotron-3.5-super-vl-free",
+          "name": "Nemotron 3.5 Super VL Free",
+          "protocols": [
+            "chat"
+          ],
+          "contextWindow": 1048576,
+          "maxOutput": 131072,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-10-15",
+          "temperature": true,
+          "free": true
+        },
+        {
+          "id": "qwen3.5-plus",
+          "name": "Qwen3.5 Plus",
+          "protocols": [
+            "messages"
+          ],
+          "contextWindow": 262144,
+          "maxOutput": 65536,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image",
+            "video"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-02-16",
+          "temperature": true,
+          "efforts": null
+        },
+        {
+          "id": "qwen3.6-plus",
+          "name": "Qwen3.6 Plus",
+          "protocols": [
+            "messages"
+          ],
+          "contextWindow": 262144,
+          "maxOutput": 65536,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image",
+            "video"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-04-02",
+          "temperature": true,
+          "efforts": null
+        },
+        {
+          "id": "qwen3.8-flash",
+          "name": "Qwen3.8 Flash",
+          "protocols": [
+            "messages"
+          ],
+          "contextWindow": 1000000,
+          "maxOutput": 131072,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "low",
+            "medium",
+            "xhigh"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image",
+            "video"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-08-26",
+          "temperature": true
+        },
+        {
+          "id": "qwen3.8-max",
+          "name": "Qwen3.8 Max",
+          "protocols": [
+            "chat"
+          ],
+          "contextWindow": 262144,
+          "maxOutput": 131072,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "low",
+            "medium",
+            "xhigh"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-08-03",
+          "temperature": true
+        }
+      ]
+    },
+    {
+      "id": "opencode-zen-free",
+      "name": "OpenCode Zen public",
+      "protocols": [
+        "chat",
+        "responses",
+        "messages",
+        "gemini"
+      ],
+      "models": [
+        {
+          "id": "beam-free",
+          "name": "Beam Free",
+          "protocols": [
+            "chat"
+          ],
+          "contextWindow": 1048576,
+          "maxOutput": 131072,
+          "tools": true,
+          "reasoning": true,
+          "efforts": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-10-05",
+          "temperature": true,
+          "free": true
+        },
+        {
+          "id": "big-pickle",
+          "name": "Big Pickle",
+          "protocols": [
+            "chat"
+          ],
+          "contextWindow": 200000,
+          "maxOutput": 32000,
+          "tools": true,
+          "reasoning": true,
+          "kind": "chat",
+          "inputModalities": [
+            "text"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2025-10-17",
+          "temperature": true,
+          "free": true,
+          "efforts": null
+        },
+        {
+          "id": "deepseek-v4.1-flash-free",
+          "name": "DeepSeek V4.1 Flash Free",
+          "protocols": [
+            "chat"
+          ],
+          "contextWindow": 258624,
+          "maxOutput": 32000,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "low",
+            "high",
+            "max"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-09-10",
+          "temperature": true,
+          "free": true
+        },
+        {
+          "id": "flint-40b-free",
+          "name": "Flint 40B Free",
+          "protocols": [
+            "chat"
+          ],
+          "contextWindow": 262144,
+          "maxOutput": 65536,
+          "tools": true,
+          "reasoning": true,
+          "efforts": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-10-21",
+          "temperature": true,
+          "free": true
+        },
+        {
+          "id": "mimo-v2.6-flash-free",
+          "name": "MiMo-V2.6-Flash Free",
+          "protocols": [
+            "chat"
+          ],
+          "contextWindow": 200000,
+          "maxOutput": 32000,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image",
+            "audio",
+            "video"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-09-22",
+          "temperature": true,
+          "free": true,
+          "efforts": null
+        },
+        {
+          "id": "nemotron-3-ultra-free",
+          "name": "Nemotron 3 Ultra Free",
+          "protocols": [
+            "chat"
+          ],
+          "contextWindow": 1000000,
+          "maxOutput": 128000,
+          "tools": true,
+          "reasoning": true,
+          "kind": "chat",
+          "inputModalities": [
+            "text"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-06-04",
+          "temperature": true,
+          "free": true,
+          "efforts": null
+        },
+        {
+          "id": "nemotron-3.5-lightning-free",
+          "name": "Nemotron 3.5 Lightning Free",
+          "protocols": [
+            "chat"
+          ],
+          "contextWindow": 262144,
+          "maxOutput": 262144,
+          "tools": true,
+          "reasoning": true,
+          "kind": "chat",
+          "inputModalities": [
+            "text"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-08-11",
+          "temperature": true,
+          "free": true,
+          "efforts": null
+        },
+        {
+          "id": "nemotron-3.5-super-vl-free",
+          "name": "Nemotron 3.5 Super VL Free",
+          "protocols": [
+            "chat"
+          ],
+          "contextWindow": 1048576,
+          "maxOutput": 131072,
+          "tools": true,
+          "vision": true,
+          "reasoning": true,
+          "efforts": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "kind": "chat",
+          "inputModalities": [
+            "text",
+            "image"
+          ],
+          "outputModalities": [
+            "text"
+          ],
+          "released": "2026-10-15",
+          "temperature": true,
+          "free": true
+        }
+      ]
+    }
+  ],
+  "agents": [
+    {
+      "id": "opencode-sdk",
+      "name": "OpenCode SDK",
+      "bin": "opencode",
+      "configFiles": [
+        ".config/magpie/extensions/opencode/agent.json"
+      ],
+      "fields": [
+        {
+          "key": "model",
+          "label": "Model"
+        },
+        {
+          "key": "small",
+          "label": "Small model"
+        }
+      ],
+      "launch": {
+        "env": {
+          "OPENCODE_CONFIG": "{config}"
+        },
+        "model": "--model",
+        "plain": [
+          "help",
+          "--help",
+          "-h",
+          "version",
+          "--version",
+          "-v",
+          "auth",
+          "upgrade"
+        ]
+      },
+      "profile": {
+        "target": "opencode"
+      }
+    }
+  ],
+  "actions": [
+    {
+      "id": "account.info",
+      "inputSchema": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "additionalProperties": false
+      },
+      "effect": "read"
+    },
+    {
+      "id": "console.snapshot",
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false
+      },
+      "effect": "read"
+    },
+    {
+      "id": "console.skill",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "slug"
+        ],
+        "properties": {
+          "slug": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          }
+        },
+        "additionalProperties": false
+      },
+      "effect": "read"
+    },
+    {
+      "id": "console.watch.list",
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false
+      },
+      "effect": "read"
+    },
+    {
+      "id": "console.watch.types",
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false
+      },
+      "effect": "read"
+    },
+    {
+      "id": "console.watch.poll",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "cursor": {
+            "type": "string",
+            "maxLength": 2048
+          }
+        },
+        "additionalProperties": false
+      },
+      "effect": "read"
+    },
+    {
+      "id": "console.watch.ack",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "receipt",
+          "ids"
+        ],
+        "properties": {
+          "receipt": {
+            "type": "string",
+            "minLength": 32,
+            "maxLength": 32
+          },
+          "ids": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 1000,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "effect": "write"
+    }
+  ],
+  "compatibility": {
+    "hostAPI": "^1.12",
+    "nativeABI": 1
+  },
+  "window": {
+    "metadata": "package.json"
+  },
+  "bindings": [
+    {
+      "id": "account.info",
+      "from": "window:page",
+      "action": "account.info",
+      "provider": "opencode-go"
+    },
+    {
+      "id": "zen.account.info",
+      "from": "window:page",
+      "action": "account.info",
+      "provider": "opencode-zen"
+    },
+    {
+      "id": "public.account.info",
+      "from": "window:page",
+      "action": "account.info",
+      "provider": "opencode-zen-free"
+    },
+    {
+      "id": "console.snapshot",
+      "from": "window:page",
+      "action": "console.snapshot",
+      "provider": "opencode-zen"
+    },
+    {
+      "id": "console.skill",
+      "from": "window:page",
+      "action": "console.skill",
+      "provider": "opencode-zen"
+    },
+    {
+      "id": "console.watch.list",
+      "from": "window:page",
+      "action": "console.watch.list",
+      "provider": "opencode-zen"
+    },
+    {
+      "id": "console.watch.types",
+      "from": "window:page",
+      "action": "console.watch.types",
+      "provider": "opencode-zen"
+    },
+    {
+      "id": "console.watch.poll",
+      "from": "window:page",
+      "action": "console.watch.poll",
+      "provider": "opencode-zen"
+    },
+    {
+      "id": "console.watch.ack",
+      "from": "window:page",
+      "action": "console.watch.ack",
+      "provider": "opencode-zen"
+    }
+  ],
+  "storageSources": [
+    {
+      "id": "opencode-history",
+      "agent": "opencode",
+      "codec": "opencode-storage-v2",
+      "roots": [
+        {
+          "slot": "data",
+          "nativeRootSlot": "opencode.data"
+        }
+      ],
+      "families": [
+        {
+          "id": "history",
+          "primary": "opencode.db",
+          "sidecars": ["opencode.db-wal", "opencode.db-shm"],
+          "trees": ["storage/session", "storage/message", "storage/part", "storage/media"]
+        }
+      ],
+      "transcript": true,
+      "resume": "native"
+    }
+  ],
+  "authBindings": [
+    {
+      "id": "signin",
+      "from": "window:page",
+      "provider": "opencode-go",
+      "methods": [
+        {
+          "id": "device",
+          "mode": "poll"
+        }
+      ],
+      "reauthorize": true
+    },
+    {
+      "id": "zen.signin",
+      "from": "window:page",
+      "provider": "opencode-zen",
+      "methods": [
+        {
+          "id": "device",
+          "mode": "poll"
+        },
+        {
+          "id": "key",
+          "mode": "poll"
+        }
+      ],
+      "reauthorize": true
+    },
+    {
+      "id": "public.signin",
+      "from": "window:page",
+      "provider": "opencode-zen-free",
+      "methods": [
+        {
+          "id": "public",
+          "mode": "poll"
+        }
+      ],
+      "reauthorize": true
+    }
+  ]
+}

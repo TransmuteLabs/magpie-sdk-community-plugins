@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ZCode — управление счётом</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <main>
+    <header>
+      <p class="eyebrow">ZCode</p>
+      <h1>Управление счётом</h1>
+      <p>Проверяйте исполнения, планы и доступные сбросы выбранного счёта.</p>
+    </header>
+    <section aria-labelledby="account-heading">
+      <h2 id="account-heading">Счёт</h2>
+      <label for="account">Сохранённый счёт</label>
+      <div class="row">
+        <select id="account"><option value="">Загрузка…</option></select>
+        <button id="reload" type="button">Обновить список</button>
+      </div>
+      <p class="hint">Если авторизация счёта изменилась, выберите его заново.</p>
+      <div class="row">
+        <button id="executions" type="button" disabled>Исполнения</button>
+        <button id="billing" type="button" disabled>Состояние планов</button>
+        <button id="resets" type="button" disabled>Доступные сбросы</button>
+        <button id="offers" type="button" disabled>Доступные предложения</button>
+      </div>
+    </section>
+    <section aria-labelledby="signin-heading">
+      <h2 id="signin-heading">Вход</h2>
+      <div class="row">
+        <label>Сайт
+          <select id="auth-site"><option value="zai">Z.ai</option><option value="bigmodel">BigModel</option><option value="zai_cn">Z.ai China (Start / BigModel)</option></select>
+        </label>
+        <label>Тип счёта
+          <select id="auth-kind">
+            <option value="auto">Автоматически</option><option value="individual">Personal</option>
+            <option value="team">Team</option><option value="start">Start</option>
+          </select>
+        </label>
+      </div>
+      <details>
+        <summary>Явный выбор Team / ключа</summary>
+        <label for="auth-organization">Organization ID</label><input id="auth-organization" maxlength="256" autocomplete="off">
+        <label for="auth-project">Project ID</label><input id="auth-project" maxlength="256" autocomplete="off">
+        <label for="auth-product">Product ID</label><input id="auth-product" maxlength="256" autocomplete="off">
+        <label for="auth-apiKeyId">API key ID</label><input id="auth-apiKeyId" maxlength="256" autocomplete="off">
+      </details>
+      <div class="row">
+        <button id="signin" type="button">Новый вход</button>
+        <button id="reauthorize" type="button">Повторный вход в выбранный счёт</button>
+        <button id="auth-poll" type="button" disabled>Проверить вход</button>
+        <button id="auth-cancel" type="button" disabled>Отменить вход</button>
+      </div>
+      <p id="auth-status" role="status" aria-live="polite">Вход и сохранение счёта выполняет Magpie.</p>
+      <a id="auth-link" target="_blank" rel="noopener noreferrer" hidden>Открыть страницу подтверждения</a>
+    </section>
+    <section aria-labelledby="actions-heading">
+      <h2 id="actions-heading">Действия</h2>
+      <p class="hint">Сначала проверьте состояние. Каждое действие требует подтверждения и автоматически не повторяется.</p>
+      <p><button id="checkin" type="button" disabled>Check-in: запросить доступные подарки</button></p>
+      <div class="actions">
+        <div>
+          <label for="reset-window">Окно лимита</label>
+          <select id="reset-window" disabled>
+            <option value="FIVE_HOUR">Пятичасовое</option>
+            <option value="WEEK">Недельное</option>
+          </select>
+          <button id="reset" type="button" disabled>Потратить сброс</button>
+        </div>
+        <div>
+          <label for="plan">ID плана</label>
+          <input id="plan" type="text" maxlength="128" autocomplete="off" placeholder="ID из состояния планов" disabled>
+          <button id="claim" type="button" disabled>Запросить план</button>
+        </div>
+      </div>
+      <details>
+        <summary>История сбросов и неподтверждённые действия</summary>
+        <p class="hint">Сверка читает историю и не тратит сброс повторно. Неизвестный результат сохраняется после перезапуска и смены авторизации. Снимайте блокировку только после проверки счёта: действие на стороне сервиса могло завершиться.</p>
+        <div class="row">
+          <button id="reset-opportunity" type="button" disabled>Запросить возможность сброса</button>
+          <button id="reset-reconcile" type="button" disabled>Сверить с историей</button>
+          <button id="reset-ack" type="button" disabled>История прочитана</button>
+        </div>
+        <div class="row">
+          <button id="reset-resolve" type="button" disabled>Признать неизвестный результат траты</button>
+          <button id="opportunity-resolve" type="button" disabled>Признать неизвестный результат выдачи</button>
+        </div>
+      </details>
+    </section>
+    <section aria-labelledby="native-heading">
+      <h2 id="native-heading">Foreground CLI-сессия</h2>
+      <p class="hint">Подключите профиль ZCode CLI и настройте рабочее пространство модуля. Запускается отдельный CLI-процесс; подключение к уже открытому desktop-сеансу не поддерживается.</p>
+      <label for="native-session">Точный ID CLI-сессии</label>
+      <input id="native-session" maxlength="256" autocomplete="off" disabled>
+      <label for="native-command">Уникальный ID команды</label>
+      <input id="native-command" maxlength="256" autocomplete="off" disabled>
+      <p class="hint">Сохраните ID при неизвестном результате. Изменение ID не снимает блокировку неподтверждённой команды.</p>
+      <label for="native-model">Gateway model ID</label>
+      <input id="native-model" maxlength="1024" autocomplete="off" placeholder="provider/model" disabled>
+      <label for="native-text">Один ввод</label>
+      <textarea id="native-text" maxlength="65536" rows="4" disabled></textarea>
+      <div class="row">
+        <button id="native-run" type="button" disabled>Отправить один ввод</button>
+        <button id="native-stop" type="button" disabled>Остановить текущую команду</button>
+      </div>
+      <p id="native-status" role="status" aria-live="polite">Повторная отправка неизвестного результата заблокирована.</p>
+    </section>
+    <section aria-labelledby="result-heading">
+      <h2 id="result-heading">Результат</h2>
+      <p id="status" role="status" aria-live="polite">Загрузка счетов…</p>
+      <pre id="output" tabindex="0" aria-label="Данные выбранного счёта">Пока нет данных.</pre>
+    </section>
+  </main>
+  <dialog id="confirm-dialog" aria-labelledby="confirm-heading">
+    <h2 id="confirm-heading">Подтвердите действие</h2>
+    <p id="confirm-text"></p>
+    <div class="row">
+      <button id="confirm-cancel" type="button" autofocus>Отмена</button>
+      <button id="confirm-accept" type="button">Подтвердить</button>
+    </div>
+  </dialog>
+  <script src="_magpie/bridge.js"></script>
+  <script src="./app.bundle.js" defer></script>
+</body>
+</html>

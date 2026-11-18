@@ -1,0 +1,695 @@
+{
+  "schema": 1,
+  "recoveredProtocolFollowUp": {
+    "checkedAt": "2026-11-17",
+    "commit": "dfd5a590a3d4c3a89e79fe90b3348015d8e6f1e1",
+    "version": "3000.11.228",
+    "path": "reference/docs/provider-protocol.md",
+    "sha256": "2070198ea631c2d321151a574d7d31fef796c1ce33971bac72076407f1ceecd5",
+    "runtimePort": false,
+    "test": "src/codec/paired_test.go",
+    "limits": [
+      "Notifications and model changes are preserved in paired native response payloads. The standard conversion explicitly rejects them.",
+      "The recovered ACP initialize prefetches user status and team settings. GetAccountManagedPluginBundle is used by cloud-backed AccountUpload retrieval, preview and revision checks. The shipped client's startup with an assigned bundle still requires live acceptance."
+    ]
+  },
+  "recoveredReferenceComparison": {
+    "checkedAt": "2026-11-18",
+    "baseCommit": "e9d40139f7da83531381ef9ef38ba454da6f1d04",
+    "commit": "4d399385deadca25115b37b430a5c7cccb2c46c4",
+    "version": "reconstructed 3000.11.228",
+    "changedPaths": [
+      "reference/crates/agent-ext/src/lib.rs",
+      "reference/crates/agent-ext/src/w25_mech8.rs",
+      "reference/crates/browser-preview/src/lib.rs",
+      "reference/crates/browser-preview/src/w25_mech5.rs",
+      "reference/crates/chisel-otel/src/lib.rs",
+      "reference/crates/chisel-otel/src/w25_mech3.rs",
+      "reference/crates/config-importers/src/lib.rs",
+      "reference/crates/config-importers/src/w25_mech5.rs"
+    ],
+    "runtimePort": false,
+    "limits": [
+      "Watched protocol and model inputs match the previous comparison.",
+      "The account-upload prefix formats a skill key. Startup with an assigned AccountUpload bundle requires shipped-client acceptance."
+    ]
+  },
+  "plugin": {"id": "devin-inbound", "version": "0.8.0", "sdkMinimum": "1.12", "nativeABI": 1, "capabilities": ["inbound-codec", "outbound-executor", "account-auth", "model-discovery", "usage-reporter", "agent-wiring", "module-rpc", "native-account-operations", "request-policy"]},
+  "requestPolicy": {
+    "api": "1.12",
+    "guide": "docs/REQUEST-POLICY.md",
+    "plan": "docs/REQUEST-POLICY-PLAN.md",
+    "acceptedBaselineRecords": 166,
+    "acceptedBaselineContentSHA256": "53c1f0fbf41d436e5aee3396a6f0a6b79ed69d418dad4b936335af85fb808b27",
+    "inventorySHA256": "9041b23f81b4269bf7126a463f045f925f3d660c1dc4ab759a8ac690b810fb8e",
+    "fixturesSHA256": "971402ad43ab862b1ff0da8c2458e2de6497c057b2386a695d31f800634c2601",
+    "freeResetEvidence": "42 seconds is an exact committed donor test fixture; minutes/hours are synthetic, no fresh capture",
+    "hostAuthority": "usbox:/tmp/magpie-request-policy-20261115/candidate-closure plus /tmp/magpie-policy-continuation.TqAAe31N/candidate minimal timefix",
+    "hostPublicPolicySHA256": "be486205f9b4cc2e37dd003e20e0602dd27470788a1c3419ac045f3f1acd1c3d",
+    "hostProviderPolicySHA256": "7b2af7224ca62fc15cd0af40f83740418644da6ec27f87b750b31d613a60031d",
+    "verificationGuardSHA256": "09f2a8d3311566d21dafc87c118ef8d5e07cfba88f78dba3114e4cf124b2b57e",
+    "currentEvidence": "/tmp/magpie-devin-policy12-20261115/candidate6-TERMINAL.md; candidate5 bounded author acceptance is preserved; final combined successor replay remains separate",
+    "nativeOwnerAcceptance": {
+      "report": "usbox:/tmp/magpie-native-acceptance-20261115.D2KiOWCp/REPORT.txt",
+      "reportSHA256": "86c96162f080a5c6bfc853b0a01146b655fdf7b386eedacd0b425c00a2c61371",
+      "verdict": "usbox:/tmp/magpie-native-acceptance-20261115.D2KiOWCp/ACCEPTANCE.json",
+      "verdictSHA256": "f6eab2ba4d1e39629697221de156425a68874af887c9f7c8a46e1908f9067e47",
+      "applicability": "Owner-visible regular-usbox Linux native paths and unchanged namespace rejection guards on the frozen candidate-closure; separate from Devin author policy integration and final combined acceptance"
+    }
+  },
+  "sources": [
+    {
+      "id": "community-devin-045-quiet",
+      "role": "bounded per-underlying-read quiet watchdog port; no total-stream deadline, caller cancellation, replay or credential-policy changes",
+      "repository": "https://github.com/magpie-community/plugins",
+      "commit": "324acd6007f2d513c5072fe2e9fe1db3524ae03d",
+      "behaviorCommit": "e30f8ed0561f8deeca30964cfdefa0799fe704d3",
+      "version": "packages/devin 0.1.45",
+      "paths": ["packages/devin/index.mjs", "packages/devin/quiet.test.mjs", "packages/devin/package.json"],
+      "checkedAt": "2026-11-17",
+      "artifacts": [
+        {"path": "packages/devin/index.mjs", "sha256": "ec73e98fbe846c6ca8bc3ffcbc3e17ec349c510717301de2c69b251a1c7ef1d8"},
+        {"path": "packages/devin/quiet.test.mjs", "sha256": "4cba4cefdcbf7b83455c8f43e5fb5c3ae517ef7ae55014865be5258914631d66"},
+        {"path": "packages/devin/package.json", "sha256": "863108a0fd2c763d08ca7320599f61e36a60b27f5d0997ada6b1eb81fab382a1"}
+      ]
+    },
+    {
+      "id": "sdk-domain-authoring",
+      "role": "committed public SDK export for initial isolated domain regressions; candidate physical host SDK and installed replay are recorded separately under limits",
+      "repository": "https://github.com/TransmuteLabs/magpie",
+      "commit": "7bc5ae211510d0b3fe436da8fa819b7e812729e5",
+      "version": "SDK 1.9 native ABI1; model efforts and rich quota DTOs; no host source changed",
+      "paths": ["go.mod", "go.sum", "pkg/extension", "pkg/protocolext"],
+      "checkedAt": "2026-11-15",
+      "artifacts": [
+        {"path": "usbox:/tmp/magpie-devin-domain.zMciImM8/host-sdk.tar", "sha256": "77eec90faf2d0bb3b2218bf29ea6e91516c5e3952c5439e26651473cc8e8fb09"}
+      ]
+    },
+    {
+      "id": "sdk-final",
+      "role": "prior committed API9 acceptance source; parent-built c018 runtime has identical production bytes and only two test-file differences from this committed tree",
+      "repository": "https://github.com/TransmuteLabs/magpie",
+      "commit": "d5b098d8183e88ab9fee1da0170d1c90b9590822",
+      "version": "SDK 1.9 native ABI1; current-account checked catalog admission; accepted tree11c2 versus binary build tree8fe differs only in tests",
+      "paths": ["go.mod", "go.sum", "pkg/extension", "pkg/protocolext", "internal/provider/extension_account_tasks.go", "internal/provider/extension_transport.go", "internal/gateway/gateway.go"],
+      "checkedAt": "2026-11-14",
+      "artifacts": [
+        {"path": "usbox:/tmp/magpie-sdk-final-base-tvn9tc_o/magpie", "sha256": "c018c44332ff9238779d1d01340dfd751209c2c694942fd0406e4d6a3c96cc86"},
+        {"path": "usbox:/tmp/magpie-sdk-final-base-23ttp2l1/source.json", "sha256": "450ac8c1fb79389904c782d018e0612cafad9e14409873a3a21254e6e4d30324"},
+        {"path": "internal/provider/extension_account_tasks.go", "sha256": "9b04f613b6b0316fc5366a723b4be76777d576af072cb00ede259f0b8c2107ad"}
+      ]
+    },
+    {
+      "id": "sdk-467-compat",
+      "role": "historical API9 typed compatibility and original installed hot/cold observations; preserved independently of current host and fixture acceptance",
+      "repository": "https://github.com/TransmuteLabs/magpie",
+      "commit": "46756a48c9c9f204a8369638dc63cbcb83d02031",
+      "version": "SDK 1.9 unpublished final DTO/validator, selected-account tasks and generic no-op/config/canonical corrections; native ABI1",
+      "paths": ["go.mod", "go.sum", "pkg/extension", "pkg/protocolext", "internal/agent/extension_controller_sync.go", "internal/extension/account_stamp.go", "internal/provider/extension_transport.go", "internal/gateway/gateway.go"],
+      "checkedAt": "2026-11-14",
+      "artifacts": [
+        {"path": "usbox:/tmp/magpie-sdk-final-base-eg014lri/magpie", "sha256": "32fbdeabd20ed3059f61a91f7614a51a2ac9b908b12dd637c204a82918a28256"},
+        {"path": "pkg/extension/agent_decision_models.go", "sha256": "8a1215b67f0f649097d02d7cd17a4fc717422bda543194c0dcbb25393bbef5d8"}
+      ]
+    },
+    {
+      "id": "sdk-account-tasks",
+      "role": "base of complete dirty parent/Volta API9 runtime capture; overlay identities are pinned separately, not attributed to this commit",
+      "repository": "https://github.com/TransmuteLabs/magpie",
+      "commit": "ae957e5a8a77553a6cf6f484c8b58a69393f3887",
+      "version": "captured SDK 1.9 account tasks, provider options, cumulative canceled-usage snapshots and native ABI1",
+      "paths": ["go.mod", "go.sum", "pkg/extension", "pkg/protocolext", "internal/extension/account_tasks.go", "internal/gateway/extension_account_tasks.go", "internal/provider/extension_account_tasks.go"],
+      "checkedAt": "2026-11-14",
+      "artifacts": [
+        {"path": "usbox:/tmp/magpie-devin-cache-installed.1XbPmdbS/host.tar.gz", "sha256": "5f6c8d17cad52fbf974091b716fd8731a885bb716afb4f9cac908ff95bad80ce"},
+        {"path": "usbox:/tmp/magpie-devin-cache-installed.1XbPmdbS/magpie-host", "sha256": "6d4ee4edd42f5e03f00b43190f8a7ed5592d6d550a0b56a2a96573240eb4531c"}
+      ]
+    },
+    {
+      "id": "sdk-cache-policy",
+      "role": "committed public SDK export for independent cache template, checked options and policy tests; not an API9 host runtime",
+      "repository": "https://github.com/TransmuteLabs/magpie",
+      "commit": "52a8d85d7956fd027d76b0baea96ea5cf002c34a",
+      "version": "historical SDK 1.8 public packages only; superseded by the separately captured API9 adapter input",
+      "paths": ["go.mod", "go.sum", "pkg/extension", "pkg/protocolext"],
+      "checkedAt": "2026-11-14",
+      "artifacts": [
+        {"path": "usbox:/tmp/magpie-devin-cache.kIfWRbeX/policy-r2/host.tar.gz", "sha256": "c0ede4e5d0de1c90d3ba099b3f43043b2a3d77d578778360c6abf4c18782960e"}
+      ]
+    },
+    {
+      "id": "sdk",
+      "role": "historical committed SDK 1.6 export and ordinary host tested for module domain changes",
+      "repository": "https://github.com/TransmuteLabs/magpie",
+      "commit": "7fbda87dc281e807e121a185760406363d100494",
+      "version": "committed SDK 1.6 export for isolated module builds; codec 0.5; not current combined SDK 1.7 runtime",
+      "paths": ["pkg/extension", "pkg/protocolext", "internal/extension", "internal/gateway/protocol_account_operation.go", "internal/agent/extension_account_operation.go", "internal/agent/extension_controller.go", "internal/agent/sync.go", "internal/provider/extension_account_operation.go", "internal/provider/extension_models_cache.go"],
+      "checkedAt": "2026-11-14",
+      "artifacts": [
+        {"path": "usbox:/tmp/magpie-devin-delivery.4GORlGks/magpie-host", "sha256": "e0195145a9816a33a2a81bc1d0f4ccd0957d5e39ba9eea2d46fbec0c338f55d1"}
+      ]
+    },
+    {
+      "id": "sdk-noop",
+      "role": "committed upstream/no-op controller base; API7 and API8 overlays are separately captured under limits",
+      "repository": "https://github.com/TransmuteLabs/magpie",
+      "commit": "9e88f10982a1d66c1b402fba27caddda8ac4ac4e",
+      "version": "devzeus with upstream aba6 merge, startup policy and approved conservative no-op fix",
+      "paths": ["pkg/extension", "pkg/protocolext", "internal/agent/extension_controller_sync.go", "internal/agent/extension_controller.go"],
+      "checkedAt": "2026-11-14",
+      "artifacts": [
+        {"path": "usbox:/tmp/magpie-devin-final.sRO8tXBQ/committed-binary", "sha256": "a9058a8fed67e50a91c34945b7ad84e77563dc91c6f31ff78214e6d2cee2e3a5"}
+      ]
+    },
+    {
+      "id": "sdk-d070",
+      "role": "historical tested union runtime and preserved no-op behavioral reds",
+      "repository": "https://github.com/TransmuteLabs/magpie",
+      "commit": "d07078c7926daf6f33af09c40297c941bd39da92",
+      "version": "SDK 1.6 Source plus native account operations and persistent model catalog; codec 0.5",
+      "paths": ["pkg/extension", "pkg/protocolext", "internal/agent/extension_controller.go", "internal/gateway/protocol_account_operation.go"],
+      "checkedAt": "2026-11-14",
+      "artifacts": [
+        {"path": "usbox:/tmp/magpie-devin-union.vlj9mmty/magpie-host", "sha256": "bc366fa3e321a7e7c0f5a6735a76c77c1488145b47892cf8551f08a8f444d024"}
+      ]
+    },
+    {
+      "id": "sdk-shared",
+      "role": "historical leader shared upstream/startup integration checkpoint before approved no-op fix",
+      "repository": "https://github.com/TransmuteLabs/magpie",
+      "commit": "87359a70169661ff9b5b4f71e0831e2c606b293f",
+      "version": "shared devzeus after upstream aba6 merge 75fa28b1098539f000281385d9acfd85f7c3e99a; not attributed to domain or no-op proof binaries",
+      "paths": ["pkg/extension", "pkg/protocolext", "internal/agent", "internal/provider/extension_transport.go", "internal/gateway/chattidy.go"],
+      "checkedAt": "2026-11-14"
+    },
+    {
+      "id": "devinapp",
+      "role": "requested committed recovered reference; compared separately from the subsequently committed w25 mechanical slots; wire/model authority unchanged from ed84daf0; historical binary separately attributed",
+      "repository": "/Users/maratkarimov/work/SIB/Agents/devinapp",
+      "commit": "fe0a9481cdce045597b04f57d5489aab4d7b21a9",
+      "version": "reconstructed devin 3000.11.228 (053434014dbd); recovered Desktop 3.10.48 descriptors",
+      "paths": ["reference/crates/chisel-agent-bin", "reference/crates/windsurf-api-client", "reference/crates/chisel-api/src/wire.rs", "gui-src/windsurf-extension-unpacked/module-432.js", "gui-src/windsurf-extension-unpacked/module-39768.js", "gui-src/windsurf-extension-unpacked/module-98224.js", "gui-src/windsurf-extension-unpacked/module-64858.js"],
+      "checkedAt": "2026-11-16",
+      "artifacts": [
+        {"path": "usbox:/tmp/magpie-nativeops.F9jg4B/recovered-target/debug/chisel-agent-bin", "sourceCommit": "97a4883009bc988fedcdf0416a50a6c62f8d9c9b", "version": "historical reconstructed devin 3000.11.228 (053434014dbd)", "sha256": "8b5438632942381272d20974f7ee59fd9af7674d452dce7ea448077b4c075327"},
+        {"path": "reference/crates/chisel-agent-bin/src/models-228.json", "sha256": "4765a69c1fc3e292873594a38bbb0e3c4e72a86a5df9ffa3a3130860bf9aa76b"},
+        {"path": "gui-src/windsurf-extension-unpacked/module-432.js", "sha256": "f710e469d4a6e28ac54d80de56a8619802d8a57bed7b1e806f6c51a569a8ea62"},
+        {"path": "gui-src/windsurf-extension-unpacked/module-39768.js", "sha256": "14afecc6f37c7ae6750b1706aa309a27fb20f5621997a2928a6d6fa88dcef4e3"},
+        {"path": "gui-src/windsurf-extension-unpacked/module-98224.js", "sha256": "ef66a64bdce5ec10bf1eb34d8fe9d7927527aab7d24cb742c3d658c2906aeb10"},
+        {"path": "gui-src/windsurf-extension-unpacked/module-64858.js", "sha256": "3e1eb28bde48285fed78d9dbe852a7c7dfecf55738e873688d06ffd12f2f10d0"},
+        {"path": "reference/crates/chisel-api/src/wire.rs", "sha256": "b5a581afa68047f62a22710ab57f29c9f6c9c9dfa170d237e8c019a3bf8edcf3"}
+      ]
+    },
+    {
+      "id": "community-devin",
+      "role": "exact community0.1.44 donor; bounded image/whitespace/signed-history port, catalog failure control; unsigned retries and heuristic length authority excluded; never a runtime dependency",
+      "repository": "https://github.com/magpie-community/plugins",
+      "commit": "b35d4b35b2446bd929896ddeb58f3cb299e9e2d1",
+      "version": "packages/devin 0.1.44",
+      "paths": ["packages/devin/index.mjs", "packages/devin/README.md", "packages/devin/package.json", "packages/devin/free.test.mjs", "packages/devin/usage.test.mjs", "packages/devin/cache-marks.test.mjs", "packages/devin/prices.test.mjs", "packages/devin/images.test.mjs", "packages/devin/thinking-signature.test.mjs", "packages/devin/long-session.test.mjs", "packages/devin/testdata/model-configs.bin", "packages/devin/testdata/model-configs-1015.bin"],
+      "checkedAt": "2026-11-16",
+      "artifacts": [
+        {"path": "packages/devin/index.mjs", "sha256": "ef90d9e1d117a1015e52ed8417af0ef6b918c8f4d1ffa2a4983225eac38ed059"},
+        {"path": "packages/devin/package.json", "sha256": "a16481c4a783a5d3e60b46269d4574d914f2748165f35b04d7ac2eee3933eb84"},
+        {"path": "packages/devin/README.md", "sha256": "11199ee595c7eb9c6c2de7f6e6c24afd9b857cf51d9134c52569696783bc339b"},
+        {"path": "packages/devin/images.test.mjs", "sha256": "d1424b8941177513816222222dde1bf6d8b6eda570945596934d6077532c8581"},
+        {"path": "packages/devin/thinking-signature.test.mjs", "sha256": "7b5afd8583e2d571eedfb0be5cb2802e5617c787e3d4b99ee09e8731a834e501"},
+        {"path": "packages/devin/long-session.test.mjs", "sha256": "5f3884914eef33527d953332dea34d1f8b102272b8f5cbd8df6d737fbb762a73"},
+        {"path": "packages/devin/testdata/model-configs.bin", "sha256": "3c56f582959ff36c74f2423e85358698315b7a433e3ff121a390accdc44b3fa0"},
+        {"path": "packages/devin/testdata/model-configs-1015.bin", "sha256": "f5b090a8a4cbd074aff092c054c722320d3feb663ea794568eed948c5f8de980"}
+      ]
+    },
+    {
+      "id": "devinapp-w25-mechanical",
+      "role": "read-only successor comparison of the two files reported dirty at fe0a9481, now committed separately; no authentication/environment/cache authority imported",
+      "repository": "/Users/maratkarimov/work/SIB/Agents/devinapp",
+      "commit": "1729055bb5c566903ce2adbcf97a7e1b78bd3dc1",
+      "version": "wave25 windsurf mechanical slots; tracked clean at capture",
+      "paths": ["reference/crates/windsurf-api-client/src/lib.rs", "reference/crates/windsurf-api-client/src/w25_mech_slots.rs"],
+      "checkedAt": "2026-11-16",
+      "artifacts": [
+        {"path": "reference/crates/windsurf-api-client/src/lib.rs", "sha256": "84476daff9b433a5b9325134399d6748ee8ff37c7e64d5f4a6a5955b41414808"},
+        {"path": "reference/crates/windsurf-api-client/src/w25_mech_slots.rs", "sha256": "485d9fb83d58dfcb9f6b9a54be30fac871458bd09e422c2568cf50bba18ee746"}
+      ]
+    },
+    {
+      "id": "community-devin-040-history",
+      "role": "read-only domain behavior and regression donor; never a runtime dependency",
+      "repository": "https://github.com/magpie-community/plugins",
+      "commit": "26ea8faf7793ca66dd8e7a8b90128a5235552a1f",
+      "version": "packages/devin 0.1.40",
+      "paths": ["packages/devin/index.mjs", "packages/devin/README.md", "packages/devin/keepalive.test.mjs", "packages/devin/cache-marks.test.mjs", "packages/devin/reasoning-history.test.mjs", "packages/devin/thinking-signature.test.mjs", "packages/devin/tool-images.test.mjs", "packages/devin/split-calls.test.mjs", "packages/devin/free.test.mjs", "packages/devin/usage.test.mjs", "packages/devin/prices.test.mjs", "packages/devin/schema.test.mjs"],
+      "checkedAt": "2026-11-14",
+      "artifacts": [
+        {"path": "packages/devin/index.mjs", "sha256": "c94c6c209f0c25d433da60fd9b1857508c43f47b254f3c85c0f2f9b5ec0f51c0"},
+        {"path": "packages/devin/keepalive.test.mjs", "sha256": "a06c09b00cd0620e885772ee240473add4853edeafca7b48b43ee12c4d16a4bf"},
+        {"path": "packages/devin/README.md", "sha256": "c0a9dfae5a99bad2b6b573f4ffe9862fe80a40229ffa59303cdd96c4ce31ec43"},
+        {"path": "packages/devin/package.json", "sha256": "54a4a160b3810a704c1c5b321124126a4ed167b06c17526cef151db26bcbc57a"}
+      ]
+    },
+    {
+      "id": "community-gemini-041",
+      "role": "read-only exact 0.1.41 delta and genuine captured tool/signature oracle; no donor installation or runtime dependency",
+      "repository": "https://github.com/magpie-community/plugins",
+      "commit": "191d94bf6ed95ccc4bc62d77e1dd9201a17f5918",
+      "version": "packages/devin 0.1.41; exact package-specific delta, also present unchanged in current fetched main57d1cc6a",
+      "paths": ["packages/devin/index.mjs", "packages/devin/gemini-thought.test.mjs", "packages/devin/testdata/gemini-tool-reply.bin", "packages/devin/package.json", "packages/devin/README.md"],
+      "checkedAt": "2026-11-14",
+      "artifacts": [
+        {"path": "packages/devin/index.mjs", "sha256": "4cc31bf5291b169f72aaf2275207737060dbe34e6be6c4f9e7924704e275c0b2"},
+        {"path": "packages/devin/gemini-thought.test.mjs", "sha256": "0afa95259fe50a59cd190781563b898aae76b8a1c895bb5df17f039d8aa1a44c"},
+        {"path": "packages/devin/testdata/gemini-tool-reply.bin", "sha256": "e4ff6e3b5134fe64f3d9761a98d3ddd1af0945ea6f7946fdfe01a9389ebd4162"},
+        {"path": "packages/devin/package.json", "sha256": "f912821599babd5610959751e3d16b3e09f446b95bc94528a2a6b11a73bb0e4b"},
+        {"path": "packages/devin/README.md", "sha256": "1d0080c83be51ac1bcc0f6d6b13c8574225e38b944eec63b918b2b0d2c0f1f11"}
+      ]
+    },
+    {
+      "id": "upstream-router-removal",
+      "role": "read-only upstream comparison confirming Adaptive/Fusion API router exclusion; no built-in code restored",
+      "repository": "https://github.com/TransmuteLabs/magpie",
+      "commit": "c8290df25991865d0b9eed60937aeb73ab7fa255",
+      "version": "upstream provider router-pick removal included by the parent merge",
+      "paths": ["internal/provider/devin.go", "internal/provider/devin_router_picks_test.go"],
+      "checkedAt": "2026-11-14",
+      "artifacts": [
+        {"path": "internal/provider/devin.go", "sha256": "51f9563ede1d09ada7ed64f7c544cb301931964fee882b30b968b159a249b404"},
+        {"path": "internal/provider/devin_router_picks_test.go", "sha256": "be9e6cff94f9b5ce03a982f03e746de1da92cf225835b8e3828115a1e491122b"}
+      ]
+    },
+    {
+      "id": "cliproxy-maintained",
+      "role": "secondary executor and lifecycle comparison; committed maintained donor only",
+      "repository": "/Users/maratkarimov/work/SIB/Proxy/CLIProxyAPI-family/CLIProxyAPI-u2-331t-up42",
+      "commit": "842cedec8f85c808f45bb2c7b66a1ee5dd23bcf9",
+      "version": "v8.0.42-698-g842cedec8",
+      "paths": ["internal/runtime/executor/devin_executor.go", "internal/runtime/executor/helps/devin_wire.go", "internal/runtime/executor/helps/devin_payload.go", "internal/runtime/executor/devin_stream_content_test.go", "internal/runtime/executor/devin_journal_test.go"],
+      "checkedAt": "2026-11-14",
+      "artifacts": [
+        {"path": "internal/runtime/executor/devin_executor.go", "sha256": "92fc96d9d260dbfe64f48b5ed60b91adf698fd1c7d225e7e0e1af873e5556eaf"},
+        {"path": "internal/runtime/executor/helps/devin_wire.go", "sha256": "d139a0c296a0a99c837e248cb70482734cec1cef6ef76c337e020173deb38a14"},
+        {"path": "internal/runtime/executor/helps/devin_payload.go", "sha256": "f82399a6024cae904851390931ebe354ea46391d4a2c2a217331281962929198"}
+      ]
+    },
+    {
+      "id": "codec-extraction",
+      "role": "historical original standalone inbound codec extraction",
+      "repository": "/Users/maratkarimov/work/SIB/Proxy/magpie-protocol-sdk",
+      "commit": "61dc6c58de9740345d0b9462041444b40ffa9dbb",
+      "version": "initial codec extraction recorded by d6841b1",
+      "paths": ["plugins/protocols/devin"],
+      "checkedAt": "2026-11-14"
+    }
+  ],
+  "watch": [
+    {"source":"community-devin-045-quiet","paths":["packages/devin/index.mjs","packages/devin/quiet.test.mjs"],"behaviors":["five-minute timeout only around each pending underlying body read in decoded and raw chat","progress renews the read window and slow consumers do not consume it","timeout cancels only the owned HTTP child, returns uncertain deadline_exceeded and preserves partial output and measured usage","single acceptance/send/body disposal, no replay or complete refusal authority"],"tests":["src/outbound/quiet_test.go","src/outbound/client_test.go","src/outbound/native_test.go","src/outbound/quiet_cancel_test.go"]},
+    {"source":"community-devin","paths":["packages/devin/index.mjs","packages/devin/images.test.mjs","packages/devin/thinking-signature.test.mjs","packages/devin/long-session.test.mjs"],"behaviors":["failed catalog returns an error rather than an authoritative snapshot or empty success","adjacent signed thoughts retain the last text/signature on a real assistant text/tool prompt while every origin remains checked","inline image magic bytes choose a supported media type without modifying image bytes","whitespace-only unmarked user prompts are omitted; unrepresentable cache boundaries fail explicitly","ambiguous invalid_argument is not proof of context exhaustion, safe unsigned replay or absence of effects"],"tests":["src/codec/messages_test.go","src/provider_completion_test.go","src/provider_request_policy_test.go","tests/provenance_test.py","docs/DONOR-MATRIX.md"]},
+    {"source":"community-devin","paths":["packages/devin/index.mjs","packages/devin/identity.test.mjs","packages/devin/apikey.test.mjs","packages/devin/usage.test.mjs","packages/devin/gzip-request.test.mjs","packages/devin/errors.test.mjs"],"behaviors":["selected-account identity display fallbacks without changing server/credential fingerprint IDs","bare HTTP401 stays a transport fact and cannot erase typed non-auth codes; explicit Connect unauthenticated requests sign-in without refresh/replay or raw error text","status authority precedes catalog; unknown free scope defers quota, catalog4xx refusal propagates, fresh success recovers","one installed native package handles explicit auth, catalog, Chat/Messages/native gzip and measured credential-free ledger rows; no companion runtime","legacy signIn usage field, CLI credential fallback and automatic browser callback server are not native SDK parity claims"],"tests":["src/provider_completion_test.go","src/outbound/client_test.go","tests/provider_single_package_e2e.py","tests/provenance_test.py","docs/PROVIDER-PARITY.md","docs/PROVIDER-COMPLETION-PLAN.md"]},
+    {"source":"cliproxy-maintained","paths":["internal/runtime/executor/devin_a3_law_test.go","internal/runtime/executor/devin_a4_law_test.go","internal/runtime/executor/devin_b4b_wire_test.go","internal/runtime/executor/devin_b4c_alias_test.go","internal/runtime/executor/devin_b4d_named_value_test.go","internal/runtime/executor/devin_stream_status_345_test.go","internal/runtime/executor/helps/devin_request_validation_test.go","internal/runtime/executor/helps/devin_ref_roles_test.go","internal/runtime/executor/helps/devin_usage_test.go","internal/runtime/executor/helps/devin_wire_fingerprint_test.go","internal/runtime/executor/helps/devin_wire.go"],"behaviors":["committed842cedec8 only; unresolved dirty consolidation excluded and no donor-wide green claim","sparse exact-key field28 Token Usage fallback preserves explicit zeros and existing complete field7 snapshot priority","invalid dimensions fail without inventing counts; missing operands do not create totals or paid-task authority","late invalid field7 retains prior snapshot; null/absent/zero sampling and original schemas/prompts remain exact","metadata then stream refusal remains failure-first with one uncertain dispatch; no synthetic empty success","message-specific failure scopes are handed off to shared policy owner, no duplicate matcher or replay"],"tests":["src/codec/provider_donor_laws_test.go","src/provider_completion_test.go","tests/provider_single_package_e2e.py","docs/CLIPROXY-PROVIDER-CHECK.md","docs/EXECUTION-FACTS.md"]},
+    {"source": "community-devin", "paths": ["packages/devin/index.mjs", "packages/devin/free.test.mjs", "packages/devin/usage.test.mjs", "packages/devin/cache-marks.test.mjs", "packages/devin/prices.test.mjs", "packages/devin/images.test.mjs"], "behaviors": ["discovered families/ordered variants/aliases/fast/priority/nearest effort and concrete UID pinning", "label-only family IDs outside SDK grammar retain concrete UID/display name and valid Free scope", "free family excludes paid unselectable Lightning variants", "fresh selected-account resolution without static inventory fallback", "Chat and Messages prompt cache boundaries, explicit native TTL and tool-definition limits", "numeric ACU amount/limit, signed micros, absence, quota spans and plan end; installed API9 and API7 expectations remain distinct"], "tests": ["src/provider_domain_test.go", "src/codec/domain_cache_test.go", "src/outbound/domain_status_test.go", "tests/donor_host_e2e.py", "docs/history/DOMAIN-COMPLETION-PLAN.md", "docs/history/DOMAIN-COMPLETION-EVIDENCE.md"]},
+    {"source": "devinapp", "paths": ["reference/crates/chisel-agent-bin/src/models-228.json", "gui-src/windsurf-extension-unpacked/module-39768.js", "gui-src/windsurf-extension-unpacked/module-98224.js"], "behaviors": ["source family aliases and concrete variant authority", "PromptCacheOptions enum-only TTL and ChatToolDefinition without a cache field", "signed int64 overage micros and optional double ACU counts"], "tests": ["src/provider_domain_test.go", "src/codec/domain_cache_test.go", "src/outbound/domain_status_test.go"]},
+    {"source": "sdk-domain-authoring", "paths": ["pkg/extension/types.go", "pkg/extension/rich_quota.go", "pkg/extension/usage_contract.go"], "behaviors": ["API9 rich fields only in API9 package; paired API7 remains compatible", "selected-model origin and accepted-write boundaries survive UID resolution"], "tests": ["src/provider_domain_test.go", "src/provider_usage_test.go", "src/provider_gemini_test.go", "src/provider_execution_facts_test.go"]},
+    {"source": "sdk-final", "paths": ["internal/provider/extension_account_tasks.go"], "behaviors": ["hot external root config CAS acquires the selected account's current checked catalog before paid admission", "empty/failed/malformed discovery and actual authority changes remain fail-closed without fallback or retry", "test-only binary-to-accepted-source differences do not imply a different runtime build tree"], "tests": ["tests/cache_keepalive_host_e2e.py", "docs/history/CACHE-KEEPALIVE-EVIDENCE.md"]},
+    {"source": "devinapp", "paths": ["reference/crates/chisel-api/src/wire.rs", "gui-src/windsurf-extension-unpacked/module-432.js"], "behaviors": ["sampling chunk oracle preserves varint/fixed64/bytes/fixed32 raw wire chunks without using the legacy varint/bytes-only decoder", "native temperature/top_p fields5/8 use fixed64; fixed32 coverage is structural rather than a claimed captured native field", "hot paid fixture preserves exact zero sampling, stop/seed, named tool choice and parallel mode while changing only max output to1"], "tests": ["tests/cache_keepalive_fixture_test.py", "tests/cache_keepalive_host_e2e.py", "docs/history/CACHE-KEEPALIVE-EVIDENCE.md"]},
+    {"source": "sdk-final", "paths": ["pkg/extension/agent_decision_models.go", "pkg/extension/account_tasks.go", "internal/agent/extension_controller_sync.go", "internal/extension/account_stamp.go", "internal/provider/extension_transport.go", "internal/gateway/gateway.go"], "behaviors": ["unpublished final API9 typed decision catalog uses public DTO and validator; older API9 drafts lack this field", "decisionModels remain separate from conversation models/priorModels; connect/set/sync/disconnect write no client files or decision-model binding values", "omitted optional input remains compatible while null/invalid catalog and unknown root/nested fields remain strict errors", "actual one-module physical-host duplicate/no-op/held-read and real-transition fences", "genuine donor Gemini Chat/Messages JSON/SSE keeps exact signature/type/tool continuation without legacy thinking-disabled injection", "three strict hot-config-CAS default-off/paid/canceled-usage passes remain separate from historical cold controls, original467 no-paid and unexplained c018 held38 REDs"], "tests": ["src/agent_module_test.go", "tests/agent_options_conformance.py", "tests/assignment_identity_e2e.py", "tests/assignment_transition_e2e.py", "tests/gemini_host_e2e.py", "tests/cache_keepalive_host_e2e.py", "tests/provenance_test.py", "docs/history/DELIVERY-EVIDENCE.md"]},
+    {"source": "community-gemini-041", "paths": ["packages/devin/index.mjs", "packages/devin/gemini-thought.test.mjs", "packages/devin/testdata/gemini-tool-reply.bin"], "behaviors": ["genuine compressed Hydrogen reply preserves exact368-byte signature, explicit gemini type and no visible thinking", "Chat and Messages buffered/streamed tool roundtrip carries signature12/type18/generation-model22", "native stop2 with a real tool maps to canonical tool_calls/tool_use without changing native execution Facts", "exact text/thinking/native-call/name/canonical-arguments matching replaces the donor global call-only and whitespace-free lookup", "bounded256-entry/8MiB memory scoped to account/generation/caller/model/conversation still requires existing origin receipts", "explicit foreign signed history fails before acceptance; restart/eviction/unknown invisible history stays unsigned", "held canceled genuine replies issue no continuation origin; no guessed type, retained Stream/credentials, retry or proven live empty-reply claim"], "tests": ["src/provider_gemini_test.go", "src/codec/gemini_thought_test.go", "tests/gemini_host_e2e.py", "src/testdata/gemini-tool-reply.bin", "docs/history/GEMINI-SIGNATURE-PLAN.md", "docs/history/GEMINI-SIGNATURE-EVIDENCE.md"]},
+    {"source": "sdk-account-tasks", "paths": ["pkg/extension/account_tasks.go", "pkg/extension/provider_options.go", "pkg/extension/usage_facts.go", "pkg/extension/native/storage_reader_unix.go", "go.mod", "go.sum", "internal/extension/account_tasks.go", "internal/gateway/extension_account_tasks.go", "internal/provider/extension_account_tasks.go"], "behaviors": ["Task/Key/Job/DueAt bind exact conversation and one-use callback to fresh selected-account authority", "preaccept foreground cancellation joins only the matching conversation", "no task usage event before accepted dispatch", "cumulative measured snapshots survive cancellation once under the original caller/operation", "fresh proxy/model/budget/readOnly/account-generation checks precede paid work", "paid default-off Provider.Options confirmation is module-owned", "native SDK transitive golang.org/x/sys v0.49.0 uses the existing pinned offline cache"], "tests": ["src/provider_cache_task_test.go", "src/provider_cache_store_test.go", "tests/cache_keepalive_host_e2e.py", "tests/provenance_test.py", "docs/CACHE-KEEPALIVE.md", "docs/history/CACHE-KEEPALIVE-EVIDENCE.md", "docs/history/CACHE-KEEPALIVE-PLAN.md", "docs/EXECUTION-FACTS.md", "src/go.mod", "src/go.sum"]},
+    {"source": "community-devin", "paths": ["packages/devin/index.mjs", "packages/devin/keepalive.test.mjs"], "behaviors": ["standard0.8 default-off paid cache task through the fresh-account scheduler", "literal keepAlive consent and exact option names/types/ranges; donor alias is not consent", "cadence from actual send time with immediate overdue eligibility", "caller/session/subagent and growing first-message conversation separation", "32 conversations/32MiB templates and bounded 256-entry hashed fallback index", "refusal/max/two-completed-miss termination without arithmetic overflow", "one-use tick claims, stale foreground completion and memory eviction", "conservative stop after transport/protocol/uncertain failure; donor initial502 retry is not reproduced"], "tests": ["src/provider_cache_policy_test.go", "src/provider_cache_store_test.go", "src/provider_cache_task_test.go", "tests/cache_keepalive_host_e2e.py", "docs/CACHE-KEEPALIVE.md", "docs/history/CACHE-KEEPALIVE-PLAN.md", "docs/history/CACHE-KEEPALIVE-EVIDENCE.md"]},
+    {"source": "devinapp", "paths": ["gui-src/windsurf-extension-unpacked/module-432.js", "gui-src/windsurf-extension-unpacked/module-39768.js", "gui-src/windsurf-extension-unpacked/module-98224.js"], "behaviors": ["credential-free byte-preserving template from the actual encoded GetChatMessage request", "preserve interleaved prompt/tool/signature/cache and sampling chunks", "one new unmarked USER continue prompt and max_tokens 1 only", "fresh metadata per admitted dispatch; no credential bytes retained in content", "strict unknown/duplicate/assignment-control refusal; no inference of live native cadence or TTL guarantees"], "tests": ["src/codec/cache_keepalive_test.go", "tests/cache_keepalive_host_e2e.py", "docs/history/CACHE-KEEPALIVE-PLAN.md"]},
+    {"source": "devinapp", "paths": ["gui-src/windsurf-extension-unpacked/module-432.js", "gui-src/windsurf-extension-unpacked/module-98224.js"], "behaviors": ["generated response scalar types including fixed64 committed_acu_cost 22", "native StopReason completion versus error", "unknown response/tool/usage control refusal", "no origin receipt before valid successful terminal", "cancellation identity during read failure"], "tests": ["src/codec/stream_completion_test.go", "src/codec/outbound_test.go", "src/codec/paired_test.go", "tests/paired_http_e2e.py"]},
+    {"source": "community-devin", "paths": ["packages/devin/tool-images.test.mjs", "packages/devin/index.mjs"], "behaviors": ["gateway seeLater image association without consuming user content", "independent installed-host deferred tool images and Claude unsigned history", "preserve historical missing-result/cache-boundary reds and corrected installed refusals with zero dispatch"], "tests": ["src/codec/donor_tool_images_test.go", "src/codec/outbound_test.go", "tests/donor_host_e2e.py", "docs/history/DONOR-HOST-EVIDENCE.md", "docs/HOST-CANONICAL-GAPS.md", "docs/history/DELIVERY-EVIDENCE.md"]},
+    {"source": "sdk", "paths": ["pkg/extension", "pkg/protocolext", "internal/extension", "internal/gateway/protocol_account_operation.go", "internal/gateway/protocol_extensions.go", "internal/agent/extension_account_operation.go", "internal/agent/extension_controller.go", "internal/agent/sync.go", "internal/cli/main.go", "internal/catalog/live.go", "internal/provider/modelprefs.go", "internal/update/shellfn_plan.go", "internal/provider/extension_models_cache.go"], "behaviors": ["same lease and selected account generation", "action effects and stable accepted-write identity across no-op catalog sync", "auth lifecycle CAS", "agent launch and binding admission/phase/revision under catalog sync", "controlled revision-only sync changes exact write preimage while installed decode RequestID/Session and journal scope remain stable", "held native bootstrap reply fails the exact revision fence after no-op sync", "actual duplicate native assignment mock dispatch counts and bootstrap error observations", "lowercase ASCII native account-operation IDs", "persisted generation-fenced dynamic model selection by a fresh CLI with gateway stopped", "all native catalogs respect key model restrictions/aliases/readOnly and alias-scoped token budgets", "expired unary catalog deadline and subsequent discovery without inference"], "tests": ["src/codec/account_test.go", "src/agent_account_test.go", "src/agent_module_test.go", "src/provider_test.go", "tests/assignment_identity_e2e.py", "docs/ASSIGNMENT-DIAGNOSIS.md", "tests/agent_http_e2e.py", "tests/paired_http_e2e.py", "tests/agent_startup_e2e.py"]},
+    {"source": "sdk", "paths": ["internal/agent/extension_controller.go", "internal/agent/extension_account_operation.go", "internal/gateway/protocol_account_operation.go", "internal/extension/manager.go", "internal/extension/store.go"], "behaviors": ["actual ordinary model selection changes owned binding model and revision", "stale-model assignment refuses before vendor acceptance with a not-started journal", "held bootstrap read and accepted-write response remain fenced after real model selection", "one accepted write keeps its original scope and completes once despite outward refusal", "retain binding revision in write identity and exact post-call Check while fixing only proven no-op sync"], "tests": ["tests/assignment_transition_e2e.py", "docs/ASSIGNMENT-DIAGNOSIS.md"]},
+    {"source": "sdk", "paths": ["internal/agent/extension_controller_sync.go", "internal/agent/extension_controller.go", "internal/gateway/protocol_account_operation.go"], "behaviors": ["scoped no-op candidate preserves complete binding/journal across ordinary sync", "same exact duplicate remains refused with one actual native dispatch", "held bootstrap read survives no-op while unchanged real-transition script retains fencing", "original bundle hash and exact source snapshot are distinct from final combined host acceptance"], "tests": ["tests/assignment_identity_e2e.py", "tests/assignment_transition_e2e.py", "docs/NOOP-ACCEPTANCE.md"]},
+    {"source": "sdk", "paths": ["internal/provider/extension_transport.go", "internal/gateway/chattidy.go", "internal/gateway/gateway.go", "pkg/extension/types.go"], "behaviors": ["ordinary canonical CallerID must come from host context independent of private inbound metadata", "missing caller refuses before acceptance without a synthetic signature origin", "SDK token counts are fresh input exclusive of separate cache buckets", "ACU Aside is nonblocking and preserves explicit zero versus absent usage", "native ACU cost is not USD", "legacy Chat repair can change reasoning aliases, missing-result presence and cache boundaries before SDK execution"], "tests": ["src/provider_test.go", "src/provider_usage_test.go", "src/provider_messages_test.go", "src/outbound/status_test.go", "tests/messages_host_e2e.py", "tests/donor_host_e2e.py", "docs/HOST-CANONICAL-GAPS.md"]},
+    {"source": "sdk-noop", "paths": ["internal/provider/extension_transport.go", "internal/provider/extension_canonical_test.go", "internal/gateway/gateway.go", "internal/gateway/extension_canonical_test.go"], "behaviors": ["canonical CallerID comes exclusively from trusted host context even with same-owner metadata", "private native metadata/request IDs retain the same-owner restriction", "SDK Chat preserves mixed source aliases, missing real results and separate cache boundaries before legacy repair", "non-SDK positive still repairs interrupted tool histories", "unchanged installed libraries prove four actual RED-to-GREEN cases while paired cancellation and no-op/real-transition fences remain green", "scoped dirty source/binary identities do not establish final upstream union acceptance"], "tests": ["tests/messages_host_e2e.py", "tests/donor_host_e2e.py", "tests/paired_http_e2e.py", "tests/assignment_identity_e2e.py", "tests/assignment_transition_e2e.py", "docs/history/DELIVERY-EVIDENCE.md", "docs/HOST-CANONICAL-GAPS.md"]},
+    {"source": "sdk-noop", "paths": ["pkg/extension/types.go", "pkg/extension/usage_facts.go", "pkg/extension/diagnostics.go", "pkg/extension/composite.go", "internal/provider/extension_transport.go", "internal/gateway/extension_usage.go", "internal/extension/diagnostics.go"], "behaviors": ["API overlay exact source identity is separate from its committed base", "sparse facts never mix with legacy totals or infer absent counts", "measured facts survive failed native terminals while cancellation retains the current lease", "native credits, ACU reported cost, actual model, upstream enum, native request ID, actual canonical/native response ID and native stop retain their units", "diagnostics are bounded scoped code-only callbacks whose rejection cannot change execution"], "tests": ["src/provider_execution_facts_test.go", "src/codec/execution_facts_test.go", "docs/history/API7-PLAN.md", "docs/EXECUTION-FACTS.md", "docs/history/DELIVERY-EVIDENCE.md", "tests/paired_http_e2e.py", "tests/agent_http_e2e.py", "tests/donor_host_e2e.py"]},
+    {"source": "upstream-router-removal", "paths": ["internal/provider/devin.go", "internal/provider/devin_router_picks_test.go"], "behaviors": ["exact trimmed case-insensitive Adaptive/Fusion UID or family filtering", "unrelated fusion-research remains selectable", "no retired built-in loader or vendor import restored"], "tests": ["src/codec/donor_prices_test.go", "docs/DONOR-MATRIX.md"]},
+    {"source": "devinapp", "paths": ["reference/crates/chisel-agent-bin/src", "reference/crates/windsurf-api-client/src", "gui-src/windsurf-extension-unpacked/module-432.js", "gui-src/windsurf-extension-unpacked/module-98224.js", "gui-src/windsurf-extension-unpacked/module-64858.js"], "behaviors": ["native framing and field numbers", "metadata 30/31", "bootstrap and assignment", "CLI arguments and redirect semantics"], "tests": ["src/codec/account_test.go", "src/codec/paired_test.go", "src/codec/continuation_test.go", "tests/agent_startup_e2e.py"]},
+    {"source": "community-devin", "paths": ["packages/devin/index.mjs", "packages/devin/keepalive.test.mjs", "packages/devin/cache-marks.test.mjs", "packages/devin/reasoning-history.test.mjs", "packages/devin/thinking-signature.test.mjs", "packages/devin/tool-images.test.mjs", "packages/devin/split-calls.test.mjs", "packages/devin/free.test.mjs", "packages/devin/usage.test.mjs", "packages/devin/prices.test.mjs", "packages/devin/schema.test.mjs"], "behaviors": ["cache keepalive and marks", "reasoning and signature history", "Messages growing cache prefixes, typed response blocks and receipt-resolved signature format/actual model", "no receipt or successful terminal on malformed, refused or canceled output", "Adaptive/Fusion routers never become effective API picks", "tool turns and images", "model/free/usage/price facts", "installed native float32 paid/Free/unknown SDK price projection", "preserve raw reds independently of passing controls", "schema constraints remain unchanged"], "tests": ["src/codec/outbound_test.go", "src/codec/donor_history_test.go", "src/codec/donor_prices_test.go", "src/codec/messages_test.go", "src/outbound/messages_test.go", "src/outbound/client_test.go", "src/provider_messages_test.go", "src/provider_test.go", "tests/donor_host_e2e.py", "tests/messages_host_e2e.py", "docs/history/DONOR-HOST-EVIDENCE.md", "docs/DONOR-MATRIX.md"]},
+    {"source": "cliproxy-maintained", "paths": ["internal/runtime/executor/devin_executor.go", "internal/runtime/executor/helps/devin_wire.go", "internal/runtime/executor/helps/devin_payload.go", "internal/runtime/executor/devin_stream_content_test.go"], "behaviors": ["acceptance and cancellation", "stream content versus usage-only replies", "explicit refusal versus replay"], "tests": ["src/outbound/client_test.go", "src/outbound/native_test.go", "src/codec/outbound_test.go", "tests/paired_http_e2e.py"]},
+    {"source": "codec-extraction", "paths": ["plugins/protocols/devin"], "behaviors": ["historical codec provenance"], "tests": ["src/codec/decode_test.go", "src/codec/response_test.go", "docs/donor-files.json"]}
+  ],
+  "limits": {
+    "quietRead045": {
+      "checkedAt": "2026-11-17",
+      "quietReadMilliseconds": 300000,
+      "responseHeaderTimeoutSecondsUnchanged": 30,
+      "packageVersionUnchanged": "0.8.0",
+      "sdkMinimumUnchanged": "1.12",
+      "evidence": "/Users/maratkarimov/work/.magpie-verification-20261116/packets/sol-devin-quiet-read-20261117-01",
+      "hostInput": "root-pinned source7af6 on HEAD31dc; read-only public SDK via external tempmodfile",
+      "scope": "ordinary decoded Complete and raw Native client calls through a controlled HTTP RoundTripper; deterministic virtual five-minute read windows",
+      "cancellationPublicationClosure": {
+        "checkedAt": "2026-11-17",
+        "finding": "DEVIN-QUIET-CANCEL-1",
+        "verdict": "APPROVE, bounded source and terminal evidence; no remaining P1/P2 in inspected scope",
+        "review": "/Users/maratkarimov/work/.magpie-verification-20261116/packets/astra-devin-quiet-review-20261117-01/TERMINAL-CLOSURE-02.txt",
+        "reviewSHA256": "74a83e7e661e0b68d5875594ae5498a86a8c4536c2937a3ae202bda57025e2d4",
+        "evidence": "/Users/maratkarimov/work/.magpie-verification-20261116/packets/sol-devin-quiet-cancel-20261117-02",
+        "testedSourceSHA256": "e577c0d5604de3e7f4932b15e2fac23029067d8474d7382e38cb3774ebc22f12",
+        "testedPackageSourceIdentity": "f3734097bfb2ebd5961cab5c49374a3acbb68b0386a62212b7698058edae8c80",
+        "deliverySHA256": "6d74705a67db8c20966de918406bec9b424ff4c5a76dcbbd8437e43969ef1a37",
+        "patchSHA256": "99830ed7c53c86d69a500d76e92c8567d8b1bac15d103055cd6e4c5f98cef097",
+        "regression": "src/outbound/quiet_cancel_test.go",
+        "regressionSHA256": "b217fd43e3bc9c3cf5b6ffec3441936d9d168ef8b9a9097e2041109564a5d1a0",
+        "oldCausalRedLeaves": 4,
+        "focusedGreenLeaves": 24,
+        "selectedRaceUniqueLeaves": 57,
+        "selectedRaceCount": 20,
+        "vetExit": 0,
+        "formatExit": 0,
+        "originalFailedReviewSHA256": "9c27b78ff27b2f6058b7c9adb19ff04ad583dd4489f7643197d957a6fd53950a",
+        "boundary": "original parent Err owns class when ended; Cause stays observable with errors.Join; live parent retains owned quiet504; no replay or usage loss",
+        "metadataOnlyAfterPositiveReview": true
+      },
+      "excluded": ["donor response-header timeout relaxation", "caller/accounting scope cancellation", "automatic unsigned retry or rotation", "live vendor or installed native acceptance"]
+    },
+    "donor044Comparison": {
+      "date": "2026-11-16",
+      "communityCommit": "b35d4b35b2446bd929896ddeb58f3cb299e9e2d1",
+      "deltaCommits": ["6c6677d0f3dc34f27a7c0677c46f91e552a67071", "2f8f061a2c65d42225e6bf3a164924b3a7421be6", "1260b2ba40a2ebe8527e1e8e951b1016a680b58f"],
+      "referenceBaseline": "ed84daf06cb9eb961a0d6cd7703e39b7b7f90654",
+      "referenceRequested": "fe0a9481cdce045597b04f57d5489aab4d7b21a9",
+      "referenceObserved": "1729055bb5c566903ce2adbcf97a7e1b78bd3dc1",
+      "currentComparison": {
+        "baseCommit": "1729055bb5c566903ce2adbcf97a7e1b78bd3dc1",
+        "comparisonCommit": "92503f9608518e986bcd8fd98da674f5243e3c33",
+        "checkedAt": "2026-11-16",
+        "watchpathCount": 12,
+        "watchChanges": [],
+        "lockedArtifactCount": 8,
+        "lockedArtifactsUnchanged": true,
+        "changedPaths": [
+          "reference/crates/affogato/src/affogato_slots.rs",
+          "reference/crates/affogato/src/lib.rs",
+          "reference/crates/chisel-core/src/lib.rs",
+          "reference/crates/chisel-core/src/w25_mech_slots.rs"
+        ],
+        "classification": "mechanical-slot modules and declarations outside protocol watchpaths",
+        "runtimePorts": [],
+        "implementationPinsUnchanged": true,
+        "comparisonRecord": "usbox:/tmp/magpie-devin-review-20261116-92503f96/CURRENT-COMPARISON.json",
+        "comparisonRecordSHA256": "e41ff27e2f8ef373aaa57aabfa22772c034098e6543ad6ff6d57b2c00da2a99b",
+        "followSubsequentHeads": false
+      },
+      "reportedDirtyNowCommitted": true,
+      "trackedDirtyAtCapture": [],
+      "wireAndModelArtifactsUnchanged": true,
+      "sdkSource": "usbox:/tmp/magpie-obs-policy-fix-20261115/candidate-01",
+      "sdkContentManifestSHA256": "e2ca42c6fa8529b781a61aec04862355a5b28183646cc57ee028f6133fb74c34",
+      "sdkCommit": null,
+      "evidence": "usbox:/tmp/magpie-devin-donor-update-20261116",
+      "excluded": ["adapter-owned unsigned retry after invalid_argument", "turning a byte-size estimate into known context exhaustion", "invented continuation prompts", "snapshot catalog authority", "reference environment/auth/cache mechanisms"],
+      "acceptance": "source-specific author evidence only; no live vendor or final combined-host/native acceptance"
+    },
+    "providerCompletion": {
+      "date": "2026-11-15",
+      "guide": "docs/PROVIDER-PARITY.md",
+      "donorCommit": "57d1cc6a9f49389d495ea9be8d986c70de7767bf",
+      "donorVersion": "0.1.41",
+      "cliproxyCommit": "842cedec8f85c808f45bb2c7b66a1ee5dd23bcf9",
+      "cliproxyTree": "8444ec2d8c9c34215b103ac4d29c3037873106cf",
+      "cliproxyTestManifestSHA256": "b1a6b9bd40edccfd5064baa77795adc858029794cd390d178c5128fd57bedc42",
+      "cliproxyDirtyTreeUsed": false,
+      "sdkSource": "usbox:/tmp/magpie-astra-combined-20261115-v4/source",
+      "sdkContentSHA256": "609a7b5a1bfd8da599639900e19a2635296b5f5d1ce85bcbd8df0df702d5b493",
+      "sdkTree": null,
+      "sdkCommit": null,
+      "hostBinarySHA256": "dfc5c0ddcaae39339ef5d2008056d0b63ad1b7821c6f87bf6af472913e2f1e79",
+      "artifacts": "usbox:/tmp/magpie-devin-provider-completion.Osz44Mr2",
+      "scope": "package-only provider comparison, auth/error/usage, identity and field28 fallback corrections; no host changes, automatic credential refresh, replay, dependency or version bump",
+      "notClaimed": "live vendor/browser UI/original CLI parity; legacy signed-out host state and pending shared message-matcher integration; parent install lifecycle and whole-monorepo verification are separate"
+    },
+    "domainCandidateHost": {
+      "sourceCommit": null,
+      "physicalTree": "36f8e629b1092b089d4d59e0f9d8473a1f602ff8",
+      "paths": 10846,
+      "source": "usbox:/tmp/magpie-upstream-signing-final.QhgGhCd7/source",
+      "sourceArchiveSHA256": "5f07aab7ab2a782131789197fe3c26778e33f9ee3d54e459ba63f62ef9fecdfc",
+      "binary": "usbox:/tmp/magpie-upstream-signing-final.QhgGhCd7/magpie",
+      "binarySHA256": "0bd335b7b6191f64d7f4ba6d1df273928e6ade33fd7966b5245987ac6a10c509",
+      "checkedAt": "2026-11-15",
+      "moduleBaselineCommit": "3bb742022225484e3573d0954df21682566831c1",
+      "testedModuleSnapshotSHA256": "d740a42c14365a6c36897e60c9644ea927eee91fae2320c1fd306f0161761ce6",
+      "testedModuleArchiveSHA256": "725f82c680360b8f8ccd84daac5729e3ba0317f460df32e56329ad22351d1aa9",
+      "runtimeInputsSHA256": "688c6f1a939b7826328de724f37526a96b34cd41b6ad33a6f200972e62515c81",
+      "publicSDKSourceSHA256": "da8861971bc4f266c6e091b1b5754a97492321eed2513ea836515569cdb0a95f",
+      "publicSDKIdenticalTo7bc": true,
+      "librarySHA256": "af90f1d3fdff103afdf8ef46740aac6c7e0b85f134e1754e8e6c14730a5623e0",
+      "evidence": "usbox:/tmp/magpie-devin-domain.zMciImM8/candidate4/domain-evidence.json",
+      "evidenceSHA256": "1b8392da15c07339f33de54d1b4708c8125f5bdd18fedfa1a9e5c049121c172d",
+      "oldBaselineRED": "usbox:/tmp/magpie-devin-domain.zMciImM8/red-v6.log",
+      "oldBaselineREDLogSHA256": "37eca74199cd25fb29200c617f99b19bbe7fd312b6a2e9589fb7a044a268435f",
+      "labelOnlyRED": "usbox:/tmp/magpie-devin-domain.zMciImM8/candidate2/label-red.log",
+      "labelOnlyREDLogSHA256": "51a06523334edc65e50fb0df17bc6aacefcacde59edf86682f16fe1eacd6f0d9",
+      "absentLimitRED": "usbox:/tmp/magpie-devin-domain.zMciImM8/candidate3/quota-limit-red2.log",
+      "absentLimitREDLogSHA256": "89851d5f37c8d4f9b6e0d8eaff043f22c8240e289f4068f39c81c2c5d3713d65",
+      "state": "module/race3/vet, provenance18, three native builds, donor46, native options, installed paired24/agent/Gemini/identity/transitions/Messages/history/Facts, API7 quota, inbound ABI and strict hot-CAS paid execution pass; exact candidate physical tree is not attributed to parent adcf4ce or a future merge commit; parent whole-host and final successor acceptance remain independent"
+    },
+    "integrationTarget": {
+      "branch": "devzeus",
+      "commit": "d5b098d8183e88ab9fee1da0170d1c90b9590822",
+      "tree": "11c2b9dd3d514bcc76c338f9ae680552319494dc",
+      "kind": "committed accepted SDK9 source; parent runtime built from tree8fe differs only in two test files",
+      "historicalDomainRuntimeCommit": "7fbda87dc281e807e121a185760406363d100494",
+      "testedRuntimeSourceSHA256": "a902d6428bba59b469e74fa466ff77f16ac65a66ef97e6863bcb0a109cd02c66",
+      "acceptedPhysicalSourceSHA256": "cdfb6bb3b27c2a618f33eb47d6e3e9b652d351dda13d24ba5dfaa1a8795d0583",
+      "binaryBuildTree": "8fe78ab9df13d733d61462eacce19bff523c1e58",
+      "binarySHA256": "c018c44332ff9238779d1d01340dfd751209c2c694942fd0406e4d6a3c96cc86",
+      "historicalRuntimeCommit": "d07078c7926daf6f33af09c40297c941bd39da92",
+      "historicalFrozenTree": "f536d8202e40aae4b0fc36630aa3c1eb496d58d5",
+      "state": "three full strict hot-config-CAS paid repetitions, duplicate/no-op/held read, real transitions, genuine Gemini four cases and paired24 pass on exact c018 runtime. Original467 no-paid, legacy parser and original c018 held38 REDs remain separate; held timing cause is unknown. Whole-host broad acceptance is parent-owned"
+    },
+    "finalInstalledSampler": {
+      "moduleBaseCommit": "da599905434f95ae725a6468b86efad5dd5bff8d",
+      "moduleSourceCommit": null,
+      "testedImplementationSourceSHA256": "925c2d4e053c593a81e6da19be409d591bfec2754470f8919d4114dd794241c9",
+      "moduleArchiveSHA256": "20e6cbe477e7b54d7a7126cdf96fd4c61cfc1148c91ed668bff8c42890d5d0f9",
+      "publicSDKSourceSHA256": "36f73768a1335fbf1210fd7033528031f70f2de72b3b182f57af7b0a954969b5",
+      "hostAcceptedCommit": "d5b098d8183e88ab9fee1da0170d1c90b9590822",
+      "hostAcceptedTree": "11c2b9dd3d514bcc76c338f9ae680552319494dc",
+      "hostAcceptedSourceReceiptSHA256": "450ac8c1fb79389904c782d018e0612cafad9e14409873a3a21254e6e4d30324",
+      "hostBinaryBuildTree": "8fe78ab9df13d733d61462eacce19bff523c1e58",
+      "hostBinaryBuildSourceReceiptSHA256": "7ce4753ff79f3493acb4f61c1826d3f52145f8b156537ac61f493b39c9a50cc6",
+      "hostCoreBuildReceiptSHA256": "baf13fcc69133298f1b44a3d60e76744288782658ad43f561ddece1a6e6a9e77",
+      "binaryToAcceptedOnlyTestChanges": ["internal/cli/settings_parity_test.go", "internal/provider/extension_account_tasks_catalog_test.go"],
+      "hostBinarySHA256": "c018c44332ff9238779d1d01340dfd751209c2c694942fd0406e4d6a3c96cc86",
+      "librarySHA256": "017ebcccec33c936334853b6efbca9991e697d657bef620bbc296991040f3402",
+      "fixtureSHA256": "c2c58b5a3d1e2dc2b87a66c83c85990776bb11ffe8655b60d33439aa7c2408c3",
+      "fixtureRegressionSHA256": "4405c0c4995183efa29ac5ae8b1945cba23b0f1b7bb69ed581c4da0bc91c638b",
+      "originalHotFixtureSHA256": "75cb45a51970477dc4e89d02ccad0a1480710dc25e71d13883cacbeb518bfac7",
+      "originalColdFixtureSHA256": "511cc360c7603026bb0226e0fff43d89fd25ec4256d8c0571136f330c1762d50",
+      "evidence": "usbox:/tmp/magpie-devin-final-fixture-20261114.3miL8Zfd",
+      "oldParserCausalRedLogSHA256": "01840f15c79abbaa3a2c0b17ad5d334a4d889bba2a5b5ef0f410617cf49dd742",
+      "oldAssertionsRedLogSHA256": "2a0e21909b74bf23f4696290151fc8bd32f8fd8afde728158d9e00d1827b8e0b",
+      "nineRegressionsGreenLogSHA256": "1bd6daf5661d17cdde83357e0bfc2e376820baec559a299699c588f36b4267e3",
+      "hotRepetitions": [
+        {"gate": "hot1", "exit": 0, "seconds": 44.680, "receiptSHA256": "262aa1d270f2a47f23d87094ab7046880f4877023a45852560bd8d180ad14f2d", "logSHA256": "11ee3a9de14c30ad5bd97de5295060c1dc7a1cbfcb568449cd8fda5180978fcf"},
+        {"gate": "hot2", "exit": 0, "seconds": 46.240, "receiptSHA256": "f50ffc880669a4acd73b7a7e6e8a6edc5c35f7a3e747c9bab5405e2b4d527a2a", "logSHA256": "8f545f17d1e4722e2dbe0d9b91979998fd542c1f337d126e663375d5affbaa8b"},
+        {"gate": "hot3", "exit": 0, "seconds": 47.552, "receiptSHA256": "0ea2d06d5adb918dacd25cc6cf48e0c29a089c5c0d79aba4146a331cafad1700", "logSHA256": "161acd9b93ef2aba45225943c780581904f08e64753c62571c8781aa11149aff"}
+      ],
+      "independentClosureEvidence": "usbox:/tmp/magpie-hot-cas-closure-20261114.sQVusLEq/EVIDENCE.json",
+      "independentClosureEvidenceSHA256": "44935bfcae6dc0e2cf69939e3b1b87540807c625c31c965e35ce3c727d1f0e63",
+      "originalHeldTimingRed": "usbox:/tmp/magpie-devin-hot-cas-fix-20261114.kjo_hnjn/installed-original-hot-tvn*",
+      "state": "nine strict fixture regressions, module/vet/default build/native ABI and all selected installed gates green; no Go/runtime/policy/manifest change. Native temperature/top_p use fixed64; fixed32 negative is legitimate structural coverage, not a captured native control. Three hot passes do not explain or prove repair of the original held38 timing symptom. Later metadata/package capture is separate"
+    },
+    "finalMergedCandidate": {
+      "sourceCommit": null,
+      "tree": "f7f26b2d5ee5388a089ab07a72f7372ed0068971",
+      "source": "usbox:/tmp/magpie-sdk-final-base-p2tiu0uf/source",
+      "sourceReceiptSHA256": "1c5ad12c8bf6774a73e8b89497250aae7e905fe790891384639113a58bc35009",
+      "coreBuildReceiptSHA256": "9ae108a4016c42c7cc693d1fa5d1817c2580a8fed383b56e548fc1f4f97b3234",
+      "binarySHA256": "9ddc4e4a076dbcc119e71b5c3b140253e8c419f3278dfadc5d8cdadd59c20adb",
+      "publicSDKSourceSHA256": "36f73768a1335fbf1210fd7033528031f70f2de72b3b182f57af7b0a954969b5",
+      "paidAdmissionSHA256": "9b04f613b6b0316fc5366a723b4be76777d576af072cb00ede259f0b8c2107ad",
+      "fixtureSHA256": "c2c58b5a3d1e2dc2b87a66c83c85990776bb11ffe8655b60d33439aa7c2408c3",
+      "librarySHA256": "017ebcccec33c936334853b6efbca9991e697d657bef620bbc296991040f3402",
+      "moduleInputSourceSHA256": "1ad5c8654766b8a323bcceed6497928680f0ebe752e1d33c05d1e4cd7a0b5ed1",
+      "evidence": "usbox:/tmp/magpie-devin-final-fixture-20261114.3miL8Zfd/fresh-host",
+      "exit": 0,
+      "seconds": 43.414,
+      "receiptSHA256": "8701d0fa5b67b24bf654276eb445a37ae9f2ac63d6aa1308630a580d4edcce9a",
+      "logSHA256": "dd4fdf4a5e4f42509192447233c1d520c965b76117aace1a776f22ab55ca8b8e",
+      "networkReceiptSHA256": "1515f2bc66724aad5cfd4dbdffc70a369fcb5ef983a0283fb4dcc820bedc2ef9",
+      "state": "one additional complete strict hot installed fixture passes; all10773 source paths unchanged, both paid arrivals, canceled measured usage in two rows and zero external requests. No new production change, future-commit attribution, broad claim or relabeling of c018 results"
+    },
+    "finalSDK9Compatibility": {
+      "moduleBaseCommit": "373ef8de35da5f1e1eaa048e2847217fd451d65a",
+      "moduleSourceCommit": null,
+      "testedImplementationSourceSHA256": "0eb3f976b3c50bd28c06f7ac0b3a959888e77b5c29090341f9c451df4dca72ea",
+      "moduleArchiveSHA256": "f5d01df95e0229f9aaed00c83476fabf0a4eb67e7fb533b7600a99f2a093c09f",
+      "redSourceSHA256": "350639a1643d31e4ddc5670b3c6a134effb5352ca6060b7163dfc59d112dee01",
+      "redEvidence": "usbox:/tmp/magpie-devin-decision-red.jibyzwAP",
+      "greenEvidence": "usbox:/tmp/magpie-devin-decision-green.A17gyfzE",
+      "publicSDKSourceSHA256": "36f73768a1335fbf1210fd7033528031f70f2de72b3b182f57af7b0a954969b5",
+      "hostCommit": "46756a48c9c9f204a8369638dc63cbcb83d02031",
+      "hostTree": "db40ddbf8944b54f9f689d444644af4c3bc76881",
+      "hostCaptureInventorySHA256": "066f893d54899199acaa849df30c7e78a9ea755b405e8316bda240b5995dd0a6",
+      "hostPhysicalInventorySHA256": "8031506ab47325fe0c2c6db6af0db8ed3373e822440568f6ae98d57030c5ed45",
+      "hostSourceArchiveSHA256": "e188abd5d115c7da3167a6296e7d07f9bd31766a738ea4e6326ff093e4a74a61",
+      "hostBinarySHA256": "32fbdeabd20ed3059f61a91f7614a51a2ac9b908b12dd637c204a82918a28256",
+      "librarySHA256": "017ebcccec33c936334853b6efbca9991e697d657bef620bbc296991040f3402",
+      "installedEvidence": "usbox:/tmp/magpie-devin-combined-accept-r3.46756a48",
+      "coldPaidEvidence": "usbox:/tmp/magpie-devin-cold-control.46756a48",
+      "originalHotFixtureSHA256": "75cb45a51970477dc4e89d02ccad0a1480710dc25e71d13883cacbeb518bfac7",
+      "coldFixtureSHA256": "511cc360c7603026bb0226e0fff43d89fd25ec4256d8c0571136f330c1762d50",
+      "state": "module/race20/vet/default build/native ABI green; installed identity/held read/real transition and Gemini4 green; unchanged cold paid fixture green. Original hot paid fixture exit1: five foreground200, readonly403, no paid arrival within38s, no measured paid rows; cleanup not-started receipts alone do not establish cause. No host edits, weakened admission, retries or historical RED relabeling"
+    },
+    "sdk19AccountTasks": {
+      "baseCommit": "ae957e5a8a77553a6cf6f484c8b58a69393f3887",
+      "sourceCommit": null,
+      "publicExportSourceSHA256": "1480770ac41c06f3f06051fd58e0b45d51bfc7f698d3a68d001249e8632794bd",
+      "sourceSHA256": "ca3c6c8ad9be659d5d507f91c39c198b69a5a5180fc8db86647943b7a4c2fda6",
+      "sourceArchiveSHA256": "5f6c8d17cad52fbf974091b716fd8731a885bb716afb4f9cac908ff95bad80ce",
+      "binarySHA256": "6d4ee4edd42f5e03f00b43190f8a7ed5592d6d550a0b56a2a96573240eb4531c",
+      "priorModelsCorrectedLibrarySHA256": "231584de44c9e047053cdd84b7d00a9aa177b0ac02341f0d78d13c7c49816d8e",
+      "moduleGatePublicExportSHA256": "dc4d6772b33459b59e4058bbdc8b3586547efe7c1ff896f173e1f58b9bc64e9b",
+      "moduleGateSourceSHA256": "92bc3c357cb124ea95160d2db4db8cab284e4cdd8779bd40663fc319b0eb4dc0",
+      "moduleGates": "usbox:/tmp/magpie-devin-agent-prior-green.kX58rZet",
+      "installedBuild": "usbox:/tmp/magpie-devin-cache-installed.1XbPmdbS",
+      "installedPaidAndPaired": "usbox:/tmp/magpie-devin-cache-installed-r8.qH9cX2Mk",
+      "installedRealTransitions": "usbox:/tmp/magpie-devin-cache-transition-r9.kT84eSDh",
+      "state": "priorModels module RED corrected; default-off/paid/paired24/real-transition gates pass with library231584 before Gemini; ordinary identity/no-op is actual RED after cosmetic ModelOptions label bumps revision and reopens duplicate AssignModel; held-noop not reached; hot external config CAS also exposes stale routing catalog; exact receipts and generic parent proposals in CACHE-KEEPALIVE-EVIDENCE.md"
+    },
+    "gemini041ModuleGates": {
+      "sourceCommit": null,
+      "moduleBaseCommit": "7f8fde6cc4de4bb5b3ebc4f4c9a3570312acc077",
+      "sourceSHA256": "dac520a0eb59fc7774cd6a540baea22ecc81c93c096a868f52340e42c453a88c",
+      "sourceArchiveSHA256": "a705c866f86090c522e9e2832fe5a37b5240fb944b551bdaf25ebbaede5216c0",
+      "sdkPublicExportSHA256": "999f9b2f2a2575d89c1a1a6dae7d7f284f950f9f89fa9e05450fdafb182d0816",
+      "evidence": "usbox:/tmp/magpie-devin-release-gates.bdnnBSq1",
+      "priorPortEvidence": "usbox:/tmp/magpie-devin-gemini-gates.42DiCEAZ",
+      "priorPortSourceSHA256": "f93d40aa7f0a4d0f9f5731644f4d37a1efc938c0b838396098a311dbb72a4f73",
+      "baselineRedEvidence": "usbox:/tmp/magpie-devin-gemini-red.DsPJcKNb",
+      "baselineRedSourceSHA256": "b96fff2eb9684d9cba18e67cc87df9ba503720d2d9bc75fcc0e35d8c2742aeb7",
+      "untypedOriginRedEvidence": "usbox:/tmp/magpie-devin-gemini-untyped.Od4KlCfa",
+      "untypedOriginRedSourceSHA256": "698d4e99e584dd01a06db6b58745996835b187a067ce28a7ee0b4460496a52d9",
+      "unmodifiedDonorTests": 7,
+      "donorArchiveSHA256": "f5e6c41bf5b081d5cba55978b295d85ac0a1c8e642fb2acb611ceade0ce30969",
+      "donorLogSHA256": "910961a39ce73d2778dc860ca67bfe32ffe99173aaa40c132d0e9c46218918cd",
+      "fixtureSHA256": "e4ff6e3b5134fe64f3d9761a98d3ddd1af0945ea6f7946fdfe01a9389ebd4162",
+      "state": "final strict-origin production Go: genuine donor four-case Chat/Messages oracle and actual untyped-origin RED-to-GREEN; all nine gates pass including cache/Gemini race3, full module, vet/build, nine provenance/distribution cases and unmodified donor7/7 with zero external attempts; later documentation/provenance reconciliation changes no tested Go; installed runtime identities and actual Messages host RED remain separate"
+    },
+    "finalInstalled08": {
+      "evidence": "usbox:/tmp/magpie-devin-release-install.cyABtIA0",
+      "moduleSourceSHA256": "dac520a0eb59fc7774cd6a540baea22ecc81c93c096a868f52340e42c453a88c",
+      "hostSourceCommit": null,
+      "hostSourceSHA256": "ca3c6c8ad9be659d5d507f91c39c198b69a5a5180fc8db86647943b7a4c2fda6",
+      "hostPublicExportSHA256": "1480770ac41c06f3f06051fd58e0b45d51bfc7f698d3a68d001249e8632794bd",
+      "hostBinarySHA256": "6d4ee4edd42f5e03f00b43190f8a7ed5592d6d550a0b56a2a96573240eb4531c",
+      "librarySHA256": "464489d54f5982f310821ebefb26704deb65f24ca20fe74161f75f28be1d6910",
+      "selectedGreen": ["default build", "paid/default-off/canceled measured usage", "paired24", "Gemini Chat JSON/SSE", "Claude Messages/signatures/history/cancel", "ordinary synthetic agent/bootstrap", "real model transitions"],
+      "knownHostReds": {
+        "cosmeticNoopDuplicateAssignModel": "usbox:/tmp/magpie-devin-cache-installed-r8.qH9cX2Mk/installed-identity-noop",
+        "hotConfigStaleCatalog": "usbox:/tmp/magpie-devin-cache-installed-r4.cGTF5MIO/installed-paid",
+        "geminiMessagesThinkingDisabled": "usbox:/tmp/magpie-devin-full-package.yApZGKVS/installed-gemini-oracle",
+        "geminiMessagesCausalProbe": "usbox:/tmp/magpie-devin-probe.giidVFmF",
+        "heldNoop": "not reached by that historical API9 identity fixture; current committed replay is recorded separately"
+      },
+      "compactEvidenceSHA256": "67d80918302190bcfcb65c18d2bfa5a0e3dc0f57cd935cafcb689f7cff5c8101",
+      "state": "historical pre-compatibility0.8 checkpoint: all selected gates exit0; its actual host REDs remain preserved. Current committed physical-host replay is recorded separately under finalSDK9Compatibility; broad acceptance is parent-owned"
+    },
+    "scopedCanonicalCandidate": {
+      "baseCommit": "9e88f10982a1d66c1b402fba27caddda8ac4ac4e",
+      "sourceCommit": null,
+      "redSourceSHA256": "e7f76ae2b81d8ce02de518040896cd050728cd750ff254180782fcfeb139a69d",
+      "redBinarySHA256": "4d1a10278620144adca17081690ed9e221c19ed291b1144cab564cf2961c75ab",
+      "sourceSHA256": "c43421772d425ffc60705d66c186b66c40173efee1583e7f864cce65f4e198aa",
+      "binarySHA256": "2fe733387f1f2ad54bfde1583b1b1d26216796cc706908f6decd5182eaffaeba",
+      "moduleCommit": "a045760bf2c116e6ad943f28290b4b407224e73f",
+      "libraries": {
+        "paired": "8fbb1835ebcb69c326855349cee1af2103fd50d1dfc111d8ef6d18b6c833d566",
+        "agent": "587521112655ff09cb35da04e5ccefbc5c28c096efac624ebf1552ba8f8b313f"
+      },
+      "evidence": "usbox:/tmp/magpie-devin-canonical.oWwRN68w",
+      "receiptArchiveSHA256": "c41e4426d9368160002617bcf6a9b5da76fb791fda4da26e2f1e46955618afab",
+      "completePatchSHA256": "89e0ab2a0987ead1447f4e731aefbd6c2d71a238943b232c2990f07a0132382e",
+      "state": "GREEN is exactly three existing-file corrective changes on tests-only RED; both added regression files identical; complete inventories unchanged after build/checks/installed replays; module production and installed scripts unchanged; four actual installed RED-to-GREEN cases and non-SDK/paired/no-op/real-transition controls pass; not final committed/upstream host acceptance"
+    },
+    "sdk18Snapshot": {
+      "baseCommit": "9e88f10982a1d66c1b402fba27caddda8ac4ac4e",
+      "sourceCommit": null,
+      "sourceSHA256": "277f939d2bf971728abef073db3593243f7370768ab2d2c549ec3977a9664fb0",
+      "binarySHA256": "a08f805ea7cf4665dfab70143eb2b2869b3ed547c7388fa91b96344217746de8",
+      "evidence": "usbox:/tmp/magpie-devin-api8.vK1K15Oc/r2",
+      "libraries": {
+        "paired": "8fbb1835ebcb69c326855349cee1af2103fd50d1dfc111d8ef6d18b6c833d566",
+        "agent": "587521112655ff09cb35da04e5ccefbc5c28c096efac624ebf1552ba8f8b313f",
+        "inbound": "3491b167bee764e3c305d94b0b1761df132ec2322128d40f723ceaaa85220e07"
+      },
+      "state": "own two-pass immutable API8 union capture; complete inventory unchanged by build; unit/race3/vet/native builds and16 installed gates green, four canonical acceptance reds and older-module Facts behavior red retained; not a source commit; exact commands/receipts in DELIVERY-EVIDENCE.md"
+    },
+    "initialSdk18Build": {
+      "sourceSHA256": "d6f34a6d73f7de2e868691d7afeddd00089a629455f9bf811367e963e42a0edc",
+      "sourceCommit": null,
+      "evidence": "usbox:/tmp/magpie-devin-api8.vK1K15Oc",
+      "state": "preserved actual host compile RED: outsideRead scope in internal/extension/manager.go; authoring module unit/race3/vet/builds pass; parent corrected shared source before the separate sdk18Snapshot capture; not a protocol red"
+    },
+    "sdk17Snapshot": {
+      "baseCommit": "9e88f10982a1d66c1b402fba27caddda8ac4ac4e",
+      "sourceCommit": null,
+      "sourceSHA256": "4c17a1a74eec69ab020c39661c0d02244452a8fdae049e9d4a24453b69337c63",
+      "binarySHA256": "42f77c642342f8b24d68d8b8fec89972037c1691d0b10392ce74031931d8a203",
+      "evidence": "usbox:/tmp/magpie-devin-final.sRO8tXBQ/v2",
+      "state": "own immutable capture of parent dirty SDK1.7 overlay; verified unchanged by build; not attributed to the base commit or mutable startup source"
+    },
+    "priorSdk17Snapshot": {
+      "sourceSHA256": "ca0d9878ee63be8e716903f1e19084d989eb14b4c036646280d69f6b161c9f9d",
+      "binarySHA256": "dabb6fb70a3679c7b399323069d1db80d9838925433e4f54bf432a7fead874b5",
+      "evidence": "usbox:/tmp/magpie-devin-final.sRO8tXBQ",
+      "state": "original module no-op/transition gates green; API7 module initially refused by the then-stale ^1.7 compatibility validator; preserved, not overwritten"
+    },
+    "scopedNoopCandidate": {
+      "sourceOrigin": "usbox:/tmp/magpie-startup-policy-znuo1uaa/source",
+      "evidence": "usbox:/tmp/magpie-devin-noop-9qcawfep",
+      "sourceCommit": null,
+      "sourceSHA256": "7c6cf2e03dad22d88cc04cbefe15183dd589ce0f4dc7566fd2e4e1e597b86022",
+      "helperSHA256": "110ffa7a7bfe7b75d70dcedc842aa066e83d7680b03229b3d8908e2cada7891a",
+      "binarySHA256": "09ce96f1286c642a1b953415ef1bfed215a27e78c40c26f0b206dee1419600bd",
+      "originalAgentLibrarySHA256": "22eefa631bb913a2e7ba1b74dd74045c62f78988b622edc6f75be4958bf69397",
+      "state": "own frozen copy hashed before/after build; original unchanged module; two gates green, same acceptance on d070 red; parent source may subsequently change"
+    },
+    "standardDistribution": {
+      "manifest": "src/magpie-agent.json",
+      "entrypoint": "./cmd/native-agent",
+      "command": "python3 scripts/build.py --output DISTRIBUTION",
+      "alias": "--agent",
+      "surface": "one native module includes inbound, outbound, request-policy, agent, auth, model, usage/Facts/diagnostics, finite bootstrap and default-off paid fresh-account cache tasks",
+      "compatibility": {"--paired-only": "src/magpie-plugin.json", "--inbound-only": "src/magpie-inbound.json"},
+      "sourceConstructors": "New/NewModule retain paired compatibility; standard packaged runtime registers NewAgent",
+      "testedPlatform": "linux/amd64",
+      "testedLibrarySHA256": "af90f1d3fdff103afdf8ef46740aac6c7e0b85f134e1754e8e6c14730a5623e0",
+      "priorSamplerLibrarySHA256": "017ebcccec33c936334853b6efbca9991e697d657bef620bbc296991040f3402",
+      "priorGeminiLibrarySHA256": "464489d54f5982f310821ebefb26704deb65f24ca20fe74161f75f28be1d6910",
+      "priorKeepaliveLibrarySHA256": "231584de44c9e047053cdd84b7d00a9aa177b0ac02341f0d78d13c7c49816d8e",
+      "evidence": "docs/history/DOMAIN-COMPLETION-EVIDENCE.md",
+      "historical07": {
+        "librarySHA256": "77717f491587f4f5fcb73ffa4f183b2fd1bb15e5fc8a8c95751c7d614cf6aab6",
+        "evidence": "usbox:/tmp/magpie-devin-default.S2EoN3BM/green-r2",
+        "state": "earlier full0.7 package passed nine installed fixtures including paired24, agent/bootstrap/cold CLI, Messages/history/Facts, no-op/held read and real transitions; these are not new API9 paid-task proofs"
+      },
+      "state": "standard0.8/API1.12 is the default artifact; explicit paired0.5 also requires API1.12/request-policy, while inbound0.2 retains API1.1 without request-policy. testedLibrarySHA256/evidence and prior library fields above retain historical domain-completion identities, not the current build. Current exact artifacts and author provenance checks are recorded under requestPolicy.currentEvidence; parent final combined replay is separate"
+    },
+    "variants": [
+      {"manifest": "src/magpie-plugin.json", "version": "0.5.0", "sdkMinimum": "1.12", "nativeABI": 1, "capabilities": ["inbound-codec", "outbound-executor", "account-auth", "model-discovery", "usage-reporter", "request-policy"], "surface": "explicit --paired-only artifact: paired native ingress, Chat and scoped Messages, auth/models/usage/Facts/diagnostics and request policy; no agent or bootstrap operations"},
+      {"manifest": "src/magpie-inbound.json", "version": "0.2.0", "sdkMinimum": "1.1", "nativeABI": 1, "capabilities": ["inbound-codec", "model-discovery"], "surface": "inbound-only canonical Chat/model converter; no account auth or provider"},
+      {"manifest": "src/magpie-agent.json", "version": "0.8.0", "sdkMinimum": "1.12", "nativeABI": 1, "capabilities": ["inbound-codec", "outbound-executor", "account-auth", "model-discovery", "usage-reporter", "agent-wiring", "module-rpc", "native-account-operations", "request-policy"], "surface": "standard default distribution: all paired features, request policy, agent/native bootstrap and default-off paid fresh-account cache tasks"}
+    ],
+    "auth": ["Explicit API key or one-use browser PKCE; explicit CLI redirects remain caller-managed", "First-account window uses a private per-instance 127.0.0.1:0/callback receiver and existing host browser/poll completion; no credential import, community plugin or native CLI auth dependency", "Canceled host flows cannot complete; bounded private receivers end on completion, deadline or instance disposal, with no new module-cancel API", "No recovered refresh/revoke endpoint; expiry requires sign-in and logout removes host state"],
+    "onboarding": {"guide":"docs/ONBOARDING.md","implementationReference":"1729055bb5c566903ce2adbcf97a7e1b78bd3dc1","callbackSource":"reference/crates/windsurf-api-client/src/oauth.rs","verification":"/tmp/magpie-devin-first-account-20261116","scope":"Existing public component lifetime/private State and host poll broker; no SDK API or donor pin change","limits":"Actual GUI HTTP and exec handlers plus native build; no rendered browser, new native load or live vendor sign-in"},
+    "notFull": [
+      "Original Cognition client/live-server parity, cache TTL, charges and current live model availability are not proven",
+      "Historical d070 bootstrap and dirty API9 cosmetic-noop reds remain preserved; current committed467 duplicate/no-op/held-read/real-transition gates pass with the typed decisionModels consumer",
+      "Canonical Messages and three history defects pass unchanged installed fixtures on scoped corrected sourcec434; current committed467 separately passes all four genuine Gemini Chat/Messages cases",
+      "Three strict hot-CAS paid repetitions pass; original467 no-paid and c018 held38 timing REDs remain preserved separately; the original held timing cause remains unknown and is not proven fixed",
+      "GetImageCaption, GetDevstralStream, managed-plugin mutations, partner-provider toggles and attribution remain unimplemented",
+      "Cloud ACP/session hosting, remote account delegation and ambiguous group-account selection are outside finite bootstrap",
+      "Literal native Basic gateway-key recognition remains a generic boundary; paid scheduling uses the public API9 account-task contract without retained Stream/credentials",
+      "API9 numeric quota uses present ACU amount/limit, signed overage micros, spans and plan-end resets; top-level plan/expiry DTOs are absent and no overage currency is inferred; paired API7 retains percentage-only metadata",
+      "Whole-host broad and final successor acceptance remain parent-owned; current candidate scoped replay is in DOMAIN-COMPLETION-EVIDENCE.md, earlier installed evidence in DELIVERY-EVIDENCE.md and historical bootstrap proof in NOOP-ACCEPTANCE.md",
+      "Discovered families/efforts/fast/priority/aliases resolve against the selected current account; SDK-unrepresentable label-only family IDs retain concrete UID/display name. Static inventory fallback, schema weakening, tool-definition cache marks, intermediate result marks and 1h TTL are not implemented or guessed; remaining boundaries are explicit in DONOR-MATRIX.md",
+      "Optional cache warming skips unsupported native controls and stops after any transport/protocol/uncertain failure; donor retry after initial502 is intentionally not reproduced"
+    ],
+    "provenance": ["Read-only donors are not installed packages or build/runtime dependencies", "Maintained CLIProxy committed 842cedec8 is the current comparison; its dirty merge files are excluded", "Old CLIProxyAPI-up-u2 7638884b is historical evidence, not the current maintained source", "Default repository lock describes the full0.8/API9 standard distribution; the builder projects identity/version/SDK floor for explicit paired-only and inbound-only compatibility artifacts", "The existing native SDK transitive golang.org/x/sys v0.49.0 and exact host checksums are recorded for offline readonly builds"]
+  }
+}

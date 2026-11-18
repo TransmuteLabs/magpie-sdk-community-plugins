@@ -1,0 +1,7 @@
+/dist/
+/go.work.sum
+**/__pycache__/
+**/node_modules/
+**/.pytest_cache/
+**/*.pyc
+.DS_Store

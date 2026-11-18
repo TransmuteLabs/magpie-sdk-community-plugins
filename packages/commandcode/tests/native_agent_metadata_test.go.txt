@@ -1,0 +1,189 @@
+package agent
+
+import (
+	"context"
+	"encoding/json"
+	"flag"
+	"os"
+	"path/filepath"
+	"testing"
+	"time"
+
+	"github.com/yetone/magpie/internal/catalog"
+	"github.com/yetone/magpie/internal/extension"
+	"github.com/yetone/magpie/internal/provider"
+)
+
+var commandCodeMetadataDistribution = flag.String("commandcode-metadata-distribution", "", "")
+
+func TestCommandCodeNativeAgentEffectiveMetadata(t *testing.T) {
+	if *commandCodeMetadataDistribution == "" {
+		t.Fatal("the default packaged native CommandCode module is required")
+	}
+	home := t.TempDir()
+	for _, name := range []string{"HOME", "USERPROFILE"} {
+		t.Setenv(name, home)
+	}
+	t.Setenv("XDG_CONFIG_HOME", filepath.Join(home, "config"))
+	t.Setenv("XDG_CACHE_HOME", filepath.Join(home, "cache"))
+	t.Setenv("APPDATA", filepath.Join(home, "appdata"))
+	manager := extension.Default()
+	t.Cleanup(func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		if err := manager.Close(ctx); err != nil {
+			t.Error(err)
+		}
+	})
+	if _, err := manager.Install(t.Context(), *commandCodeMetadataDistribution); err != nil {
+		t.Fatal(err)
+	}
+	if err := provider.Save(provider.Provider{ID: "metadata", Name: "Metadata", Chat: "http://127.0.0.1:1/v1", Key: "fixture",
+		Models: []string{"wide", "unknown", "empty"}}); err != nil {
+		t.Fatal(err)
+	}
+	if err := catalog.SaveLive("metadata", "http://127.0.0.1:1/v1", []catalog.Model{
+		{ID: "wide", Context: 400000, Output: 500000, Efforts: []string{"none", "low", "medium", "high"}, DefaultEffort: "medium"},
+		{ID: "unknown"},
+		{ID: "empty", Efforts: []string{}},
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if err := provider.Save(provider.Provider{ID: "decision-metadata", Name: "Decision metadata",
+		Decide: "http://127.0.0.1:1/v1", Key: "fixture", Models: []string{"typesafe/jev"}}); err != nil {
+		t.Fatal(err)
+	}
+	if err := provider.SaveGroup(provider.Group{ID: "metadata-judges", Name: "Metadata judges",
+		Members: []string{"decision-metadata/typesafe/jev"}}); err != nil {
+		t.Fatal(err)
+	}
+	if decisions := pluggedDecisionModels("commandcode-sdk"); len(decisions) != 2 {
+		t.Fatalf("native fixture lost its separate decision provider/group catalog: %+v", decisions)
+	}
+	dir := filepath.Join(home, ".commandcode")
+	settingsPath, providersPath := filepath.Join(dir, "settings.json"), filepath.Join(dir, "providers.json")
+	if err := os.MkdirAll(dir, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(settingsPath, []byte(`{"model":"vendor/original","theme":"dark"}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(providersPath, []byte(`{"provider":{"mine":{"userNote":"keep"}}}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	read := func() (map[string]any, map[string]any, map[string]any) {
+		t.Helper()
+		var settings, providers map[string]any
+		raw, err := os.ReadFile(settingsPath)
+		if err != nil || json.Unmarshal(raw, &settings) != nil {
+			t.Fatal("invalid native settings", err)
+		}
+		raw, err = os.ReadFile(providersPath)
+		if err != nil || json.Unmarshal(raw, &providers) != nil {
+			t.Fatal("invalid native provider config", err)
+		}
+		root := providers["provider"].(map[string]any)
+		if root["mine"].(map[string]any)["userNote"] != "keep" || settings["theme"] != "dark" {
+			t.Fatal("native agent changed unrelated user configuration")
+		}
+		models := root["magpie"].(map[string]any)["models"].(map[string]any)
+		if len(models) != 3 || models["decision-metadata/typesafe/jev"] != nil || models["group/metadata-judges"] != nil {
+			t.Fatalf("native decision discovery changed the conversational catalog: %+v", models)
+		}
+		return settings, providers, models
+	}
+	a, err := Find("commandcode-sdk")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := a.ConnectHow(); err != nil {
+		t.Fatal(err)
+	}
+	settings, providers, models := read()
+	wide := models["metadata/wide"].(map[string]any)
+	if wide["contextWindow"] != float64(400000) || wide["maxOutput"] != float64(400000) ||
+		len(wide["reasoningEfforts"].([]any)) != 4 || wide["reasoningEfforts"].([]any)[0] != "off" {
+		t.Fatalf("ordinary native Connect lost effective model facts: %+v", wide)
+	}
+	if settings["reasoningEffort"].(map[string]any)["magpie/metadata/wide"] != "medium" ||
+		models["metadata/unknown"].(map[string]any)["maxOutput"] != nil ||
+		models["metadata/empty"].(map[string]any)["reasoning"] != false {
+		t.Fatal("native metadata invented unknown facts or lost the default/no-level distinction")
+	}
+	if !a.Wired() {
+		t.Fatal("ordinary native inspection lost its gateway/model options")
+	}
+	if err := provider.SetModelOutput("metadata/wide", 16384); err != nil {
+		t.Fatal(err)
+	}
+	if err := provider.SetModelEfforts("metadata/wide", []string{"none", "low", "high"}); err != nil {
+		t.Fatal(err)
+	}
+	SyncCatalog()
+	settings, providers, models = read()
+	wide = models["metadata/wide"].(map[string]any)
+	if wide["maxOutput"] != float64(16384) || settings["reasoningEffort"] != nil {
+		t.Fatal("ordinary native sync ignored a model edit or retained a removed default")
+	}
+	wide["maxOutput"] = 4096
+	raw, _ := json.Marshal(providers)
+	if err := os.WriteFile(providersPath, raw, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := a.Apply("model", "magpie/metadata/wide"); err != nil {
+		t.Fatal(err)
+	}
+	if err := a.Apply("effort", "low"); err != nil {
+		t.Fatal(err)
+	}
+	if err := a.Apply("effort", "medium"); err == nil {
+		t.Fatal("native set accepted an effort removed by the ordinary model edit")
+	}
+	for _, output := range []int{32768, 65536} {
+		if err := provider.SetModelOutput("metadata/wide", output); err != nil {
+			t.Fatal(err)
+		}
+		SyncCatalog()
+		settings, _, models = read()
+		if models["metadata/wide"].(map[string]any)["maxOutput"] != float64(4096) ||
+			settings["reasoningEffort"].(map[string]any)["magpie/metadata/wide"] != "low" {
+			t.Fatal("repeated native sync adopted a user limit or reset a user-selected effort")
+		}
+	}
+	if err := a.Apply("effort", "none"); err != nil {
+		t.Fatal(err)
+	}
+	SyncCatalog()
+	settings, _, _ = read()
+	if settings["reasoningEffort"].(map[string]any)["magpie/metadata/wide"] != "off" || !a.Wired() {
+		t.Fatal("ordinary native effort edit or inspection lost the vendor off spelling")
+	}
+	if err := a.Apply("effort", ""); err != nil {
+		t.Fatal(err)
+	}
+	SyncCatalog()
+	settings, _, _ = read()
+	if settings["reasoningEffort"] != nil {
+		t.Fatal("ordinary native sync replaced Auto with a default")
+	}
+	if err := a.Apply("effort", "none"); err != nil {
+		t.Fatal(err)
+	}
+	if err := a.Disconnect(); err != nil {
+		t.Fatal(err)
+	}
+	raw, err = os.ReadFile(settingsPath)
+	if err != nil || json.Unmarshal(raw, &settings) != nil || settings["model"] != "vendor/original" ||
+		settings["theme"] != "dark" || settings["reasoningEffort"] != nil {
+		t.Fatal("native disconnect did not preserve original settings", err)
+	}
+	raw, err = os.ReadFile(providersPath)
+	if err != nil || json.Unmarshal(raw, &providers) != nil {
+		t.Fatal("native disconnect produced invalid provider config", err)
+	}
+	root := providers["provider"].(map[string]any)
+	kept := root["magpie"].(map[string]any)["models"].(map[string]any)["metadata/wide"].(map[string]any)
+	if kept["maxOutput"] != float64(4096) || kept["name"] != nil {
+		t.Fatalf("native disconnect removed a user limit or retained generated metadata: %+v", kept)
+	}
+}

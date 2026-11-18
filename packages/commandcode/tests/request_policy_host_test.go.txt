@@ -1,0 +1,373 @@
+package gateway
+
+import (
+	"context"
+	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
+	"flag"
+	"fmt"
+	"io"
+	"net"
+	"net/http"
+	"net/http/httptest"
+	"net/url"
+	"strings"
+	"sync"
+	"testing"
+	"time"
+
+	extensionhost "github.com/yetone/magpie/internal/extension"
+	"github.com/yetone/magpie/internal/provider"
+	"github.com/yetone/magpie/internal/settings"
+	"github.com/yetone/magpie/internal/usage"
+)
+
+var solDistribution = flag.String("sol-distribution", "", "")
+var solPackage = flag.String("sol-package", "", "")
+var solScenario = flag.String("sol-scenario", "", "")
+var solBaseline = flag.Bool("sol-baseline", false, "")
+var solEndpoint = flag.String("sol-endpoint", "", "")
+
+func solOpenCodeAccountID(user string) string {
+	digest := sha256.Sum256([]byte("OpenCode Console\x00opencode-go\x00" + user + "\x00"))
+	return hex.EncodeToString(digest[:16])
+}
+
+func TestSOLRequestPolicyOrdinaryFront(test *testing.T) {
+	fresh(test)
+	test.Setenv("MAGPIE_NO_ACCOUNTS", "")
+	test.Setenv("MAGPIE_ADDR", "")
+	command := *solPackage == "commandcode"
+	scenario := *solScenario
+	decision := strings.HasPrefix(scenario, "jev-")
+	var mutex sync.Mutex
+	var sends []string
+	var reads int
+	refused := make(chan struct{}, 1)
+	upstream := httptest.NewUnstartedServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		writer.Header().Set("Content-Type", "application/json")
+		if request.URL.Path == "/alpha/billing/subscriptions" {
+			mutex.Lock()
+			reads++
+			mutex.Unlock()
+			if scenario == "cancel-read" {
+				writer.Header().Set("Retry-After", "2")
+				writer.WriteHeader(503)
+				io.WriteString(writer, `{"error":{"type":"temporary","message":"fixture read refused"}}`)
+				select {
+				case refused <- struct{}{}:
+				default:
+				}
+				return
+			}
+			io.WriteString(writer, `{"data":{"planId":"individual-pro","status":"active"}}`)
+			return
+		}
+		switch request.URL.Path {
+		case "/provider/v1/models":
+			io.WriteString(writer, `{"data":[{"id":"fixture","supported_endpoints":["/chat/completions"]},{"id":"independent","supported_endpoints":["/chat/completions"]}]}`)
+			return
+		case "/alpha/billing/credits":
+			io.WriteString(writer, `{"credits":{"monthlyCredits":100}}`)
+			return
+		case "/zen/go/v1/usage":
+			io.WriteString(writer, `{"usage":{"rolling":{"percent":1}}}`)
+			return
+		}
+		if !strings.HasSuffix(request.URL.Path, "/chat/completions") && !(decision && request.URL.Path == "/provider/v1/systemone") {
+			test.Errorf("unexpected vendor route: %s", request.URL.Path)
+			writer.WriteHeader(500)
+			return
+		}
+		key := strings.TrimPrefix(request.Header.Get("Authorization"), "Bearer ")
+		if key != "policy-A" && key != "policy-B" {
+			test.Error("host did not use its selected synthetic credentials")
+		}
+		if decision && (request.Header.Get("x-command-code-version") != "1.88.2" ||
+			request.Header.Get("x-api-key") != "" || request.Header.Get("Cookie") != "") {
+			test.Error("Jev lost its original selected-account CLI identity")
+		}
+		mutex.Lock()
+		sends = append(sends, key)
+		count := len(sends)
+		mutex.Unlock()
+		switch scenario {
+		case "ambiguous":
+			writer.WriteHeader(429)
+			if command {
+				io.WriteString(writer, `{"error":{"type":"payment","message":"PREMIUM_CREDITS_EXHAUSTED: insufficient credits"},"accepted":true}`)
+			} else {
+				io.WriteString(writer, `{"error":{"type":"GoUsageLimitError","message":"Go usage limit exceeded"},"accepted":true}`)
+			}
+			return
+		case "transport":
+			connection, _, err := writer.(http.Hijacker).Hijack()
+			if err != nil {
+				test.Error(err)
+				return
+			}
+			connection.Close()
+			return
+		case "uncertain", "jev-uncertain":
+			writer.Header().Set("Content-Length", "4096")
+			io.WriteString(writer, `{"choices":[`)
+			return
+		case "output":
+			writer.Header().Set("Content-Type", "text/event-stream")
+			io.WriteString(writer, "data: {\"choices\":[{\"index\":0,\"delta\":{\"content\":\"paid output\"}}]}\n\n")
+			return
+		}
+		if scenario == "long-delay" || scenario == "budget" || scenario == "model-budget" ||
+			scenario == "request-terminal" || scenario == "content-terminal" ||
+			scenario == "jev-budget" || scenario == "jev-request-terminal" || scenario == "jev-content-terminal" ||
+			count == 1 && !decision {
+			writer.Header().Set("Retry-After", "3600")
+			writer.WriteHeader(429)
+			if command {
+				io.WriteString(writer, `{"error":{"type":"payment","message":"PREMIUM_CREDITS_EXHAUSTED: insufficient credits"}}`)
+			} else {
+				io.WriteString(writer, `{"error":{"type":"GoUsageLimitError","message":"Go usage limit exceeded"}}`)
+			}
+			return
+		}
+		if decision {
+			io.WriteString(writer, `{"model":"typesafe/jev","answers":{"ok":{"type":"noul","noul":0.93}},"usage":{"input_tokens":41,"output_tokens":3}}`)
+			return
+		}
+		fmt.Fprintf(writer, `{"id":"paid","object":"chat.completion","model":"fixture","choices":[{"index":0,"message":{"role":"assistant","content":%q},"finish_reason":"stop"}],"usage":{"prompt_tokens":3,"completion_tokens":2}}`, key)
+	}))
+	if !command {
+		vendor := http.NewServeMux()
+		vendor.Handle("/zen/", upstream.Config.Handler)
+		vendor.Handle("/inference/", upstream.Config.Handler)
+		upstream.Config.Handler = vendor
+		location, err := url.Parse(*solEndpoint)
+		if err != nil || location.Hostname() != "127.0.0.1" {
+			test.Fatal("fixture requires its compiled loopback endpoint")
+		}
+		upstream.Listener.Close()
+		upstream.Listener, err = net.Listen("tcp", location.Host)
+		if err != nil {
+			test.Fatal(err)
+		}
+	}
+	upstream.Start()
+	defer upstream.Close()
+	if !command {
+		probe := &http.Client{Timeout: time.Second}
+		response, err := probe.Get(upstream.URL + "/")
+		if err != nil {
+			test.Fatal(err)
+		}
+		response.Body.Close()
+		if response.StatusCode != http.StatusNotFound {
+			test.Fatal("ambient root probe reached the vendor fixture", response.StatusCode)
+		}
+	}
+	test.Setenv("MAGPIE_OPENCODE_FIXTURE_URL", upstream.URL)
+	test.Setenv("MAGPIE_OPENCODE_FIXTURE_VARIANT", "window")
+	manager := extensionhost.Default()
+	test.Cleanup(func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		if err := manager.Close(ctx); err != nil {
+			test.Error(err)
+		}
+	})
+	entry, err := manager.Install(test.Context(), *solDistribution)
+	if err != nil {
+		test.Fatal(err)
+	}
+	if !*solBaseline && entry.Manifest.Contract.Version.Minor != 12 || entry.Manifest.Runtime != "native" {
+		test.Fatal("fixture did not install the actual API1.12 native module")
+	}
+	config := map[string]any{"projectId": "global"}
+	subscription := "opencode-go"
+	model := "deepseek-v4.1-flash"
+	if command {
+		config = map[string]any{"apiURL": upstream.URL, "studioURL": upstream.URL, "workingDirectory": "/synthetic"}
+		subscription, model = "commandcode-native", "fixture"
+	}
+	if decision {
+		model = "typesafe/jev"
+	}
+	values, _ := json.Marshal(config)
+	if _, err := manager.CompareAndSwapModuleConfig(test.Context(), entry.Manifest.ID, "0", values); err != nil {
+		test.Fatal(err)
+	}
+	for _, key := range []string{"policy-A", "policy-B"} {
+		id := key
+		auth := map[string]any{"apiKey": key}
+		if !command {
+			auth = map[string]any{"access": key, "refresh": "synthetic-refresh", "expires": time.Now().Add(time.Hour),
+				"userId": key, "email": key + "@fixture.invalid"}
+			id = solOpenCodeAccountID(key)
+		}
+		encoded, _ := json.Marshal(auth)
+		if _, err := manager.Store().SaveAccount(extensionhost.Account{Plugin: entry.Manifest.ID, Provider: subscription,
+			ID: id, Auth: encoded, ExpiresAt: time.Now().Add(time.Hour).UnixMilli()}, 0); err != nil {
+			test.Fatal(err)
+		}
+	}
+	provider.Changed()
+	providerID := provider.ExtensionProviderID(entry.Manifest.ID, subscription)
+	if decision {
+		accounts, err := provider.ExtensionProviders()
+		if err != nil {
+			test.Fatal(err)
+		}
+		for _, account := range accounts {
+			if _, err := account.Fetch(test.Context()); err != nil {
+				test.Fatal("ordinary Jev catalog discovery failed", err)
+			}
+		}
+		provider.Changed()
+	}
+	selected, err := provider.Find(providerID)
+	if err != nil {
+		test.Fatal(err)
+	}
+	selected.Routing = "order"
+	if scenario == "smart" {
+		selected.Routing = "smart"
+	}
+	if err := provider.Save(*selected); err != nil {
+		test.Fatal(err)
+	}
+	current := settings.Load()
+	policy := `{"requestPolicy":{"defaults":{"maxRetries":1,"maxTotalRetries":3,"baseDelayMs":0,"maxDelayMs":7200000,"shortWaitMs":0,"maxElapsedMs":7200000}}}`
+	if scenario == "budget" || scenario == "jev-budget" {
+		policy = `{"requestPolicy":{"defaults":{"maxTotalRetries":0,"baseDelayMs":0,"shortWaitMs":0}}}`
+	}
+	if scenario == "model-budget" {
+		policy = `{"requestPolicy":{"defaults":{"maxTotalRetries":3,"baseDelayMs":0,"shortWaitMs":0,"models":{"` + model + `":{"maxTotalRetries":0}}}}}`
+	}
+	if scenario == "other-model-budget" {
+		policy = `{"requestPolicy":{"defaults":{"maxTotalRetries":3,"baseDelayMs":0,"shortWaitMs":0,"models":{"unselected-model":{"maxTotalRetries":0}}}}}`
+	}
+	if scenario == "request-terminal" || scenario == "content-terminal" || scenario == "jev-request-terminal" || scenario == "jev-content-terminal" {
+		class := "request-refusal"
+		if scenario == "content-terminal" || scenario == "jev-content-terminal" {
+			class = "content-refusal"
+		}
+		policy = `{"requestPolicy":{"defaults":{"rules":[{"id":"sol.operator-terminal","status":[429],"class":"` + class + `","scope":"request"}]}}}`
+	}
+	if scenario == "cancel-read" {
+		policy = `{"requestPolicy":{"defaults":{"maxRetries":2,"maxTotalRetries":3,"baseDelayMs":0,"shortWaitMs":5000,"maxDelayMs":5000,"rules":[{"id":"sol.read","status":[503],"class":"transient-outage","scope":"account"}]}}}`
+	}
+	if err := json.Unmarshal([]byte(policy), &current); err != nil {
+		test.Fatal(err)
+	}
+	if err := settings.Save(current); err != nil {
+		test.Fatal(err)
+	}
+	observer := &fakeObserver{watch: true}
+	test.Cleanup(usage.Observe(observer))
+	server := New()
+	defer server.idle.stop()
+	ctx, cancel := context.WithCancel(test.Context())
+	defer cancel()
+	var joined chan struct{}
+	if scenario == "cancel-read" {
+		joined = make(chan struct{})
+		go func() {
+			defer close(joined)
+			select {
+			case <-refused:
+				timer := time.NewTimer(150 * time.Millisecond)
+				defer timer.Stop()
+				select {
+				case <-timer.C:
+					cancel()
+				case <-ctx.Done():
+				}
+			case <-ctx.Done():
+			}
+		}()
+	}
+	stream := scenario == "output"
+	body := fmt.Sprintf(`{"model":%q,"messages":[{"role":"user","content":"policy fixture"}],"stream":%t}`, providerID+"/"+model, stream)
+	path := "/v1/chat/completions"
+	if decision {
+		path = "/v1/systemone"
+		body = fmt.Sprintf(`{"model":%q,"state":{"text":"ping"},"questions":{"ok":{"type":"noul","instructions":"Is this a test?"}}}`, providerID+"/"+model)
+		if scenario == "jev-decisions" {
+			path = "/v1/decisions"
+			body = fmt.Sprintf(`{"model":%q,"input":"ping","questions":[{"name":"ok","type":"predicate","instructions":"Is this a test?"}]}`, providerID+"/"+model)
+		}
+	}
+	request := httptest.NewRequest(http.MethodPost, path, strings.NewReader(body)).WithContext(ctx)
+	request.RemoteAddr = "127.0.0.1:23456"
+	response := httptest.NewRecorder()
+	started := time.Now()
+	server.Front().ServeHTTP(response, request)
+	if joined != nil {
+		cancel()
+		<-joined
+	}
+	mutex.Lock()
+	actual, readCount := append([]string(nil), sends...), reads
+	mutex.Unlock()
+	switch scenario {
+	case "jev-systemone", "jev-decisions":
+		if response.Code != 200 || len(actual) != 1 || !strings.Contains(response.Body.String(), "0.93") {
+			test.Fatalf("ordinary Jev decision failed: status=%d sends=%v body=%s", response.Code, actual, response.Body)
+		}
+	case "sibling", "smart", "other-model-budget":
+		if response.Code != 200 || len(actual) != 2 || actual[0] == actual[1] {
+			test.Fatalf("eligible sibling was not selected: status=%d sends=%v body=%s", response.Code, actual, response.Body)
+		}
+	case "long-delay":
+		if response.Code < 400 || len(actual) != 2 || response.Header().Get("Retry-After") == "" || time.Since(started) > 15*time.Second {
+			test.Fatalf("long refusal was shortened or blocked: status=%d sends=%v headers=%v", response.Code, actual, response.Header())
+		}
+	case "budget", "model-budget", "request-terminal", "content-terminal", "jev-budget", "jev-request-terminal", "jev-content-terminal":
+		if response.Code < 400 || len(actual) != 1 {
+			test.Fatalf("terminal/scope/budget enumerated accounts: status=%d sends=%v body=%s", response.Code, actual, response.Body)
+		}
+	case "transport", "uncertain", "output", "ambiguous", "jev-uncertain":
+		if len(actual) != 1 || response.Code == 200 && scenario != "output" {
+			test.Fatalf("accepted or uncertain work replayed: status=%d sends=%v body=%s", response.Code, actual, response.Body)
+		}
+	case "cancel-read":
+		if len(actual) != 0 || readCount != 1 || ctx.Err() == nil {
+			test.Fatalf("canceled read permit dispatched work: sends=%v reads=%d error=%v", actual, readCount, ctx.Err())
+		}
+	default:
+		test.Fatal("unknown scenario", scenario)
+	}
+	if len(server.Recent()) != 1 {
+		test.Fatal("ordinary request logging was lost", server.Recent())
+	}
+	rows := usage.Load(time.Time{})
+	if len(rows) != 1 {
+		test.Fatal("ordinary usage ledger was lost or duplicated", rows)
+	}
+	if scenario == "jev-systemone" || scenario == "jev-decisions" {
+		if rows[0].Input != 41 || rows[0].Output != 3 || server.Recent()[0].Usage.Input != 41 || server.Recent()[0].Usage.Output != 3 {
+			test.Fatal("ordinary Jev usage was lost or counted twice", rows)
+		}
+	}
+	if scenario == "sibling" || scenario == "smart" || scenario == "other-model-budget" {
+		expectedType := "GoUsageLimitError"
+		if command {
+			expectedType = "payment"
+		}
+		server.trace.mu.Lock()
+		if len(server.trace.routes) != 1 || len(server.trace.routes[0].Tries) != 2 {
+			server.trace.mu.Unlock()
+			test.Fatal("ordinary trace lost actual attempts")
+		}
+		tries := server.trace.routes[0].Tries
+		first, last := tries[0].UpstreamFailure, tries[1].UpstreamFailure
+		server.trace.mu.Unlock()
+		if first != (usage.UpstreamFailure{Status: 429, Type: expectedType}) ||
+			last != (usage.UpstreamFailure{}) || rows[0].UpstreamFailure != (usage.UpstreamFailure{}) ||
+			server.Recent()[0].UpstreamFailure != (usage.UpstreamFailure{}) {
+			test.Fatalf("original refusal observation left its actual try: first=%+v last=%+v row=%+v", first, last, rows[0].UpstreamFailure)
+		}
+	}
+	test.Logf("receipt package=%s scenario=%s status=%d sends=%v reads=%d rows=%d elapsed=%s",
+		*solPackage, scenario, response.Code, actual, readCount, len(usage.Load(time.Time{})), time.Since(started))
+}

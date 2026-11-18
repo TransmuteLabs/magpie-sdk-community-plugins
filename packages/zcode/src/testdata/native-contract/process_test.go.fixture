@@ -1,0 +1,435 @@
+package cli
+
+import (
+	"context"
+	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
+	"errors"
+	"io/fs"
+	"os"
+	"path/filepath"
+	"slices"
+	"strconv"
+	"strings"
+	"testing"
+	"time"
+
+	"github.com/yetone/magpie/internal/agent"
+	"github.com/yetone/magpie/internal/extension"
+	sdk "github.com/yetone/magpie/pkg/extension"
+)
+
+type zcodeNativeReply struct {
+	raw json.RawMessage
+	err error
+}
+
+func zcodeNativeAccount(t *testing.T, fixture *zcodeConnectedFixture, key string) extension.Account {
+	t.Helper()
+	digest := sha256.Sum256([]byte(strings.Join([]string{"zai", "legacy-key", key, "", "", ""}, "\x00")))
+	auth, _ := json.Marshal(map[string]string{"site": "zai", "kind": "legacy-key", "key": key,
+		"userId": "synthetic-user", "device": "synthetic-native-device"})
+	account, err := fixture.manager.Store().SaveAccount(extension.Account{
+		Plugin: "zcode", Provider: "zcode", ID: "zcode-" + hex.EncodeToString(digest[:16]), Auth: auth,
+	}, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return account
+}
+
+func zcodeProcessInstall(t *testing.T, mode string) (*zcodeConnectedFixture, sdk.Scope) {
+	t.Helper()
+	fixture := zcodeConnectedInstall(t, false)
+	values, _ := json.Marshal(map[string]any{"dataDir": filepath.Join(fixture.home, "controller"),
+		"nativeWorkspace": map[string]string{"workspacePath": fixture.cwd, "workspaceKey": "workspace-1"}})
+	config, err := fixture.manager.ModuleConfig(t.Context(), "zcode")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := fixture.manager.CompareAndSwapModuleConfig(t.Context(), "zcode", config.Version, values); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(fixture.home, "peer-case"), []byte(mode), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	account := zcodeNativeAccount(t, fixture, "synthetic-native-key")
+	zcodeConnectProfile(t)
+	return fixture, sdk.Scope{Plugin: "zcode", Provider: "zcode", Account: account.ID, Generation: account.Generation,
+		Session: "session-9", Operation: "native-run", Attempt: 1}
+}
+
+func zcodeNativeCall(ctx context.Context, fixture *zcodeConnectedFixture, scope sdk.Scope) zcodeNativeReply {
+	input := json.RawMessage(`{"sessionId":"session-9","commandId":"cmd-send-1","model":"native-fixture/fixture-model","text":"fixture"}`)
+	raw, err := fixture.manager.Call(ctx, "zcode", sdk.MethodModuleCall, scope,
+		sdk.ModuleCallRequest{Action: "native.run", Input: input}, nil)
+	return zcodeNativeReply{raw: raw, err: err}
+}
+
+func zcodeNativeAudit(t *testing.T, fixture *zcodeConnectedFixture) []map[string]json.RawMessage {
+	t.Helper()
+	body, err := os.ReadFile(fixture.log)
+	if os.IsNotExist(err) {
+		return nil
+	}
+	if err != nil {
+		t.Fatal(err)
+	}
+	var rows []map[string]json.RawMessage
+	lines := strings.Split(string(body), "\n")
+	for _, line := range lines[:len(lines)-1] {
+		var row map[string]json.RawMessage
+		if json.Unmarshal([]byte(line), &row) != nil {
+			t.Fatal("invalid synthetic native audit", line)
+		}
+		rows = append(rows, row)
+	}
+	return rows
+}
+
+func zcodeNativeCount(t *testing.T, fixture *zcodeConnectedFixture, kind string) int {
+	t.Helper()
+	count := 0
+	for _, row := range zcodeNativeAudit(t, fixture) {
+		if string(row["kind"]) == `"`+kind+`"` {
+			count++
+		}
+	}
+	return count
+}
+
+func zcodeNativeWait(t *testing.T, fixture *zcodeConnectedFixture, kind string) {
+	t.Helper()
+	deadline := time.Now().Add(15 * time.Second)
+	for time.Now().Before(deadline) {
+		if zcodeNativeCount(t, fixture, kind) > 0 {
+			return
+		}
+		time.Sleep(20 * time.Millisecond)
+	}
+	t.Fatal("synthetic native peer did not reach bounded phase", kind, zcodeNativeAudit(t, fixture))
+}
+
+func zcodeNativeJoined(t *testing.T, fixture *zcodeConnectedFixture, scope sdk.Scope) {
+	t.Helper()
+	joined := false
+	err := filepath.WalkDir(fixture.home, func(path string, entry fs.DirEntry, walkErr error) error {
+		if walkErr != nil || entry.IsDir() || filepath.Base(filepath.Dir(path)) != "processes" {
+			return walkErr
+		}
+		body, err := os.ReadFile(path)
+		if err != nil {
+			return err
+		}
+		var receipt struct {
+			Scope   sdk.Scope `json:"scope"`
+			Recipe  string    `json:"recipe"`
+			Profile string    `json:"profile"`
+			Joined  bool      `json:"joined"`
+		}
+		if json.Unmarshal(body, &receipt) == nil && receipt.Scope.Operation == scope.Operation {
+			if receipt.Scope != scope || receipt.Recipe != "native.run" || receipt.Profile != "zcode-native" || !receipt.Joined {
+				t.Fatalf("actual owned process lost its scope or joined receipt: %s", body)
+			}
+			joined = true
+		}
+		return nil
+	})
+	if err != nil || !joined {
+		t.Fatal("actual owned native child has no joined terminal receipt", err)
+	}
+}
+
+func zcodeNativeNoRepeat(t *testing.T, fixture *zcodeConnectedFixture, scope sdk.Scope) {
+	t.Helper()
+	spawns, sends := zcodeNativeCount(t, fixture, "spawn"), zcodeNativeCount(t, fixture, "send")
+	scope.Operation = "native-replay-probe"
+	result := zcodeNativeCall(t.Context(), fixture, scope)
+	if result.err == nil || zcodeNativeCount(t, fixture, "spawn") != spawns ||
+		zcodeNativeCount(t, fixture, "send") != sends {
+		t.Fatalf("durable native intent was replayed: err=%v result=%s", result.err, result.raw)
+	}
+}
+
+func zcodeNativeNoReplacement(t *testing.T, fixture *zcodeConnectedFixture, scope sdk.Scope) {
+	t.Helper()
+	spawns, sends := zcodeNativeCount(t, fixture, "spawn"), zcodeNativeCount(t, fixture, "send")
+	scope.Operation = "native-replacement-probe"
+	input := json.RawMessage(`{"sessionId":"session-9","commandId":"another-command","model":"native-fixture/fixture-model","text":"fixture"}`)
+	raw, err := fixture.manager.Call(t.Context(), "zcode", sdk.MethodModuleCall, scope,
+		sdk.ModuleCallRequest{Action: "native.run", Input: input}, nil)
+	if err == nil || zcodeNativeCount(t, fixture, "spawn") != spawns ||
+		zcodeNativeCount(t, fixture, "send") != sends {
+		t.Fatalf("fresh command bypassed pending native intent: %v %s", err, raw)
+	}
+}
+
+func TestInstalledZCodeForegroundUsesConnectedProfileAndJoins(t *testing.T) {
+	fixture, scope := zcodeProcessInstall(t, "adoption")
+	result := zcodeNativeCall(t.Context(), fixture, scope)
+	var terminal struct {
+		Outcome string `json:"outcome"`
+		State   string `json:"state"`
+		Joined  bool   `json:"joined"`
+	}
+	if result.err != nil || json.Unmarshal(result.raw, &terminal) != nil || terminal.Outcome != "completed" ||
+		terminal.State != "completedSuccess" || !terminal.Joined {
+		t.Fatalf("actual declared ZCode process did not finish: %v %s", result.err, result.raw)
+	}
+	spawns, sends := 0, 0
+	for _, row := range zcodeNativeAudit(t, fixture) {
+		switch string(row["kind"]) {
+		case `"spawn"`:
+			spawns++
+			var argv []string
+			var cwd, config string
+			if json.Unmarshal(row["argv"], &argv) != nil || json.Unmarshal(row["cwd"], &cwd) != nil ||
+				json.Unmarshal(row["config"], &config) != nil || !slices.Equal(argv, []string{"app-server", "--stdio"}) ||
+				cwd != fixture.home || config != fixture.config || cwd == fixture.cwd {
+				t.Fatal("ordinary process changed profile-home cwd or literal launch recipe", row)
+			}
+		case `"send"`:
+			sends++
+		}
+	}
+	if spawns != 1 || sends != 1 || zcodeNativeCount(t, fixture, "reverseReply") != 1 {
+		t.Fatal("actual native conversation changed send/reverse correlation", spawns, sends)
+	}
+	zcodeNativeJoined(t, fixture, scope)
+	zcodeNativeNoRepeat(t, fixture, scope)
+}
+
+func TestInstalledZCodeForegroundStopStaysWithSelectedRun(t *testing.T) {
+	fixture, scope := zcodeProcessInstall(t, "adoption-running")
+	ctx, cancel := context.WithTimeout(t.Context(), 30*time.Second)
+	defer cancel()
+	done := make(chan zcodeNativeReply, 1)
+	go func(selected sdk.Scope) { done <- zcodeNativeCall(ctx, fixture, selected) }(scope)
+	zcodeNativeWait(t, fixture, "reverseReply")
+	other := zcodeNativeAccount(t, fixture, "another-synthetic-key")
+	for _, change := range []string{"command", "account"} {
+		selected := scope
+		selected.Operation = "native-stop-" + change
+		command := "cmd-send-1"
+		if change == "command" {
+			command = "foreign"
+		} else {
+			selected.Account, selected.Generation = other.ID, other.Generation
+		}
+		input, _ := json.Marshal(map[string]string{"sessionId": "session-9", "commandId": command})
+		if _, err := fixture.manager.Call(t.Context(), "zcode", sdk.MethodModuleCall, selected,
+			sdk.ModuleCallRequest{Action: "native.stop", Input: input}, nil); err == nil {
+			t.Fatal("foreign native stop reached the selected process", change)
+		}
+	}
+	selected := scope
+	selected.Operation = "native-stop-owned"
+	if _, err := fixture.manager.Call(t.Context(), "zcode", sdk.MethodModuleCall, selected, sdk.ModuleCallRequest{
+		Action: "native.stop", Input: json.RawMessage(`{"sessionId":"session-9","commandId":"cmd-send-1"}`),
+	}, nil); err != nil {
+		t.Fatal("matching native stop failed", err)
+	}
+	select {
+	case result := <-done:
+		if result.err != nil || !strings.Contains(string(result.raw), `"state":"completedInterrupted"`) {
+			t.Fatalf("native stop lost authoritative terminal query: %v %s", result.err, result.raw)
+		}
+	case <-ctx.Done():
+		t.Fatal("native stop did not bypass pending turn completion")
+	}
+	if zcodeNativeCount(t, fixture, "stop") != 1 || zcodeNativeCount(t, fixture, "send") != 1 ||
+		zcodeNativeCount(t, fixture, "reverseReply") != 1 {
+		t.Fatal("stop/reverse handling repeated native business input")
+	}
+	zcodeNativeJoined(t, fixture, scope)
+}
+
+func TestInstalledZCodeForegroundLossCannotReplay(t *testing.T) {
+	for _, mode := range []string{"adoption-loss", "adoption-foreign-reverse", "adoption-foreign-reply", "adoption-unknown-query", "adoption-foreign-cancel"} {
+		t.Run(mode, func(t *testing.T) {
+			fixture, scope := zcodeProcessInstall(t, mode)
+			ctx, cancel := context.WithTimeout(t.Context(), 20*time.Second)
+			defer cancel()
+			result := zcodeNativeCall(ctx, fixture, scope)
+			if result.err == nil || zcodeNativeCount(t, fixture, "send") != 1 {
+				t.Fatalf("native uncertainty became success or repeated: %v %s", result.err, result.raw)
+			}
+			zcodeNativeJoined(t, fixture, scope)
+			zcodeNativeNoRepeat(t, fixture, scope)
+			zcodeNativeNoReplacement(t, fixture, scope)
+		})
+	}
+}
+
+func TestInstalledZCodeForegroundLargeFrameAndNumericReverse(t *testing.T) {
+	for _, mode := range []string{"adoption-large", "adoption-numeric-reverse"} {
+		t.Run(mode, func(t *testing.T) {
+			fixture, scope := zcodeProcessInstall(t, mode)
+			result := zcodeNativeCall(t.Context(), fixture, scope)
+			if result.err != nil || !strings.Contains(string(result.raw), `"state":"completedSuccess"`) ||
+				zcodeNativeCount(t, fixture, "send") != 1 || zcodeNativeCount(t, fixture, "reverseReply") != 1 {
+				for cause := errors.Unwrap(result.err); cause != nil; cause = errors.Unwrap(cause) {
+					t.Log("native publication cause:", cause)
+				}
+				t.Fatal("bounded source-shaped native framing/correlation failed", result.err, string(result.raw))
+			}
+			zcodeNativeJoined(t, fixture, scope)
+		})
+	}
+}
+
+func TestInstalledZCodeForegroundCancellationAndRevocationJoin(t *testing.T) {
+	for _, change := range []string{"cancel", "account", "config", "profile", "off"} {
+		t.Run(change, func(t *testing.T) {
+			fixture, scope := zcodeProcessInstall(t, "adoption-running")
+			original := scope
+			ctx, cancel := context.WithTimeout(t.Context(), 30*time.Second)
+			defer cancel()
+			done := make(chan zcodeNativeReply, 1)
+			go func(selected sdk.Scope) { done <- zcodeNativeCall(ctx, fixture, selected) }(scope)
+			zcodeNativeWait(t, fixture, "reverseReply")
+			switch change {
+			case "cancel":
+				cancel()
+			case "account":
+				accounts, err := fixture.manager.Store().Accounts("zcode", "zcode")
+				if err != nil || len(accounts) != 1 {
+					t.Fatal(accounts, err)
+				}
+				account, err := fixture.manager.Store().SaveAccount(accounts[0], scope.Generation)
+				if err != nil {
+					t.Fatal(err)
+				}
+				scope.Generation = account.Generation
+			case "config":
+				config, err := fixture.manager.ModuleConfig(t.Context(), "zcode")
+				if err != nil {
+					t.Fatal(err)
+				}
+				var values map[string]any
+				if json.Unmarshal(config.Values, &values) != nil {
+					t.Fatal("invalid fixture module config")
+				}
+				values["freeFirst"] = false
+				body, _ := json.Marshal(values)
+				if _, err := fixture.manager.CompareAndSwapModuleConfig(t.Context(), "zcode", config.Version, body); err != nil {
+					t.Fatal(err)
+				}
+			case "profile":
+				if err := agent.Starter("zcode-native").Disconnect(); err != nil {
+					t.Fatal(err)
+				}
+			case "off":
+				if err := fixture.manager.SetEnabled(t.Context(), "zcode", false); err != nil {
+					t.Fatal(err)
+				}
+			}
+			select {
+			case result := <-done:
+				if result.err == nil {
+					t.Fatal("revoked native parent published success", change, string(result.raw))
+				}
+			case <-time.After(15 * time.Second):
+				t.Fatal("native owner did not stop/join after revocation", change)
+			}
+			zcodeNativeJoined(t, fixture, original)
+			if zcodeNativeCount(t, fixture, "send") != 1 {
+				t.Fatal("revocation repeated native input", change)
+			}
+			if change == "off" {
+				if err := fixture.manager.SetEnabled(t.Context(), "zcode", true); err != nil {
+					t.Fatal(err)
+				}
+			}
+			if change != "cancel" {
+				zcodeConnectProfile(t)
+			}
+			zcodeNativeNoRepeat(t, fixture, scope)
+			zcodeNativeNoReplacement(t, fixture, scope)
+		})
+	}
+}
+
+func TestInstalledZCodeForegroundWindowRouteAndStop(t *testing.T) {
+	fixture, scope := zcodeProcessInstall(t, "adoption-running")
+	windows, err := fixture.manager.Windows(t.Context())
+	if err != nil || len(windows) != 1 {
+		t.Fatal(windows, err)
+	}
+	revision := windows[0].Revision
+	options := sdk.WindowCallOptions{Account: &sdk.AccountSelection{
+		ID: scope.Account, ExpectedGeneration: strconv.FormatUint(scope.Generation, 10),
+	}}
+	input := json.RawMessage(`{"sessionId":"session-9","commandId":"cmd-window","model":"native-fixture/fixture-model","text":"fixture"}`)
+	call := func(ctx context.Context, binding string, body json.RawMessage, selected sdk.WindowCallOptions) zcodeNativeReply {
+		raw, err := fixture.manager.CallWindowBindingWithOptions(ctx, "zcode", revision,
+			"window:page", binding, body, selected)
+		return zcodeNativeReply{raw: raw, err: err}
+	}
+	for _, invalid := range []struct {
+		name     string
+		selected sdk.WindowCallOptions
+	}{
+		{"missing", sdk.WindowCallOptions{}},
+		{"stale", sdk.WindowCallOptions{Account: &sdk.AccountSelection{ID: scope.Account, ExpectedGeneration: "99"}}},
+	} {
+		result := call(extension.WithModuleRequestID(t.Context(), "window-"+invalid.name),
+			"page.native-run", input, invalid.selected)
+		if result.err == nil || zcodeNativeCount(t, fixture, "spawn") != 0 {
+			t.Fatal("invalid window selection launched native process", invalid.name, result.err)
+		}
+	}
+	ctx, cancel := context.WithTimeout(extension.WithModuleRequestID(t.Context(), "window-native-run"), 30*time.Second)
+	defer cancel()
+	done := make(chan zcodeNativeReply, 1)
+	go func() { done <- call(ctx, "page.native-run", input, options) }()
+	zcodeNativeWait(t, fixture, "reverseReply")
+	stopped := call(extension.WithModuleRequestID(t.Context(), "window-native-stop"), "page.native-stop",
+		json.RawMessage(`{"sessionId":"session-9","commandId":"cmd-window"}`), options)
+	if stopped.err != nil {
+		t.Fatal("actual selected window stop route", stopped.err, string(stopped.raw))
+	}
+	select {
+	case result := <-done:
+		if result.err != nil || !strings.Contains(string(result.raw), `"state":"completedInterrupted"`) {
+			t.Fatal("actual window run lost terminal query/join", result.err, string(result.raw))
+		}
+	case <-ctx.Done():
+		t.Fatal("actual window stop did not finish its selected process")
+	}
+	if zcodeNativeCount(t, fixture, "spawn") != 1 || zcodeNativeCount(t, fixture, "send") != 1 ||
+		zcodeNativeCount(t, fixture, "stop") != 1 {
+		t.Fatal("actual window route repeated native input", zcodeNativeAudit(t, fixture))
+	}
+	result := call(extension.WithModuleRequestID(t.Context(), "window-native-new-intent"),
+		"page.native-run", input, options)
+	if result.err == nil || zcodeNativeCount(t, fixture, "spawn") != 1 {
+		t.Fatal("fresh UI request identity bypassed durable native command intent", result.err)
+	}
+	joined := 0
+	if err := filepath.WalkDir(fixture.home, func(path string, entry fs.DirEntry, walkErr error) error {
+		if walkErr != nil || entry.IsDir() || filepath.Base(filepath.Dir(path)) != "processes" {
+			return walkErr
+		}
+		body, err := os.ReadFile(path)
+		if err != nil {
+			return err
+		}
+		var receipt struct {
+			Scope  sdk.Scope `json:"scope"`
+			Recipe string    `json:"recipe"`
+			Joined bool      `json:"joined"`
+		}
+		if json.Unmarshal(body, &receipt) == nil && receipt.Recipe == "native.run" {
+			if !receipt.Joined || receipt.Scope.Account != scope.Account ||
+				receipt.Scope.Generation != scope.Generation || receipt.Scope.Operation == "" || receipt.Scope.Attempt != 1 {
+				t.Fatalf("window process did not retain selected authority and join: %s", body)
+			}
+			joined++
+		}
+		return nil
+	}); err != nil || joined == 0 {
+		t.Fatal("actual window process has no joined receipt", joined, err)
+	}
+}

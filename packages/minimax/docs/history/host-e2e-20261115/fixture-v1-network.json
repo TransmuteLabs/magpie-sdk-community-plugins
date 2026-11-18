@@ -1,0 +1,66 @@
+{
+  "probe": [
+    "external denied",
+    "assigned local address allowed"
+  ],
+  "exit": 0,
+  "host": "usbox",
+  "guard": "per-descendant seccomp; loopback and exact assigned local addresses",
+  "user_namespace": false,
+  "uid": 1000,
+  "assigned_addresses": [
+    "127.0.0.1",
+    "162.248.226.17",
+    "::1",
+    "fe80::9e6b:ff:fe2a:46d2"
+  ],
+  "events": [
+    {
+      "syscall": 42,
+      "allowed": false,
+      "destination": "203.0.113.1"
+    },
+    {
+      "syscall": 42,
+      "allowed": true,
+      "destination": "162.248.226.17"
+    },
+    {
+      "syscall": 42,
+      "allowed": true,
+      "destination": "127.0.0.1"
+    },
+    {
+      "syscall": 44,
+      "allowed": true,
+      "destination": "already-connected"
+    },
+    {
+      "syscall": 44,
+      "allowed": true,
+      "destination": "already-connected"
+    },
+    {
+      "syscall": 42,
+      "allowed": true,
+      "destination": "127.0.0.1"
+    },
+    {
+      "syscall": 44,
+      "allowed": true,
+      "destination": "already-connected"
+    },
+    {
+      "syscall": 44,
+      "allowed": true,
+      "destination": "already-connected"
+    },
+    {
+      "syscall": 44,
+      "allowed": true,
+      "destination": "already-connected"
+    }
+  ],
+  "kernel_live_address_race_limit": "Not a sandbox against adversarial sockaddr mutation",
+  "root_owner": 0
+}

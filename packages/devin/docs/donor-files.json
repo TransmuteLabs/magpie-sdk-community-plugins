@@ -1,0 +1,19 @@
+{
+  "donor_path": "../magpie-protocol-sdk/plugins/protocols/devin",
+  "donor_head": "61dc6c58de9740345d0b9462041444b40ffa9dbb",
+  "files_sha256": {
+    "EVIDENCE.md": "1927bb517367936868947aeea7b5f65fa4eb942f91149a0b0d18a82d91de4218",
+    "README.md": "58aa1ab4b81eb8152ea087bbd7a80ecfff1ce0d86fab0e46b11f6d9d374e0c37",
+    "catalog.go": "4b2ee5e3de349afa06ae806fafc8a0ca279e3b0b818c3490336ff11af002407c",
+    "catalog_test.go": "002ce4f6e035e46d9dde8069419d08a0e4f9b3a912b478f650e0e51314834629",
+    "decode.go": "abf04b7bdcb38db029325e682d3b67ed522c031add455c33aa8efb57b701c1cd",
+    "decode_test.go": "6a79799fb2ba86980b849638cd3eb62920d1588523ee4e45999dc62e2897518a",
+    "generation.go": "66b586a1538a2dead4c4617752b425ce46bcddd171b03d80a1730226436be544",
+    "generation_test.go": "75e9bb4ed96019f9a9ac6bb0e2c5047ccce284725b6169245352b9fdac44fc83",
+    "response.go": "4943a023b1aa0d828fb5691bbfbcfafdc11193a55189ba5ef94738b8108cc7ff",
+    "response_test.go": "f5c5ad47828ea82eee608af0c2edb4d4223861a8e4cd8a0cac12ba4bdb41b369",
+    "wire.go": "fe7bd9522827c22a5073187b2038243d2c204bd09cfa7b45974958ad7677d85c"
+  },
+  "sdk_immutable_base": "7e2a72b6178eb2a51c4e6018ee9515fdbb321da7",
+  "fixtures": "synthetic donor fixtures only; no recovered cassette bytes copied"
+}

@@ -1,0 +1,191 @@
+[
+  {
+    "fixture": "testdata/donors/zen-dsh028.json",
+    "commit": "324acd6007f2d513c5072fe2e9fe1db3524ae03d",
+    "path": "packages/zen-free/index.test.mjs",
+    "selection": "Literal DSH_EDIT, DSH_READ and DSH_SKILL object values plus asserted served names/descriptions; JSON transcription, no donor execution",
+    "sha256": "6030d7fd61ddb54408fe0cb3d4e9a23ecd7000a6b9b543d13e015307f76eeffa"
+  },
+  {
+    "fixture": "testdata/donors/zen-catalog.json",
+    "commit": "38bd73789a43bf043599d6196af96583228035d7",
+    "path": "packages/core/src/models-dev/snapshot.txt",
+    "selection": "Exact JSON value of top-level opencode; no reserialization",
+    "sha256": "7dcffff473c82eafb8e57066142f34fa46477240b2dc28ddf8e704326608554e"
+  },
+  {
+    "fixture": "testdata/donors/zen-list.json",
+    "commit": "57d1cc6a9f49389d495ea9be8d986c70de7767bf",
+    "path": "packages/zen-free/fixtures/zen-models-2026-10-15.json",
+    "selection": "Entire reviewed public fixture",
+    "sha256": "c85b9fa7fc7002bc34b3381807c0960458d3849bb57532fb777681583e4102d4"
+  },
+  {
+    "fixture": "testdata/donors/tool-fixtures.mjs",
+    "commit": "57d1cc6a9f49389d495ea9be8d986c70de7767bf",
+    "path": "packages/zen-free/tool-fixtures.mjs",
+    "selection": "Entire reviewed public fixture",
+    "sha256": "68e809d39ee4bcccbe05d7173b095b1faf4763dc6bf7758d8603ccf1d513e675"
+  },
+  {
+    "fixture": "testdata/donors/zen-tool-response.mjs",
+    "commit": "57d1cc6a9f49389d495ea9be8d986c70de7767bf",
+    "path": "packages/zen-free/tool-response.mjs",
+    "selection": "Entire reviewed public fixture",
+    "sha256": "2ee596c69a09a8ae0adafb1907a10e5d10f9ab80bb4cb425bad352dc15dbb8ad"
+  },
+  {
+    "fixture": "testdata/donors/zen-collapse.mjs",
+    "commit": "57d1cc6a9f49389d495ea9be8d986c70de7767bf",
+    "path": "packages/zen-free/stream.mjs",
+    "selection": "Entire reviewed public fixture",
+    "sha256": "328294ca816bf5e92542df176bbcb8649956e99ccdb6b2178463bf7d4c03004a"
+  },
+  {
+    "fixture": "testdata/donors/zen-tool-request.js.txt",
+    "commit": "57d1cc6a9f49389d495ea9be8d986c70de7767bf",
+    "path": "packages/zen-free/provider.mjs",
+    "selection": "Literal CORE_TOOLS/CORE_PARAMETER and normalizeTools through renameRefused; no environment, transport or provider initialization",
+    "sha256": "b0a7f67b799cf800335a452a6d9b517eda86984747c98405fc67d2d3fa05938b"
+  },
+  {
+    "fixture": "testdata/donors/zen-environment.js.txt",
+    "commit": "57d1cc6a9f49389d495ea9be8d986c70de7767bf",
+    "path": "packages/zen-free/provider.mjs",
+    "selection": "Literal environment layout and insertion helpers; oracle supplies synthetic filesystem/platform facts, no local inspection",
+    "sha256": "bbb4d9a25c71bbd35f21a9e9d4c9cfbc78d5b8041b6162fc5266cc5de950cd14"
+  },
+  {
+    "fixture": "testdata/donors/skill-file.ts.txt",
+    "commit": "38bd73789a43bf043599d6196af96583228035d7",
+    "path": "packages/core/src/config/plugin/skill-file.ts",
+    "selection": "Entire literal native skill frontmatter parser/schema authority; not executed",
+    "sha256": "21046ab5318eab36f9c35dbe56fa4391db78cd6c385d25d424cc0411d168a0e1"
+  },
+  {
+    "fixture": "testdata/donors/markdown.ts.txt",
+    "commit": "38bd73789a43bf043599d6196af96583228035d7",
+    "path": "packages/core/src/config/markdown.ts",
+    "selection": "Entire literal native skill frontmatter parser/schema authority; not executed",
+    "sha256": "31290d5be1e80c41d2d5c3518387d455cae30c49b566e75bd4eb3684e125e0b2"
+  },
+  {
+    "fixture": "testdata/donors/watch-types.ts.txt",
+    "commit": "38bd73789a43bf043599d6196af96583228035d7",
+    "path": "packages/core/src/plugin/provider/opencode-watches.ts",
+    "selection": "Literal EventType schema, description limit and events action normalization; session-mutating watch actions excluded",
+    "sha256": "d20a69d5e1d023a61124e482d2ea97306b1a3015816042c425aee7b85a071126"
+  },
+  {
+    "fixture": "testdata/donors/skill-bundle.ts.txt",
+    "commit": "38bd73789a43bf043599d6196af96583228035d7",
+    "path": "packages/core/test/plugin/provider-opencode.test.ts",
+    "selection": "Literal skillBundle declaration",
+    "sha256": "db7cac38cf1426502c2ff2fcb8d0010b2634e4acf97c7c75c4577001d8c60378"
+  },
+  {
+    "fixture": "testdata/donors/console-lists.ts.txt",
+    "commit": "38bd73789a43bf043599d6196af96583228035d7",
+    "path": "packages/core/test/plugin/provider-opencode.test.ts",
+    "selection": "Literal Console list server in header/cache regression",
+    "sha256": "d1d66f9433dc91f125161aee48e208890ce787c1e1be8f7567daec4ea6da67ac"
+  },
+  {
+    "fixture": "testdata/donors/watch-event.ts.txt",
+    "commit": "38bd73789a43bf043599d6196af96583228035d7",
+    "path": "packages/core/test/plugin/provider-opencode-watches.test.ts",
+    "selection": "Literal watchEvent fixture constructor; not executed locally",
+    "sha256": "2c437024e4663f93ab492d5a625b20a2b33de47fb2a863001dac5e07c65e671c"
+  },
+  {
+    "fixture": "testdata/donors/policy.ts.txt",
+    "commit": "38bd73789a43bf043599d6196af96583228035d7",
+    "path": "packages/schema/src/config/policy.ts",
+    "selection": "Exact policy enums and legacy resource normalization",
+    "sha256": "72586095738f791dc7cef2c3e134c19be9b85130d66fdaa0dbebb74e9530df52"
+  },
+  {
+    "fixture": "testdata/donors/database-path.ts.txt",
+    "commit": "38bd73789a43bf043599d6196af96583228035d7",
+    "path": "packages/cli/src/database-path.ts",
+    "selection": "Entire literal native storage-root source; not executed",
+    "sha256": "921368eee69db647d2973d7dc529e86a8942027ee0032d3acb112d6a55e6b9d7"
+  },
+  {
+    "fixture": "testdata/donors/global-roots.ts.txt",
+    "commit": "38bd73789a43bf043599d6196af96583228035d7",
+    "path": "packages/util/src/global-roots.ts",
+    "selection": "Entire literal native storage-root source; not executed",
+    "sha256": "6cdc234ac155e308dadeb62682c687468ba656fd463482d00fce025c9dc819b6"
+  },
+  {
+    "fixture": "testdata/donors/history-schema.sql",
+    "commit": "38bd73789a43bf043599d6196af96583228035d7",
+    "path": "packages/core/src/database/migration/20260127222353_familiar_lady_ursula.ts;packages/core/src/database/migration/20260804233008_loose_psylocke.ts;packages/core/src/database/migration/20261029002625_session_part.ts;packages/core/src/database/migration/20261025123711_blob.ts",
+    "selection": "Literal CREATE TABLE template payloads for project/session_v2/staging session_message/instruction_state/session_part/blob_ref/blob plus literal staging rename; only JS backtick escapes decoded, not a complete migration",
+    "sha256": "02e4d969b0416883bebe70ff2bd400a7bde7315801d2ae2caa0af0a4ec2c53db"
+  },
+  {
+    "fixture": "testdata/donors/history-parts.ts.txt",
+    "commit": "38bd73789a43bf043599d6196af96583228035d7",
+    "path": "packages/core/src/session/history.ts",
+    "selection": "Literal withParts ordering and legacy-inline merge",
+    "sha256": "5ae0802cc689afced0ecae6ae9502a8f753653fa5e5abebb136fd76f371278a7"
+  },
+  {
+    "fixture": "testdata/donors/history-epoch.ts.txt",
+    "commit": "38bd73789a43bf043599d6196af96583228035d7",
+    "path": "packages/core/src/session/history.ts",
+    "selection": "Literal instruction baseline epoch and native checkpoint replay filter",
+    "sha256": "bc89c230d95a3141e5d5a59b0a897ded8b49f6b1913389d9c93f69f8f111a9ea"
+  },
+  {
+    "fixture": "testdata/donors/history-wal.ts.txt",
+    "commit": "38bd73789a43bf043599d6196af96583228035d7",
+    "path": "packages/core/src/database/database.ts",
+    "selection": "Literal native file-database WAL/bootstrap pragmas; not executed",
+    "sha256": "d78cc522e7cd97c6380dd5433e3218cb70883451ada12eecbdbef2000d400f34"
+  },
+  {
+    "fixture": "testdata/donors/history-media.ts.txt",
+    "commit": "38bd73789a43bf043599d6196af96583228035d7",
+    "path": "packages/core/src/session/blob.ts",
+    "selection": "Literal missing-media and inline file hydration behavior",
+    "sha256": "e33d7e73528e4e952af469c7284997be482046fdae93e78afdbec0e3977dab37"
+  },
+  {
+    "fixture": "testdata/donors/history-legacy-roots.go.txt",
+    "commit": "893f560cccdeb8fa2e98eadb60427990c10eedcc",
+    "path": "internal/sessions/opencode.go",
+    "selection": "Literal archived root/storage and V1/V2 selection commentary/helpers; not a runtime dependency",
+    "sha256": "626eea4cebbb826ad99aba19481653bfba7e254ed870efda1d57263a8a7c6305"
+  },
+  {
+    "fixture": "testdata/donors/console.json",
+    "commit": "38bd73789a43bf043599d6196af96583228035d7",
+    "path": "packages/core/test/plugin/provider-opencode.test.ts;packages/core/test/plugin/provider-opencode-watches.test.ts",
+    "selection": "Reviewed JSON adaptation of native skillBundle, instruction/list fixtures and watchEvent defaults; synthetic sessionID ses_fixture and cursor 1.1",
+    "sha256": "ce89ef4c13b14625f48960c979d7371ecfa06c4c1b5b7f92339f765c4fe64af6"
+  },
+  {
+    "fixture": "testdata/donors/zen-replies.json",
+    "commit": "57d1cc6a9f49389d495ea9be8d986c70de7767bf",
+    "path": "packages/zen-free/tool-fixtures.mjs",
+    "selection": "toolReply(protocol, Read, false/true) from exact tool-fixtures.mjs, generated only on usbox with Node via testdata/donor_replies.mjs",
+    "sha256": "92653b744eaa2ca7ee521054ec42244148214b83f8c2fd8180fe923daca971b2"
+  },
+  {
+    "fixture": "testdata/donors/zen-tools.json",
+    "commit": "57d1cc6a9f49389d495ea9be8d986c70de7767bf",
+    "path": "packages/zen-free/provider.mjs;packages/zen-free/tool-response.mjs;packages/zen-free/tool-fixtures.mjs",
+    "selection": "Reviewed synthetic native requests/replies evaluated by literal request helpers and guardToolResponse on usbox through testdata/zen_tools_oracle.mjs; no environment or stream-collapse policy",
+    "sha256": "4bdbf44f267e2a1fd96d5048e9b49e62570c790aaf9d6cc79515b75b093b833a"
+  },
+  {
+    "fixture": "testdata/donors/zen-policy.json",
+    "commit": "57d1cc6a9f49389d495ea9be8d986c70de7767bf",
+    "path": "packages/zen-free/provider.mjs;packages/zen-free/stream.mjs",
+    "selection": "Synthetic cases generated on usbox by unchanged literal collapseResponse and environment helpers; configured facts only, temporary preference omits donor's unverifiable approval claim; native strict incomplete/error rejection stays module-owned",
+    "sha256": "438d8ad34106cf14cb5403bdd989182392e7fc993136c363e6949b4054664a81"
+  }
+]

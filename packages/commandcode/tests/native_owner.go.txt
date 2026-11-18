@@ -1,0 +1,317 @@
+package main
+
+import (
+	"bytes"
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"io"
+	"net/http"
+	"net/http/httptest"
+	"os"
+	"path/filepath"
+	"strings"
+	"sync/atomic"
+	"time"
+
+	host "github.com/yetone/magpie/internal/extension"
+	"github.com/yetone/magpie/internal/provider"
+	sdk "github.com/yetone/magpie/pkg/extension"
+)
+
+func check(err error) {
+	if err != nil {
+		panic(err)
+	}
+}
+
+func require(value bool, message string) {
+	if !value {
+		panic(message)
+	}
+}
+
+func main() {
+	ctx, cancel := context.WithTimeout(context.Background(), 90*time.Second)
+	defer cancel()
+	distribution := os.Args[1]
+	var goPlan atomic.Bool
+	var billingUnavailable atomic.Bool
+	var providerTerminal atomic.Bool
+	var calls atomic.Int64
+	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		switch request.URL.Path {
+		case "/alpha/whoami":
+			io.WriteString(writer, `{"user":{"id":"synthetic-user","userName":"Synthetic"}}`)
+		case "/alpha/billing/subscriptions":
+			plan := "individual-pro"
+			if goPlan.Load() {
+				plan = "individual-go"
+			}
+			fmt.Fprintf(writer, `{"data":{"planId":%q,"status":"active"}}`, plan)
+		case "/alpha/billing/credits":
+			if billingUnavailable.Load() {
+				writer.WriteHeader(http.StatusServiceUnavailable)
+				return
+			}
+			io.WriteString(writer, `{"credits":{"monthlyCredits":9,"purchasedCredits":0,"freeCredits":0},"windowLimits":{"fiveHour":{"used":1,"cap":10}}}`)
+		case "/provider/v1/models":
+			io.WriteString(writer, `{"data":[{"id":"fixture-model","context_length":256000,"supported_endpoints":["/chat/completions","/responses","/messages"]}]}`)
+		case "/provider/v1/chat/completions", "/provider/v1/responses", "/provider/v1/messages":
+			calls.Add(1)
+			require(request.Header.Get("Authorization") == "Bearer synthetic-key", "native selected auth missing")
+			require(request.Header.Get("x-cmd-zdr") == "1", "ZDR disappeared")
+			body, err := io.ReadAll(request.Body)
+			check(err)
+			if bytes.Contains(body, []byte(`"stream":true`)) {
+				writer.Header().Set("Content-Type", "text/event-stream")
+				var start, terminal string
+				switch request.URL.Path {
+				case "/provider/v1/chat/completions":
+					start = `{"choices":[{"delta":{"content":"partial"}}]}`
+					terminal = `{"choices":[{"delta":{},"finish_reason":"stop"}]}`
+				case "/provider/v1/responses":
+					start = `{"type":"response.output_text.delta","delta":"partial"}`
+					terminal = `{"type":"response.completed","response":{"status":"completed"}}`
+				case "/provider/v1/messages":
+					start = `{"type":"content_block_delta","delta":{"type":"text_delta","text":"partial"}}`
+					terminal = `{"type":"message_stop"}`
+				}
+				fmt.Fprintf(writer, "data: %s\n\n", start)
+				if providerTerminal.Load() {
+					fmt.Fprintf(writer, "data: %s\n\n", terminal)
+				}
+				return
+			}
+			writer.Header().Set("Content-Type", "application/json")
+			io.WriteString(writer, `{"nativeFixture":true}`)
+		case "/provider/v1/systemone":
+			calls.Add(1)
+			require(request.Header.Get("Authorization") == "Bearer synthetic-key" &&
+				request.Header.Get("x-api-key") == "" && request.Header.Get("x-command-code-version") == "1.88.2",
+				"native SystemOne lost its selected CLI identity")
+			writer.Header().Set("Content-Type", "application/json")
+			io.WriteString(writer, `{"model":"typesafe/jev","answers":{"ok":{"type":"noul","noul":0.93}},"usage":{"input_tokens":41,"output_tokens":3}}`)
+		case "/alpha/generate":
+			calls.Add(1)
+			body, err := io.ReadAll(request.Body)
+			check(err)
+			require(bytes.Contains(body, []byte(`"params"`)), "Go plan did not produce native format")
+			writer.Header().Set("Content-Type", "application/x-ndjson")
+			io.WriteString(writer, "{\"type\":\"text-delta\",\"text\":\"native Go-plan reply\"}\n{\"type\":\"finish\",\"finishReason\":\"stop\",\"totalUsage\":{\"inputTokens\":3,\"outputTokens\":2}}\n")
+		default:
+			panic("unexpected local route: " + request.URL.Path)
+		}
+	}))
+	defer server.Close()
+	manager := host.Default()
+	defer func() { check(manager.Close(context.Background())) }()
+	entry, err := manager.Install(ctx, distribution)
+	check(err)
+	require(entry.Manifest.Runtime == "native", "fixture was not installed as native")
+	installed, err := manager.List()
+	check(err)
+	require(len(installed) == 1, "standalone fixture installed an additional runtime module")
+	id, providerID := entry.Manifest.ID, entry.Manifest.Providers[0].ID
+	config, _ := json.Marshal(map[string]any{"apiURL": server.URL, "studioURL": "https://commandcode.ai", "workingDirectory": "/synthetic", "zdr": true})
+	_, err = manager.CompareAndSwapModuleConfig(ctx, id, "0", config)
+	check(err)
+	scope := sdk.Scope{Provider: providerID}
+	var begin sdk.AuthStartResult
+	check(manager.Invoke(ctx, id, sdk.MethodAuthStart, scope, sdk.AuthStartRequest{Method: "api-key", Input: json.RawMessage(`{"apiKey":"synthetic-key"}`)}, &begin, nil))
+	var auth sdk.AuthResult
+	check(manager.Invoke(ctx, id, sdk.MethodAuthFinish, scope, sdk.AuthFinishRequest{Continuation: begin.Continuation}, &auth, nil))
+	account, err := manager.Store().SaveAccount(host.Account{Plugin: id, Provider: providerID, ID: auth.ID, Auth: auth.Credentials}, 0)
+	check(err)
+	providers, err := provider.ExtensionProviders()
+	check(err)
+	require(len(providers) == 1, "ordinary extension provider was not discovered")
+	ordinary := providers[0]
+	models, err := ordinary.Fetch(ctx)
+	check(err)
+	require(len(models) == 2 && models[0].ID == "fixture-model" && models[1].ID == "typesafe/jev" &&
+		models[1].Decides && len(models[1].APIs) == 0,
+		"ordinary provider catalog lost the separate decision fact")
+	for _, endpoint := range []string{"/v1/chat/completions", "/v1/responses", "/v1/messages"} {
+		body := []byte(`{"model":"fixture-model","stream":false,"messages":[{"role":"user","content":"fixture"}]}`)
+		request, err := http.NewRequestWithContext(ctx, "POST", "extension://"+ordinary.ID+endpoint, bytes.NewReader(body))
+		check(err)
+		response, err := ordinary.Do(http.DefaultClient, request)
+		check(err)
+		received, err := io.ReadAll(response.Body)
+		check(err)
+		check(response.Body.Close())
+		require(response.StatusCode == 200 && bytes.Contains(received, []byte(`"nativeFixture":true`)), "ordinary native forwarding failed")
+	}
+	goPlan.Store(true)
+	body := []byte(`{"model":"fixture-model","stream":true,"messages":[{"role":"user","content":"fixture"}]}`)
+	request, err := http.NewRequestWithContext(ctx, "POST", "extension://"+ordinary.ID+"/v1/chat/completions", bytes.NewReader(body))
+	check(err)
+	response, err := ordinary.Do(http.DefaultClient, request)
+	check(err)
+	received, err := io.ReadAll(response.Body)
+	check(err)
+	check(response.Body.Close())
+	require(strings.Contains(string(received), "native Go-plan reply") && strings.Contains(string(received), "[DONE]"), "ordinary Go-plan output is incomplete")
+	scope = sdk.Scope{Plugin: id, Provider: providerID, Account: account.ID, Generation: account.Generation}
+	var allowance sdk.UsageResult
+	check(manager.Invoke(ctx, id, sdk.MethodProviderUsage, scope, sdk.UsageRequest{}, &allowance, nil))
+	require(len(allowance.Windows) == 2 && allowance.Revision == "0", "native usage windows or initial host revision missing")
+	dirty, err := manager.Store().InvalidateUsage(scope)
+	check(err)
+	require(dirty.Dirty && dirty.Version() == "1" && manager.Store().UsageReady(scope) != nil, "native usage invalidation did not fence the account")
+	beforeCalls := calls.Load()
+	request, err = http.NewRequestWithContext(ctx, "POST", "extension://"+ordinary.ID+"/v1/chat/completions", bytes.NewReader(body))
+	check(err)
+	response, err = ordinary.Do(http.DefaultClient, request)
+	if response != nil {
+		check(response.Body.Close())
+	}
+	require(err != nil && calls.Load() == beforeCalls, "dirty native usage reached inference")
+	billingUnavailable.Store(true)
+	allowance = sdk.UsageResult{}
+	check(manager.Invoke(ctx, id, sdk.MethodProviderUsage, scope, sdk.UsageRequest{}, &allowance, nil))
+	require(allowance.Revision == dirty.Version() && allowance.Error != "", "unknown native usage lost the selected host revision")
+	require(manager.Store().UsageReady(scope) != nil, "unknown native usage reopened inference")
+	billingUnavailable.Store(false)
+	allowance = sdk.UsageResult{}
+	check(manager.Invoke(ctx, id, sdk.MethodProviderUsage, scope, sdk.UsageRequest{}, &allowance, nil))
+	require(allowance.Revision == dirty.Version() && allowance.Error == "" && allowance.AsOf == 0, "fresh native usage did not acknowledge its host revision")
+	current, err := manager.Store().UsageStamp(scope)
+	check(err)
+	require(!current.Dirty && current.Revision == dirty.Revision, "fresh native usage left the account dirty")
+	dirty, err = manager.Store().InvalidateUsage(scope)
+	check(err)
+	readings := provider.LoginUsage(ctx, ordinary.ID)
+	reading, found := readings[ordinary.Account.User]
+	require(found && reading.Error == "" && !reading.ReadDeferred && reading.AsOf == nil && len(reading.Windows) == 2, "ordinary native quota path did not publish a fresh reading")
+	current, err = manager.Store().UsageStamp(scope)
+	check(err)
+	require(!current.Dirty && current.Revision == dirty.Revision, "ordinary quota owner did not acknowledge the native host revision")
+	var status struct {
+		SystemOne struct {
+			Model      string `json:"model"`
+			Negotiated bool   `json:"negotiated"`
+			Reason     string `json:"reason"`
+			Operation  string `json:"operation"`
+		} `json:"systemone"`
+	}
+	check(manager.Invoke(ctx, id, sdk.MethodModuleCall, scope, sdk.ModuleCallRequest{Action: "status", Input: json.RawMessage(`{}`)}, &status, nil))
+	require(status.SystemOne.Model == "typesafe/jev" && status.SystemOne.Negotiated &&
+		status.SystemOne.Operation == "systemone" && status.SystemOne.Reason == "", "native status lost its negotiated Jev operation")
+	var decision any
+	err = manager.Invoke(ctx, id, sdk.MethodModuleCall, scope, sdk.ModuleCallRequest{Action: "systemone", Input: json.RawMessage(`{"model":"typesafe/jev","state":{"text":"ping"},"questions":{}}`)}, &decision, nil)
+	var refusal *sdk.Error
+	require(errors.As(err, &refusal) && refusal.Code == "unnegotiated_capability" && refusal.Outcome == "not-started", "module action bypassed the selected-account operation")
+	require(sdk.OperationSystemOne.Valid(), "the tested host has no negotiated SystemOne operation")
+	candidate := entry.Manifest.Clone()
+	candidate.Providers[0].Models = []sdk.Model{{ID: "typesafe/jev", Kind: "decision", Operations: []sdk.ProviderOperation{sdk.OperationSystemOne}}}
+	check(candidate.Validate())
+	beforeCalls = calls.Load()
+	request, err = http.NewRequestWithContext(ctx, "POST", "extension://"+ordinary.ID+"/v1/systemone", strings.NewReader(`{"model":"typesafe/jev","state":{"text":"ping"},"questions":{}}`))
+	check(err)
+	response, err = ordinary.Do(http.DefaultClient, request)
+	check(err)
+	received, err = io.ReadAll(response.Body)
+	check(err)
+	check(response.Body.Close())
+	require(response.StatusCode == 200 && bytes.Contains(received, []byte(`"noul":0.93`)) &&
+		calls.Load() == beforeCalls+1, "ordinary native SystemOne operation did not execute exactly once")
+	home, err := os.UserHomeDir()
+	check(err)
+	check(os.MkdirAll(filepath.Join(home, ".commandcode"), 0700))
+	check(os.WriteFile(filepath.Join(home, ".commandcode/auth.json"), []byte(`{"apiKey":"synthetic-key"}`), 0600))
+	check(manager.Invoke(ctx, id, sdk.MethodAuthStart, sdk.Scope{Provider: providerID}, sdk.AuthStartRequest{Method: "cli-import"}, &begin, nil))
+	var imported sdk.AuthResult
+	check(manager.Invoke(ctx, id, sdk.MethodAuthFinish, sdk.Scope{Provider: providerID}, sdk.AuthFinishRequest{Continuation: begin.Continuation}, &imported, nil))
+	require(imported.ID == account.ID && bytes.Equal(imported.Credentials, auth.Credentials), "explicit synthetic CLI import changed key identity")
+	check(os.WriteFile(filepath.Join(home, ".commandcode/settings.json"), []byte(`{"model":"vendor/original","modelProvider":"vendor","userKeep":true}`), 0600))
+	check(os.WriteFile(filepath.Join(home, ".commandcode/providers.json"), []byte(`{"provider":{"vendor":{"baseURL":"https://uncontacted.invalid"}}}`), 0600))
+	binding := &sdk.AgentBindingSnapshot{Target: "commandcode", Revision: "0", Values: map[string]string{}}
+	policy := host.ActionPolicy{Root: home, Paths: entry.Manifest.Agents[0].ConfigFiles, BackupDir: filepath.Join(home, "action-backups"), Binding: binding}
+	options := map[string]any{"gateway": "http://127.0.0.1:3425", "field": "model", "value": "magpie/p/m",
+		"models": []any{map[string]any{"value": "magpie/p/m", "context": 1000000}}}
+	optionsBody, _ := json.Marshal(options)
+	actions := host.NewActions(manager)
+	plan, err := actions.AgentPlan(ctx, id, sdk.Scope{}, sdk.AgentPlanRequest{ID: "commandcode-sdk", Action: "connect", Options: optionsBody}, policy)
+	check(err)
+	originals := plan.Snapshots()
+	preview := plan.Preview()
+	applied, err := plan.Execute(ctx, preview.Revision)
+	check(err)
+	require(applied.Applied, "native agent plan was not applied")
+	settingsPath := filepath.Join(home, ".commandcode/settings.json")
+	settingsBytes, err := os.ReadFile(settingsPath)
+	check(err)
+	var setting map[string]any
+	check(json.Unmarshal(settingsBytes, &setting))
+	require(setting["model"] == "magpie/p/m" && setting["userKeep"] == true, "native agent plan corrupted settings")
+	setting["addedAfterAdoption"] = "preserved"
+	settingsBytes, _ = json.Marshal(setting)
+	check(os.WriteFile(settingsPath, settingsBytes, 0600))
+	options["previous"] = originals
+	optionsBody, _ = json.Marshal(options)
+	policy.Binding = &sdk.AgentBindingSnapshot{Target: "commandcode", Revision: "1", Connected: true, Values: map[string]string{"model": "magpie/p/m", "effort": ""}}
+	plan, err = actions.AgentPlan(ctx, id, sdk.Scope{}, sdk.AgentPlanRequest{ID: "commandcode-sdk", Action: "disconnect", Options: optionsBody}, policy)
+	check(err)
+	applied, err = plan.Execute(ctx, plan.Preview().Revision)
+	check(err)
+	require(applied.Applied, "native disconnect plan was not applied")
+	settingsBytes, err = os.ReadFile(settingsPath)
+	check(err)
+	check(json.Unmarshal(settingsBytes, &setting))
+	require(setting["model"] == "vendor/original" && setting["addedAfterAdoption"] == "preserved", "native disconnect lost original or foreign settings")
+	goPlan.Store(false)
+	for _, endpoint := range []string{"/v1/chat/completions", "/v1/responses", "/v1/messages"} {
+		for _, terminal := range []bool{true, false} {
+			providerTerminal.Store(terminal)
+			attemptContext, attempt := provider.WithExtensionAttempt(ctx)
+			before := calls.Load()
+			requestBody := `{"model":"fixture-model","stream":true,"messages":[{"role":"user","content":"fixture"}]}`
+			if endpoint == "/v1/responses" {
+				requestBody = `{"model":"fixture-model","stream":true,"input":"fixture"}`
+			} else if endpoint == "/v1/messages" {
+				requestBody = `{"model":"fixture-model","stream":true,"max_tokens":1024,"messages":[{"role":"user","content":"fixture"}]}`
+			}
+			request, err := http.NewRequestWithContext(attemptContext, "POST", "extension://"+ordinary.ID+endpoint,
+				strings.NewReader(requestBody))
+			check(err)
+			response, err := ordinary.Do(http.DefaultClient, request)
+			check(err)
+			received, readErr := io.ReadAll(response.Body)
+			check(response.Body.Close())
+			module, operation := attempt.Operation()
+			receipt, err := manager.Store().Operation(module, operation)
+			check(err)
+			require(response.StatusCode == 200 && bytes.Contains(received, []byte("partial")) &&
+				calls.Load() == before+1 && attempt.Outcome(true) != nil, "ordinary provider stream lost bytes or replay fencing")
+			if terminal {
+				require(readErr == nil && receipt.State == "completed" && attempt.Outcome(false) == nil,
+					"ordinary completed provider stream lost its authoritative receipt")
+			} else {
+				require(readErr != nil && receipt.State == "uncertain" && attempt.Outcome(false) != nil,
+					"ordinary truncated provider stream fabricated completion")
+			}
+			replayed, err := ordinary.Do(http.DefaultClient, request)
+			if replayed != nil {
+				check(replayed.Body.Close())
+			}
+			require(err != nil && calls.Load() == before+1, "ordinary provider terminal attempt replayed")
+			provider.LoginUsage(ctx, ordinary.ID)
+		}
+	}
+	check(manager.SetEnabled(ctx, id, false))
+	request, err = http.NewRequestWithContext(ctx, "POST", "extension://"+ordinary.ID+"/v1/chat/completions", bytes.NewReader(body))
+	check(err)
+	_, err = ordinary.Do(http.DefaultClient, request)
+	require(err != nil, "disabled native module still executed")
+	require(calls.Load() == 11, "unexpected native retry or extra provider execution")
+	check(manager.SetEnabled(ctx, id, true))
+	check(manager.Store().DeleteAccount(id, providerID, account.ID, account.Generation))
+	request, err = http.NewRequestWithContext(ctx, "POST", "extension://"+ordinary.ID+"/v1/chat/completions", bytes.NewReader(body))
+	check(err)
+	_, err = ordinary.Do(http.DefaultClient, request)
+	require(err != nil, "deleted native account still executed")
+	fmt.Println(`{"native":true,"singleInstalledModule":true,"ordinaryProtocols":3,"ordinaryStreamProtocols":3,"completedProviderStreamsAuthoritative":true,"truncatedProviderStreamsUncertain":true,"terminalAttemptsNotReplayed":true,"goPlan":true,"quota":true,"hostUsageRevisions":["0","1","2"],"dirtyInferenceDenied":true,"unknownUsageStillDenied":true,"freshUsageAcknowledged":true,"ordinaryQuotaAcknowledged":true,"systemOneOrdinaryNative":true,"moduleActionCannotBypassOperation":true,"hostDecisionContractAvailable":true,"syntheticCLIImport":true,"checkedAgentApplyDisconnect":true,"offDenied":true,"deletedAccountDenied":true,"vendorCalls":0}`)
+}

@@ -1,0 +1,263 @@
+{
+  "schema": 1,
+  "checkedAt": "2026-11-15",
+  "status": "scoped-f1-f4-combined-and-final-package-accepted",
+  "module": {
+    "repository": "magpie-sdk-plugin-protocol-commandcode",
+    "baseCommit": "b0f5c5f4cf6263bc6871ed6611076b36cdcb9115",
+    "version": "0.1.3",
+    "sdkMinimum": "1.9",
+    "nativeABI": 1,
+    "runtimeSource": "usbox:/tmp/magpie-commandcode-completion.QL5FOqka/provider-eof-green1/module",
+    "runtimeSourceArchiveSHA256": "e52fab122d111475339dee7536e9ce4e0c13763f03bd6cd7bd89dd791b440ccc",
+    "runtimePackage": "usbox:/tmp/magpie-commandcode-completion.QL5FOqka/provider-eof-green1/dist/package",
+    "runtimePackageZipSHA256": "55d9de3326ffade1efbe7957243fd1c005ce34fb849d13f0cad9c7774ed004e9",
+    "runtimeLibrarySHA256": "9d7f706ea0e7851c8054bad30459836d857952ee02a6fe0dc7c3bf2c7aea6074",
+    "nativeReplayFixtures": "usbox:/tmp/magpie-commandcode-completion.QL5FOqka/typed-native-input2",
+    "nativeReplayRefinesOnlyFixturesAfterRuntimeFreeze": true,
+    "finalPackagingAcceptancePending": false,
+    "scopedCompatibilityAccepted": true,
+    "localLoreCommitIdentity": "The module commit containing this record; its SHA and final packet identity are recorded outside the commit to avoid self-reference."
+  },
+  "hostBase": {
+    "commit": "66ac2f7fdaeb208e8f4d60f53aea7b33ed396c55",
+    "commitTree": "94ec4c8de4e5b366a6e3fb854df2176007587ab8",
+    "physicalTree": "94ec4c8de4e5b366a6e3fb854df2176007587ab8",
+    "captureHead": "adcf4ce5edbe2fe9595c4fceb9e809c23f74d60d",
+    "captureHeadIsPhysicalTreeCommit": false,
+    "source": "usbox:/tmp/magpie-upstream-signing-closure.ofRrrBdz/source",
+    "paths": 10849,
+    "archiveSHA256": "131aeaa8fa9052dab47854ead8cb8b57f7f4dadca92715dbad307f4424c2de9e",
+    "receiptSHA256": "d97b5eca0017294ddccc457ee691411ede08c190e12a0d7857f27af6d49ec7c7",
+    "sourceIdentity": "56ffb3c7c68dd2c89c9c72f30bda6a0c0c5b487667f3ac9174fdb5b5a220ebb6",
+    "suppliedBinarySHA256": "a8e09770909f78ae89cc6175a45bb98e1dacdb305b62856f46956928cb8ecbe2",
+    "baseContainsCompletionFix": false,
+    "packetModified": false
+  },
+  "completionOverlay": {
+    "source": "usbox:/tmp/magpie-commandcode-completion.QL5FOqka/closure94-typed-input2/overlay",
+    "inputArchiveSHA256": "7326d06866f01eb7e7573be863d3fe68798a1b9ff2bfb003324f655cff3c4608",
+    "patchSHA256": "8f699c58724a8612c87089775ca85bebf27477a34c94c423bee52e665f5d9440",
+    "sourceAndTestFileCount": 10,
+    "owningReference": "docs/subsystems/extension-providers.md",
+    "owningReferenceSHA256": "cbd2d2be1d1128e13809c6877f74e7c4e8502062fe4453e8ffabca9292180f0d",
+    "hostFilesStaged": false,
+    "hostCommitCreated": false,
+    "binary": "usbox:/tmp/magpie-commandcode-completion.QL5FOqka/closure94-typed-binary/magpie",
+    "binarySHA256": "8b1a102fae32aca85e54b75f478bd6585efe70d3a33900f7c6ed4c1fce041c4f",
+    "binaryBuildReceiptSHA256": "9b1740a084e646ec65ec224fb7baba7fbe36ee53e3a9f0b5b622f3f232c8331d",
+    "syntaxGuardBinarySHA256": "e329ba8de5d1d6cb673551ddabc22b425d9424515b6e790b62d484368400f46c",
+    "syntaxGuardBinaryIsFinalTypedCorrection": false,
+    "receiptGraceSeconds": 2,
+    "tailAllowance": "one SDK MaxChunkBytes plus one overflow probe byte",
+    "budgetDecision": "Matches the existing process-worker cancellation grace for a local tail/receipt handoff after proven protocol completion; not a vendor time guarantee.",
+    "unboundedNativeJoinLimitation": true
+  },
+  "evidenceRoot": "usbox:/tmp/magpie-commandcode-completion.QL5FOqka",
+  "moduleGates": [
+    {
+      "directory": "candidate2",
+      "receiptSHA256": "99b3f7b8d8727a0c288bf4d50b8236a6f12e764738c5c3631236cd90eb590415",
+      "race20": {"pass": 2840, "fail": 0, "skip": 0},
+      "passed": ["format", "vet", "build", "strict-types", "donor", "isolated-official-harness", "sources", "native-package", "zip"],
+      "scope": "Historical checkpoint before Provider API EOF correction.",
+      "runtimeLibrarySHA256": "3ad154bc60ff7de5e9c4654c8d8c789cd19cf22572e4d0a712c98d731bdb69ae",
+      "runtimePackageZipSHA256": "f0f4eff3a9322cb10144e02cac314bad6a3023cafcb6aab4e40af83b92afbd84"
+    },
+    {
+      "directory": "provider-eof-green1",
+      "receiptSHA256": "ea16f776def4d54051f40a521ebb890c74707dca00d7bb2e73c6890cbe2b2ad6",
+      "race20": {"pass": 3520, "fail": 0, "skip": 0},
+      "passed": ["physical-host-snapshot", "format", "vet", "build", "strict-types", "donor", "isolated-official-harness", "sources", "native-package", "zip"],
+      "scope": "Final runtime including F1; actual SDK Serve checks forwarding bytes, one dispatch, uncertainty and no replay for all three Provider API streams."
+    }
+  ],
+  "causalNegatives": [
+    {
+      "directory": "red",
+      "receiptSHA256": "ebba122182ce8f13899a0d4a9a75b1f043921dd6980e69eaacdaed59d7083d36",
+      "counts": {"pass": 4, "fail": 17, "skip": 0}
+    },
+    {
+      "directory": "red2",
+      "receiptSHA256": "a9ec644c555e864d75b593e4805cb49a0cbb2c401d4724377a1b1cd6ae792a02",
+      "counts": {"pass": 6, "fail": 16, "skip": 0}
+    },
+    {
+      "directory": "agent-red",
+      "receiptSHA256": "cfb6ffb893effdd01193a57c683890baef4f7ea1afef2181ce36125da53605d2",
+      "counts": {"pass": 22, "fail": 1, "skip": 0}
+    },
+    {
+      "directory": "usage-red",
+      "receiptSHA256": "3e55d56c244a99713c7291fd8b7d1153ea3d6fd138dd403b26dea921fa078a0c",
+      "counts": {"pass": 20, "fail": 5, "skip": 0}
+    },
+    {
+      "directory": "host4b9-authority-red",
+      "receiptSHA256": "7ac61274db9d68e6a875d509afd1575ff06eb4958434cdfb6299985df5ed0246",
+      "counts": {"pass": 0, "fail": 7, "skip": 0},
+      "meaning": "The prior Close wrongly replaces promptly delivered completed receipts after protocol rejection."
+    },
+    {
+      "directory": "host4b9-readers-causal-red",
+      "receiptSHA256": "515090634a4af52e461415735741123a99b8449d4804855a52c04fc1a5d9d181",
+      "counts": {"pass": 20, "fail": 2, "skip": 0},
+      "meaning": "Only stream/terminal and its parent fail; this does not independently prove necessity of whole/search hooks."
+    },
+    {
+      "directory": "closure94-typed-guard-red",
+      "receiptSHA256": "77c7cbf24f24735e13c24691d8aa3f4a14dee9b24b318826bbc7096e1a85ab6a",
+      "counts": {"pass": 25, "fail": 3, "skip": 0},
+      "meaning": "The unchanged syntactically valid choices:string event and an invalid typed terminal wrongly authorize draining under the syntax-only guard; parent included."
+    },
+    {
+      "directory": "provider-eof-red1",
+      "receiptSHA256": "b5151a1879c8f100419120d5fc2ec305b4c2b1d703f5d02bd0b5e895682fcf63",
+      "counts": {"pass": 9, "fail": 16, "skip": 0},
+      "meaning": "Old production falsely completes EOF-only, unsolicited SSE EOF, wrong-protocol terminal, malformed-before-terminal and malformed-tail cases across Chat, Responses and Messages; parent included. No compile failure."
+    }
+  ],
+  "retainedHostGates": [
+    {
+      "directory": "host4b9-provider-green",
+      "receiptSHA256": "6760ff1feb34c9748c73405ac1aa2d7aae70ff595c3a861c3ea1822065d78924",
+      "race20": {"pass": 880, "fail": 0, "skip": 0},
+      "transportAndRegressionBytesUnchanged": true,
+      "covered": ["prompt completed receipts after early close, parse failure and nonterminal", "context recovery through wrappers", "repeated Close and caller cancellation join", "missing and late receipts", "excess tail racing completed receipt", "real two-second timeout and late completed receipt", "no automatic replay"]
+    },
+    {
+      "directory": "closure94-native",
+      "receiptSHA256": "c18bb33e89ea2423afacd1fb781936fe9804111817d9be9601f1f74695663727",
+      "passed": ["actual-binary-clean-install", "native-owner"],
+      "goProtocols20": {"pass": 20, "fail": 0, "skip": 0},
+      "systemone20": {"pass": 20, "fail": 0, "skip": 0},
+      "agent20": {"pass": 20, "fail": 0, "skip": 0},
+      "scope": "Actual standalone native package; ordinary Chat/Responses/Messages whole and stream, installed search, decision and agent paths. Successful replies under the earlier syntax-guard overlay."
+    },
+    {
+      "directory": "closure94-static",
+      "receiptSHA256": "a3fbcdebd03d0065615067b4beffb16c9075aa0a2ce421f36eca42d6a73c9747",
+      "passed": ["format", "vet", "build"],
+      "scope": "Earlier syntax-guard overlay."
+    },
+    {
+      "directory": "closure94-typed-green20",
+      "receiptSHA256": "0e2fe2d560a90a6866f16a1ca6c8032b3426da8740611bb245997502de44c4fd",
+      "race20": {"pass": 980, "fail": 0, "skip": 0},
+      "passed": ["format", "vet", "build"],
+      "scope": "Final typed decoder correction on exact committed tree94 plus frozen overlay."
+    }
+  ],
+  "combinedInstalledAcceptance": {
+    "directory": "closure94-typed-native",
+    "receiptSHA256": "e7fa4a6a5213c9d2da01d5b74c6d904ed8df48b2f368d66cd7c895e6d4c13847",
+    "base": "hostBase.physicalTree",
+    "overlay": "completionOverlay",
+    "module": "module.runtimePackage",
+    "passed": ["actual-binary-clean-one-package-install-list-inspect", "ordinary-native-owner"],
+    "goProtocolsRace20": {"pass": 20, "fail": 0, "skip": 0},
+    "systemoneRace20": {"pass": 20, "fail": 0, "skip": 0},
+    "agentRace20": {"pass": 20, "fail": 0, "skip": 0},
+    "ordinaryPaths": ["Go-plan Chat whole and stream", "Go-plan Responses whole and stream", "Go-plan Messages whole and stream", "installed translated search", "SystemOne and Decisions selected-account outcomes and usage", "agent connect, inspect, sync, model/effort edits and disconnect", "Provider API complete and truncated SSE for Chat, Responses and Messages", "quota revisions, dirty/unknown/fresh fences, configuration, disable and account deletion"],
+    "scope": "F1 producer terminal correction and F4 typed consumer completion correction exercised together. Exactly one standalone native package, synthetic local HTTP only. This accepts the frozen compatibility overlay, not a merged host or API 1.10."
+  },
+  "finalPackagingAcceptance": {
+    "directory": "f1-f4-final1",
+    "sourceInputArchiveSHA256": "c4e69a842346932eba20b4422a5e4644062dde832e11ecda23ccb7ab20d6a852",
+    "receiptSHA256": "ce52d710deb17286b9cdad4226100de404cdbb459e8f402e3b7f811a235240f6",
+    "passed": ["physical-host-snapshot", "format", "provenance-regression", "all-pinned-sources-and-overlay", "native-c-shared-and-strict-types", "zip-inventory"],
+    "distribution": "usbox:/tmp/magpie-commandcode-completion.QL5FOqka/f1-f4-final1/dist/package",
+    "zip": "usbox:/tmp/magpie-commandcode-completion.QL5FOqka/f1-f4-final1/dist/protocol-commandcode-0.1.3-linux-amd64.zip",
+    "zipSHA256": "4220d84f4f678d55db374d55b33f44e4583e58a71a24185c4a40d6162c5b7b80",
+    "runtimeComparisonReceipt": "usbox:/tmp/magpie-commandcode-completion.QL5FOqka/f1-f4-final-runtime-equality.json",
+    "runtimeComparisonReceiptSHA256": "84def89103144a2659bb10c19a17e5261068a6df8236cf5713377778ac7a4c90",
+    "identicalRuntimeFiles": ["lib/commandcode.so", "magpie-plugin.json", "package.json", "web/app.js", "web/index.html"],
+    "identicalProductionAndBuildSources": 18,
+    "finalCleanInstallDirectory": "f1-f4-final-install",
+    "finalCleanInstallReceiptSHA256": "1426451a7d8d5a03aa639c46fd1c90700eecfa37e583f8c8c21a88d3f0804132",
+    "finalCleanInstallPassed": true,
+    "metadataBoundary": "The final acceptance fields and verification-only status documents are recorded after packaging. Production, build inputs and packaged files are unchanged; no additional runtime suite was needed."
+  },
+  "changedFiles": {
+    "module": [
+      "CONTRACT-PLAN.md", "PLAN.md", "README.md", "SOURCES.md", "VERIFICATION.md",
+      "agent.go", "generate.go", "generate_stream.go", "models.go", "module.go",
+      "package.json", "provenance_test.go", "source-lock.json", "transport.go",
+      "agent_off_test.go", "generate_completion_test.go", "google_schema.go",
+      "provider_completion_test.go", "provider_stream.go",
+      "verify/check_sources.py", "verify/native_agent_metadata_test.go.txt",
+      "verify/native_owner.go.txt", "verify/EVIDENCE-COMPLETION.json",
+      "verify/HOST-CONTRACT-BLOCKER.md", "verify/astra_provider_probe_test.go.txt",
+      "verify/check_host_snapshot.py", "verify/harness_probe.mjs",
+      "verify/install_package.py", "verify/native_go_plan_test.go.txt",
+      "verify/replay_native.py", "verify/run_completion.py",
+      "verify/run_host_completion.py"
+    ],
+    "hostUnstaged": [
+      "docs/subsystems/extension-providers.md",
+      "internal/provider/extension_transport.go",
+      "internal/provider/extension_transport_completion_test.go",
+      "internal/gateway/gateway.go", "internal/gateway/continuation.go",
+      "internal/gateway/search.go", "internal/gateway/chat.go",
+      "internal/gateway/responses.go", "internal/gateway/anthropic.go",
+      "internal/gateway/codeassist.go",
+      "internal/gateway/extension_transport_completion_test.go"
+    ]
+  },
+  "independentReview": {
+    "initialReview": "local:/tmp/commandcode-independent-review.gJRco4/ZENO-review.txt",
+    "initialReviewSHA256": "b6a6b9b2469473f798c02288d7b873c2aa79f51269ddb379e1181c897d603017",
+    "initialReviewerKind": "separate Codex CLI process, not a claimed named Zeno or Astra agent",
+    "finding": "JSON syntax validity does not prove actual typed decoder acceptance.",
+    "findingHasCausalNegative": true,
+    "assignedAstraReviewer": "Raman",
+    "assignedAstraThread": "01a1dcb8-7d49-7813-9703-b2a32e78d66d",
+    "astraAcceptancePending": false,
+    "scope": "No remaining HIGH/MEDIUM in these F1/F4 corrections; no broad host, five-plugin or active API 1.10 acceptance.",
+    "f4": {
+      "unchangedProbeRace3": {"pass": 66, "fail": 0, "skip": 0},
+      "testedSource": "closure94-typed-proposal1",
+      "finalSource": "closure94-typed-input2",
+      "sourceEquivalenceReview": "The four decoder-file differences are only struct spacing; no behavioral difference."
+    },
+    "f1": {
+      "unchangedProbeRace3": {"pass": 12, "fail": 0, "skip": 0},
+      "testedSource": "provider-eof-green1",
+      "probePath": "verify/astra_provider_probe_test.go.txt",
+      "probeSHA256": "ab3f7b6fe973549dc009cd959e9ea669ddd1b7b5b593022db0002845f3ca3d1a",
+      "peerReceipt": "usbox:/tmp/magpie-astra-comprehensive.777KSM92/commandcode-fixed-result.json",
+      "peerReceiptSHA256": "8c4f03b4df2fc9ce5cfde426800ccad6c1bf91037faf45dda0f6657cb0c57ea3",
+      "peerInputsSHA256": "b0ad7fdac991941cf03ca7d9c778b7fafb1e0a8f2859ae3b46c350265ffec81a",
+      "peerLogSHA256": "2a0bb30b821c8eba62a883397ac014fce329586f9f78e1b967a904793b3fe5d6",
+      "authorUnchangedProbeDirectory": "provider-eof-astra-green2",
+      "authorReceiptSHA256": "e83c26c846feb73f4f2baa4878c13b6bdf6828820059d7e5089edb7c951fcc5a"
+    },
+    "frozenComprehensiveReportSHA256": "8e281a556ee880029f01ea8a9e3913e94c21bfb8b2eae7eb670d3df3cfb07f86",
+    "originalPeerProbesReceiptSHA256": "e4e8194a53f2acc6676eb8524143b53f2f12bef6c16e5287d35f0399eb4557ea"
+  },
+  "retainedSetupFailures": [
+    {
+      "directory": "provider-eof-astra-green1",
+      "meaning": "Verification PATH omitted /usr/sbin/ip. No tests ran; setup failure only, corrected in green2."
+    }
+  ],
+  "environment": {
+    "machine": "usbox",
+    "temporaryHomeAndXdg": true,
+    "offlinePinnedCaches": true,
+    "GOMAXPROCS": 2,
+    "goParallelism": 2,
+    "networkGuardSHA256": "09f2a8d3311566d21dafc87c118ef8d5e07cfba88f78dba3114e4cf124b2b57e"
+  },
+  "notClaimed": [
+    "final completion-fix merge or host commit",
+    "combined API 1.10 or other owners' corrections",
+    "a two-second bound on uncooperative in-process native worker shutdown",
+    "live vendor, credentials or browser approval",
+    "actual CommandCode CLI continuation or page rendering",
+    "non-Linux native execution",
+    "a broad host suite",
+    "publication, push or installed-app activation"
+  ]
+}

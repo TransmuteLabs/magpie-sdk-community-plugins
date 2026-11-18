@@ -1,0 +1,142 @@
+{
+  "schema": 1,
+  "date": "2026-11-14",
+  "status": "actual shared post-fix metadata replay green; exact final parent release pin pending",
+  "scope": "SDK model metadata helper, ordinary agent lifecycle, installed native CommandCode metadata, module suite and standalone package; no common broad run or host commit",
+  "evidenceRoot": "usbox:/tmp/magpie-model-metadata.INRSn51E",
+  "terminalEvidence": "module-metadata-postfix1/evidence.json",
+  "terminalEvidenceSHA256": "4a202b534d30b93767e11063ec123bf8669a6502c6793f27b96a9c565af5888c",
+  "host": {
+    "baseCommitOnly": "ae957e5a8a77553a6cf6f484c8b58a69393f3887",
+    "baseTreeOnly": "958fdab666e41dc35c41a8a061b76dba88c67aeb",
+    "inventory": "shared-api9-2.json",
+    "sourceIdentitySHA256": "e65763bfb9d461d3354effadd909cdcecd2f727e3461f0c07ba96c633508ab3b",
+    "archiveSHA256": "1ea721335576005f5aff570f7b4ce165bf24dc0fd4042c9842f0a7ccf26f4b44",
+    "files": 10703,
+    "actualWorktreeBytesWithoutProductionOverlay": true,
+    "parentEffortPreservationHunksPresent": true,
+    "onlyChangedPinnedSDKFilesSincePreviousActualCapture": [
+      "pkg/extension/types.go",
+      "internal/provider/models.go"
+    ],
+    "ownedHostFilesUnchanged": 16,
+    "finalParentCommit": null,
+    "finalParentTree": null,
+    "hostSharedWritesStagingOrCommit": false
+  },
+  "module": {
+    "baseCommit": "cfb084c073cb5fe9c64423a46c7990ea020c0f3e",
+    "version": "0.1.2",
+    "minimumSDK": "1.9",
+    "systemOneOperationFloor": "1.7",
+    "nativeABI": 1,
+    "inventory": "magpie-commandcode-sdk17-metadata-postfix1.json",
+    "executionSourceIdentitySHA256": "10df9b66997ea3b1f4c1160b1f68033cbe848afd1ac4f1b3ac20cfbc8f575a2e",
+    "archiveSHA256": "40f2fd26db010eda31f4a000ab21f2419c3cb2b5897c5d9479e4bf6d548ab238",
+    "files": 53,
+    "runtimeUnchangedSincePreviousActualRed": true,
+    "laterStatusDocumentsOutsideExecutionSnapshot": [
+      "OWN-MODEL-METADATA-API9.md",
+      "PLAN.md",
+      "VERIFICATION.md",
+      "verify/EVIDENCE-SDK19.json",
+      "verify/EVIDENCE-SDK19-POSTFIX.json"
+    ]
+  },
+  "checks": {
+    "sdkHelperRace20": {
+      "command": ["go", "test", "-race", "-tags", "nogui", "./pkg/extension", "-run", "^TestAgentModelMetadata", "-count=20", "-json", "-timeout=600s"],
+      "exit": 0,
+      "counts": {"pass": 260, "fail": 0, "skip": 0},
+      "log": "module-metadata-postfix1/sdk-race20.log",
+      "logSHA256": "54f54fae28eadd7a2f7479192d87d09d552e5c76f534a6710ae4e786285859f7"
+    },
+    "ordinaryAgentRace20": {
+      "command": ["go", "test", "-race", "-tags", "nogui", "./internal/agent", "-run", "^Test(ExtensionAgentModelMetadata.*|AgentModelMetadata.*|ExtensionAgentNoopSync.*)$", "-count=20", "-json", "-timeout=900s"],
+      "exit": 0,
+      "counts": {"pass": 120, "fail": 0, "skip": 0},
+      "log": "module-metadata-postfix1/ordinary-agent-race20.log",
+      "logSHA256": "72acefd1a9e250b157404cc2d978baa910b40eda261d29f3fa2eed2b17580a8f"
+    },
+    "installedNativeAgentRace20": {
+      "command": ["go", "test", "-race", "-tags", "nogui", "-overlay", "/tmp/magpie-model-metadata.INRSn51E/module-metadata-postfix1/native-agent-overlay.json", "./internal/agent", "-run", "^TestCommandCodeNativeAgentEffectiveMetadata$", "-count=20", "-json", "-timeout=900s", "-args", "-commandcode-metadata-distribution", "/tmp/magpie-model-metadata.INRSn51E/module-metadata-postfix1/dist/package"],
+      "overlay": "test fixture only; actual host production source unchanged",
+      "exit": 0,
+      "counts": {"pass": 20, "fail": 0, "skip": 0},
+      "log": "module-metadata-postfix1/native-agent-race20.log",
+      "logSHA256": "440c1dddaf55eb5792b313bf36a24af248173a5cee4ebb55f0d21def02e8db93"
+    },
+    "moduleRace20": {
+      "command": ["go", "test", "-race", "-count=20", "-json", "-timeout=600s", "./..."],
+      "workingDirectory": "module-metadata-postfix1/module",
+      "exit": 0,
+      "counts": {"pass": 1420, "fail": 0, "skip": 0},
+      "log": "module-metadata-postfix1/module-race20.log",
+      "logSHA256": "7cd68815d01c87dd3fd62b52c83be8c60cf1c68c109ba27cd62be9f746a8fa93"
+    },
+    "format": {"exit": 0, "emptyDiff": true},
+    "scopedVet": {"command": ["go", "vet", "-tags", "nogui", "./pkg/extension", "./internal/agent"], "exit": 0},
+    "sourceProvenance": {"exit": 0, "hashes": 56},
+    "cSharedStrictTSAndDefaultPackageBuild": {"exit": 0},
+    "packageVerification": {"exit": 0}
+  },
+  "testedDistribution": {
+    "path": "module-metadata-postfix1/dist/protocol-commandcode-0.1.2-linux-amd64.zip",
+    "sha256": "afb43cce7742d18168aaf00ce5245c9833686bd69452b1765f3e468d60d0bb68",
+    "files": 14,
+    "scope": "actual distribution used by native replay; current status documents updated afterward"
+  },
+  "currentPackage": {
+    "path": "module-metadata-postfix-package2/dist/protocol-commandcode-0.1.2-linux-amd64.zip",
+    "localPreservedCopy": "dist/sdk19-snapshot-e65763bf/protocol-commandcode-0.1.2-linux-amd64.zip",
+    "sha256": "754f22490aed1f3258cec630ae27bb63fb62532cff5f41ec8ecce1378675713b",
+    "sourceInventory": "magpie-commandcode-sdk17-metadata-postfix-package2.json",
+    "sourceIdentitySHA256": "6b929f8b6454f967c9528d74069cc67183f6ffe177a3804feb95e3cb77540a03",
+    "sourceArchiveSHA256": "7e38a49d89556a1d9ac040debb0e0e0203781108679d783409e06e1440bd0c68",
+    "sourceFiles": 54,
+    "packagingEvidence": "module-metadata-postfix-package2/evidence.json",
+    "packagingEvidenceSHA256": "749f525eecab5a2c83c5c39d93d35c91037feef7c79a5c37e45db7fc5bfdf73f",
+    "provenanceTestSourceHashesBuildAndArchiveVerificationExit": 0,
+    "runtimeInputsUnchangedSinceGreenRace20": true,
+    "nativeUIManifestAndSourceLockBytesMatchTestedDistribution": true,
+    "comparisonEvidence": "module-metadata-postfix-package2/artifact-comparison.json",
+    "comparisonEvidenceSHA256": "0fb1483a732d5d22dd6796ed4a9e70ee5434274c8327a374ec54160ab98a1b76",
+    "currentEvidenceAndHistoricalRecordsVerified": true,
+    "scope": "default package rebuilt with current GREEN status documents; final parent release pin pending",
+    "annotation": "This currentPackage record was added after packaging. Repository verify/*.json records are outside the distribution, so the packaged files and their hashes are unchanged."
+  },
+  "execution": {
+    "host": "usbox",
+    "initialUserNamespaceForNative": true,
+    "isolatedHOMEAndXDG": true,
+    "network": "existing descendant loopback seccomp guard for trusted fixtures",
+    "offlinePinnedCaches": true,
+    "environmentAndToolchain": "verify/EVIDENCE-SDK19.json:environment",
+    "hostFilesMatchedAfterChecks": 10703,
+    "moduleFilesMatchedAfterChecks": 53,
+    "liveVendorRequests": 0
+  },
+  "preservedPreFixReds": {
+    "repositoryRecord": "verify/EVIDENCE-SDK19.json",
+    "sdkAndOrdinaryAgent": "proof-shared-api9-1/evidence.json",
+    "sdkCounts": {"pass": 12, "fail": 1, "skip": 0},
+    "ordinaryCounts": {"pass": 100, "fail": 20, "skip": 0},
+    "nativeAgent": "module-metadata-shared2/native-agent-race20.log",
+    "nativeCounts": {"pass": 0, "fail": 20, "skip": 0},
+    "oldLogsAndArtifactsOverwrittenOrDeleted": false
+  },
+  "compatibility": {
+    "discoveryMissingOrNullEfforts": "unknown, no new floor",
+    "discoveryEmptyEfforts": "known no levels, no new floor",
+    "newAgentMetadataAndHelper": "API1.9 agent-wiring",
+    "ordinaryLegacyMetadataOff": "included in green ordinary race20",
+    "defaultPackageRequiresNoCapabilityVariantOrAdditionalRuntimePlugin": true
+  },
+  "remainingLimits": [
+    "Pin exact final parent commit/tree and regenerate/replay release provenance when the coordinating owner supplies it.",
+    "No live vendor/browser approval, real CLI import/continuation, GUI rendering or non-Linux native execution is claimed.",
+    "Native Go-plan remains Chat-only with explicit unsupported-control refusals and no replay after uncertain execution.",
+    "Google nested-reference schema normalization is deferred and native history is not advertised.",
+    "SystemOne/checkin/activation and earlier causal proofs remain separately attributed to their recorded sources; no common broad acceptance is claimed here."
+  ]
+}

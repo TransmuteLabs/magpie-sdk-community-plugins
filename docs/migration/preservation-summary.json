@@ -1,0 +1,123 @@
+{
+  "commandcode": {
+    "originalFiles": 78,
+    "unchanged": 60,
+    "relocationEdits": [
+      "OWN-MODEL-METADATA-API9.md",
+      "README.md",
+      "SOURCES.md",
+      "SYSTEMONE-SDK-CONTRACT.md",
+      "build.py",
+      "go.mod",
+      "provenance_test.go",
+      "source-lock.json",
+      "systemone_contract_test.go",
+      "verify/check_host_snapshot.py",
+      "verify/check_package.py",
+      "verify/check_sources.py",
+      "verify/harness_probe.mjs",
+      "verify/replay_native.py",
+      "verify/run_completion.py",
+      "verify/systemone_donor.mjs",
+      "web/app.ts",
+      "web/sdk-ui.d.ts"
+    ],
+    "allMapped": true
+  },
+  "devin": {
+    "originalFiles": 154,
+    "unchanged": 147,
+    "relocationEdits": [
+      "README.md",
+      "build.py",
+      "gemini_host_e2e.py",
+      "go.mod",
+      "provenance.py",
+      "provenance_test.py",
+      "source-lock.json"
+    ],
+    "allMapped": true
+  },
+  "zcode": {
+    "originalFiles": 233,
+    "unchanged": 208,
+    "relocationEdits": [
+      "COMMUNITY-PARITY.md",
+      "ONE-BUNDLE-AUDIT.md",
+      "README.md",
+      "SOURCES.md",
+      "auth_e2e.py",
+      "build.py",
+      "e2e.py",
+      "go.mod",
+      "prototype/ui-sdk15/control.ts",
+      "source-lock.json",
+      "sources_test.go",
+      "testdata/agent/run.py",
+      "testdata/agent/verify.py",
+      "testdata/automatic-history/verify.py",
+      "testdata/completion/verify.py",
+      "testdata/donor0166/provenance.py",
+      "testdata/observability/installed.py",
+      "testdata/observability/verify.py",
+      "testdata/parity/default_package.py",
+      "testdata/parity/provenance.py",
+      "testdata/parity/ui_verify.py",
+      "testdata/parity/verify.py",
+      "ui_auth_e2e.py",
+      "ui_e2e.py",
+      "web/auth-http.mjs"
+    ],
+    "allMapped": true
+  },
+  "opencode": {
+    "originalFiles": 140,
+    "unchanged": 120,
+    "relocationEdits": [
+      "HISTORY_UI.md",
+      "MIGRATION.md",
+      "README.md",
+      "SOURCES.md",
+      "build.py",
+      "go.mod",
+      "history_lock_linux_test.go",
+      "source-lock.json",
+      "source_version_test.go",
+      "testdata/check_distribution.py",
+      "testdata/check_history_ui_plan.py",
+      "testdata/donor_replies.mjs",
+      "testdata/extract_donors.py",
+      "testdata/full_e2e.py",
+      "testdata/history_contract.py",
+      "testdata/native_refresh.py",
+      "testdata/storage_e2e.py",
+      "testdata/storage_writer.py",
+      "testdata/zen_policy_oracle.mjs",
+      "testdata/zen_tools_oracle.mjs"
+    ],
+    "allMapped": true
+  },
+  "omp": {
+    "originalFiles": 62,
+    "unchanged": 46,
+    "relocationEdits": [
+      "CODEX-EXPORT.md",
+      "CODEX-LINEAGE.md",
+      "README.md",
+      "SOURCE-PREVIEW.md",
+      "SOURCES.md",
+      "build.py",
+      "build_source_preview.py",
+      "go.mod",
+      "provenance.py",
+      "source-lock.json",
+      "source_version_test.go",
+      "test_build_identity.py",
+      "test_build_provenance.py",
+      "test_build_source_preview.py",
+      "verify_host.py",
+      "verify_source_owner.py"
+    ],
+    "allMapped": true
+  }
+}

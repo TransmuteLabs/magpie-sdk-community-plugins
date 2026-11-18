@@ -1,0 +1,93 @@
+{
+  "authority": "zai-org/ZCode@fec975905a2abd4c07e35c40d51fa097a2258ec9",
+  "subscribe": {
+    "id": "subscribe-1",
+    "method": "v4/conversation/subscribe",
+    "params": {
+      "topic": "conversation/session-9",
+      "connectionId": "connection-1",
+      "clientMode": "desktop-continuous",
+      "workspace": {"workspacePath": "/fixture/workspace", "workspaceKey": "workspace-1"}
+    }
+  },
+  "subscribeAck": {
+    "id": "subscribe-1",
+    "result": {"ack": {"subscriptionId": "subscription-1", "mode": "snapshot", "logEpoch": "epoch-1"}}
+  },
+  "send": {
+    "id": "send-1",
+    "method": "v4/command",
+    "params": {
+      "workspace": {"workspacePath": "/fixture/workspace", "workspaceKey": "workspace-1"},
+      "commandId": "cmd-send-1",
+      "clientId": "client-1",
+      "sessionId": "session-9",
+      "type": "sendText",
+      "payload": {"text": "fixture", "modelSelection": {"providerId": "magpie", "modelId": "fixture-model"}},
+      "issuedAt": 1800000000000
+    }
+  },
+  "sendAck": {
+    "id": "send-1",
+    "result": {
+      "commandId": "cmd-send-1",
+      "status": "accepted",
+      "revisionAtDecision": 1,
+      "result": {"type": "inputAccepted", "delivery": "startNow", "inputId": "input-1"}
+    }
+  },
+  "reverse": {
+    "id": "rpc-reverse-1",
+    "method": "interaction/requestProviderRuntimeHeaders",
+    "params": {
+      "requestId": "session-9:provider-runtime-headers:00000000-0000-4000-8000-000000000001",
+      "sessionId": "session-9",
+      "turnId": "turn-1",
+      "workspace": {"workspacePath": "/fixture/workspace", "workspaceKey": "workspace-1"},
+      "modelSelection": {"providerId": "magpie", "modelId": "fixture-model"},
+      "providerId": "magpie",
+      "reason": "model-request"
+    }
+  },
+  "reverseReply": {"id": "rpc-reverse-1", "result": {"headersApplied": false}},
+  "reverseCancelled": {
+    "method": "interaction/providerRuntimeHeadersCancelled",
+    "params": {
+      "requestId": "session-9:provider-runtime-headers:00000000-0000-4000-8000-000000000001",
+      "sessionId": "session-9",
+      "workspace": {"workspacePath": "/fixture/workspace", "workspaceKey": "workspace-1"}
+    }
+  },
+  "stop": {
+    "id": "stop-1",
+    "method": "v4/command",
+    "params": {
+      "workspace": {"workspacePath": "/fixture/workspace", "workspaceKey": "workspace-1"},
+      "commandId": "cmd-stop-1",
+      "clientId": "client-1",
+      "sessionId": "session-9",
+      "type": "stop",
+      "payload": {"expectedForegroundExecutionId": "execution-1"},
+      "issuedAt": 1800000000001
+    }
+  },
+  "stopAck": {
+    "id": "stop-1",
+    "result": {"commandId": "cmd-stop-1", "status": "accepted", "revisionAtDecision": 2}
+  },
+  "query": {
+    "id": "query-1",
+    "method": "v4/commands/query",
+    "params": {"commands": [{"sessionId": "session-9", "commandId": "cmd-send-1"}]}
+  },
+  "queryResult": {
+    "id": "query-1",
+    "result": {
+      "results": [{
+        "key": {"sessionId": "session-9", "commandId": "cmd-send-1"},
+        "result": {"commandId": "cmd-send-1", "status": "accepted", "revisionAtDecision": 1},
+        "turn": {"turnId": "turn-1", "state": "completedInterrupted"}
+      }]
+    }
+  }
+}

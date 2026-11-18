@@ -1,0 +1,53 @@
+package commandcode
+
+import (
+	"encoding/json"
+	"io"
+	"net/http"
+	"net/http/httptest"
+	"strings"
+	"testing"
+
+	sdk "github.com/yetone/magpie/pkg/extension"
+)
+
+func TestAstraProviderTruncatedStreamIsNotCompleted(t *testing.T) {
+	for _, protocol := range []string{"chat", "responses", "anthropic"} {
+		t.Run(protocol, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+				if request.URL.Path == "/alpha/billing/subscriptions" {
+					io.WriteString(writer, `{"data":{"planId":"individual-pro","status":"active"}}`)
+					return
+				}
+				writer.Header().Set("Content-Type", "text/event-stream")
+				switch protocol {
+				case "chat":
+					io.WriteString(writer, "data: {\"choices\":[{\"delta\":{\"content\":\"partial\"}}]}\n\n")
+				case "responses":
+					io.WriteString(writer, "data: {\"type\":\"response.output_text.delta\",\"delta\":\"partial\"}\n\n")
+				case "anthropic":
+					io.WriteString(writer, "data: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"text_delta\",\"text\":\"partial\"}}\n\n")
+				}
+			}))
+			defer server.Close()
+			worker := fixture(t, Config{APIURL: server.URL, StudioURL: "https://commandcode.ai"})
+			raw, _, err := worker.call(sdk.MethodProviderExecute, sdk.ExecuteRequest{
+				Protocol: protocol, Model: "fixture",
+				Body: []byte(`{"model":"fixture","stream":true,"messages":[{"role":"user","content":"hello"}]}`),
+			}, testAuth())
+			if err != nil {
+				if !strings.Contains(err.Error(), "uncertain") {
+					t.Logf("explicit failure: %v", err)
+				}
+				return
+			}
+			var result sdk.ExecuteResult
+			if json.Unmarshal(raw, &result) != nil {
+				t.Fatalf("invalid SDK result: %s", raw)
+			}
+			if result.Outcome == "completed" {
+				t.Fatalf("truncated %s SSE without a protocol terminal published completed receipt: %s", protocol, raw)
+			}
+		})
+	}
+}

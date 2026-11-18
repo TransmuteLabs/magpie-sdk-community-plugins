@@ -1,0 +1,11 @@
+{
+  "mode": "fixture-v2",
+  "command": [
+    "python3",
+    "fixture_smoke.py"
+  ],
+  "exit": 0,
+  "seconds": 0.5861304779537022,
+  "runnerSHA256": "12f41c2255732fa2d1723cddf3d6e2b10ee9032aa0196f95f734cdc2f66191ba",
+  "home": "/tmp/magpie-minimax-host-e2e.fhLVWFGt/mm-env-pb00nhov"
+}

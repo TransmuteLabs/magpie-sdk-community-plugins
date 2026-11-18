@@ -1,0 +1,10 @@
+{
+  "name": "magpie-opencode-go",
+  "version": "0.8.0",
+  "private": true,
+  "type": "module",
+  "magpie": {
+    "page": {"title": "OpenCode", "file": "web/index.html"},
+    "permissions": []
+  }
+}

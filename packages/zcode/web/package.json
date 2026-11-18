@@ -1,0 +1,13 @@
+{
+  "name": "magpie-zcode-control",
+  "version": "0.15.0",
+  "private": true,
+  "type": "module",
+  "magpie": {
+    "page": {
+      "title": "ZCode",
+      "file": "web/index.html"
+    },
+    "permissions": []
+  }
+}

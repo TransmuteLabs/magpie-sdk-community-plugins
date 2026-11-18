@@ -1,0 +1,352 @@
+{
+  "schema": 1,
+  "plugin": {"id": "opencode", "version": "0.8.0", "sdkMinimum": "1.9", "nativeABI": 1},
+  "variant": "full",
+  "compatibilityArtifacts": [{"id": "opencode", "version": "0.8.0", "sdkMinimum": "1.8", "nativeABI": 1, "variant": "api8", "buildFlag": "--compat-api8"}],
+  "currentSourceReview": {
+    "checkedAt": "2026-11-15",
+    "moduleBaseCommit": "e2112da6fe0c601ee6523a972ebcb69cbaeef681",
+    "officialBaseline": "83960f8a56b2f2b8ad0b751f23baaf9d0eb65ad9",
+    "officialDev": "38bd73789a43bf043599d6196af96583228035d7",
+    "officialLatestRelease": {"version": "2.3.0", "tag": "v2.3.0", "commit": "a6b15d33daf6ab7d35569f6d711fdb630b9f04e7"},
+    "officialRelevantDelta": "Provider/auth/Console/config/schema/database and stored history sources unchanged; other core changes repair text boundaries and glob errors, outside this package's protocol/config/storage behavior",
+    "communityBaseline": "26ea8faf7793ca66dd8e7a8b90128a5235552a1f",
+    "communityCurrent": "57d1cc6a9f49389d495ea9be8d986c70de7767bf",
+    "communityZenDelta": "Entire packages/zen-free subtree unchanged",
+    "sourceCheckoutsPreserved": true,
+    "record": "SOURCES.md",
+    "hostBoundaries": "HOST_GAPS.md",
+    "nativeOwnership": "Generated magpie provider leaves official Console integration/policies/discovery/session wake enabled; native Console connection and native experimental flag remain separately owned. Magpie OAuth/gateway key do not create that connection",
+    "nativeOwnershipFixtures": ["agent_console_test.go", "console_features_test.go"]
+  },
+  "publicPolicyWork": {
+    "identity": "Selected opencode-zen-free only; personal Go/Zen and Gemini remain native passthrough",
+    "protocols": ["chat", "responses", "messages"],
+    "behaviors": ["Force upstream streaming and Chat include_usage", "Caller-selected JSON collapse or SSE after tool normalization", "Optional explicit publicEnvironment facts with no home/Git/filesystem probing", "Strict terminal/error/cancellation and exact JSON number preservation"],
+    "donorCases": 63,
+    "bounds": {"replyBytes": 33554432, "eventBytes": 1048576, "positions": 10000, "itemIndex": 65535},
+    "intentionalDifferences": ["No truncated success synthesis", "Responses requires native completed response, not incomplete success", "Configured temp preference grants no tool/filesystem approval and omits donor's approval claim"],
+    "tests": ["zen_policy_test.go", "zen_collapse_test.go", "testdata/zen_policy_oracle.mjs"],
+    "developmentPacket": "usbox:/tmp/magpie-opencode-current.2PzAwkkH",
+    "developmentSDKTree": "013b3ab2d4cb863c3150af3110a377718402f38b",
+    "finalInstalledHostAcceptance": "Passed bounded candidate physical-host replay, source/binary unchanged. Parent full acceptance/review pending; this is not an accepted parent or future commit claim",
+    "candidateHost": {
+      "source": "usbox:/tmp/magpie-upstream-signing-final.QhgGhCd7/source",
+      "tree": "36f8e629b1092b089d4d59e0f9d8473a1f602ff8",
+      "headAtCapture": "adcf4ce5edbe2fe9595c4fceb9e809c23f74d60d",
+      "sourcePaths": 10846,
+      "sourceArchiveSHA256": "5f07aab7ab2a782131789197fe3c26778e33f9ee3d54e459ba63f62ef9fecdfc",
+      "binary": "usbox:/tmp/magpie-upstream-signing-final.QhgGhCd7/magpie",
+      "binarySHA256": "0bd335b7b6191f64d7f4ba6d1df273928e6ade33fd7966b5245987ac6a10c509",
+      "hostCommit": null,
+      "boundary": "Immutable physical source and supplied binary only; parent base acceptance/review pending; headAtCapture and future commits do not identify this tested tree"
+    }
+  },
+  "currentAcceptance": {
+    "checkedAt": "2026-11-15",
+    "state": "bounded history owner/native/Chromium, module and package gates passed; shared SDK1.10 publication and merged-host exact-source acceptance remain separate",
+    "packet": "usbox:/tmp/magpie-history-v1.FwJugSor",
+    "receipt": "history-receipt.json",
+    "record": "HISTORY_UI.md",
+    "moduleBaseCommit": "5cf5084432d9a365f04316186c944ca77a42f7f8",
+    "hostBaseHead": "66ac2f7fdaeb208e8f4d60f53aea7b33ed396c55",
+    "hostBaseTree": "94ec4c8de4e5b366a6e3fb854df2176007587ab8",
+    "hostBaseArchiveSHA256": "131aeaa8fa9052dab47854ead8cb8b57f7f4dadca92715dbad307f4424c2de9e",
+    "hostSourceSelection": "Supplied immutable closure API9 source plus candidate6 history-only16-path overlay and corrected settings CAS/regression; concurrent AgentResume helper additions and all shared API10 authoring excluded from this proof, preserved in working source",
+    "hostOverlayArchiveSHA256": "73d6c72fb5b7b9608660a88bc6550a310e7c619e417b3a72a15e85c74cb54287",
+    "hostPhysicalTree": "2c3ea47814211d7d0b818eeb074168fe8f83ec16",
+    "hostSourcePaths": 10858,
+    "hostBinarySHA256": "c62a94b7b09b5e1d7a48edf1f7b6604440202e36fbdef4e09c0f9308e67a6770",
+    "hostCommit": null,
+    "stockArtifactSource": "module6-package used by proof8; refreshed final distribution hashes and exact installed replay are recorded separately in distribution-artifacts.json and final-results.json",
+    "stockLibrarySHA256": "87a3bc56cc1a11482c5891ae18b6637d169f8f21926892b4da1ac29b58041cf1",
+    "browserBundleSHA256": "a469e51f66f29882ae3a4596e5954b7e12963434c1cb8327c16c892876ea3b33",
+    "gates": {"ownerReceipt": "proof8-results.json", "completedParentBrowserReceipt": "proof8-tail-results.json", "moduleReceipt": "module6-results.json", "finalPackageReceipt": "final-results.json", "ownerGoRacePasses": 38, "moduleRacePasses": 377, "parentVMTests": 5, "sdkUINeighbors": 4, "moduleUITests": 6, "causalControls": 7, "chromium": "installed-history-proof8/history-browser-result.json", "nativeWALMediaHTTP": "installed-history-proof8/result.json", "oldAPI9Unsupported": "installed-history-old-api9/history-browser-result.json", "imageDecoded": true},
+    "reviewCorrections": ["Settings-backed OwnOff sampled outside non-reentrant settings CAS lock; old-source timeout preserved", "Settings raw revision rechecked after owner callbacks and load; in-place and atomic-replacement external refusal fails3/3 each on old source and remains byte-for-byte untouched after corrected rejection"],
+    "red": ["red-nogui-results.json", "red-results.json", "candidate1-results.json", "candidate2-results.json", "module2-results.json", "module3-results.json", "replay1-results.json", "replay2-results.json", "module4-results.json", "red-ownoff-results.json", "candidate6-results.json", "red-cas-review-results.json", "proof7-results.json", "proof8-results.json"],
+    "actualOpenCodeExecutable": false,
+    "liveVendors": false,
+    "dependenciesChanged": false,
+    "rankedBoundaries": "HOST_GAPS.md: final shared SDK1.10 integration/replay; native Console single sign-in is conditional and excluded; native remote policy/skills/session wake remain client-owned"
+  },
+  "historyUIWork": {
+    "feature": "session-history-v1",
+    "nativeMinimum": "1.9",
+    "api8Minimum": "1.8",
+    "globalSDKVersionEdited": false,
+    "hello": {"optIn": {"features": ["session-history-v1"]}, "result": "features[] on the existing hello response; legacy hello unchanged; older bridge resolves ready false"},
+    "binding": {"module": "opencode", "source": "opencode-history", "agent": "opencode", "rootSlot": "data", "nativeRootSlot": "opencode.data", "agentProfile": "opencode-sdk is not storage authority"},
+    "owner": ["current page ref", "window component", "module", "package revision", "config version", "declared source", "finite selected root", "persisted settings and exact consent revision", "source epoch", "OwnOff"],
+    "methods": ["inspect(source)", "requestAccess({source,viewRef,rootRef})", "release({source,viewRef,consentRef})", "list({source,viewRef,rootRef,cursor?,limit?})", "read({source,viewRef,sessionRef})", "media({source,viewRef,sessionRef,readRef,mediaRef})"],
+    "bounds": {"catalogs": 16, "catalogLifetimeSeconds": 300, "catalogEntries": 10000, "pageEntries": 256, "pageEntryJSONBytes": 262144, "transcriptTextBytes": 400000, "mediaBytes": 8388608, "metadataPollMilliseconds": 2000},
+    "noAccountConsent": true,
+    "noCSPOrNetworkWidening": true,
+    "build": "Actual SDK types/runtime; installed pinned Bun creates classic browser bootstrap; no new build or runtime dependency; native package remains self-contained",
+    "tests": ["testdata/history_ui.test.mjs", "testdata/history_browser.cjs", "testdata/storage_e2e.py", "testdata/check_distribution.py"],
+    "record": "HISTORY_UI.md",
+    "acceptedPlan": "5cf5084432d9a365f04316186c944ca77a42f7f8:HISTORY_UI_PLAN.md"
+  },
+  "publicPolicyAcceptance": {
+    "checkedAt": "2026-11-15",
+    "state": "passed bounded synthetic candidate-host verification; parent full acceptance/review pending",
+    "packet": "usbox:/tmp/magpie-opencode-current.2PzAwkkH",
+    "receipt": "accept-summary.json",
+    "record": "EVIDENCE.md",
+    "moduleBaseCommit": "e2112da6fe0c601ee6523a972ebcb69cbaeef681",
+    "behaviorSourceArchiveSHA256": "f92d2d92eb365ce3f8b7fa8d9757788738b5dbdbf36ad33c97b974bc20d25311",
+    "finalSourceBoundary": "Final documentation/provenance and package metadata have a separate inventory. The final package retains exactly the stock native library and browser assets exercised by candidate-host replay",
+    "hostTree": "36f8e629b1092b089d4d59e0f9d8473a1f602ff8",
+    "hostCommit": null,
+    "hostHeadAtCapture": "adcf4ce5edbe2fe9595c4fceb9e809c23f74d60d",
+    "hostSourceArchiveSHA256": "5f07aab7ab2a782131789197fe3c26778e33f9ee3d54e459ba63f62ef9fecdfc",
+    "hostBinarySHA256": "0bd335b7b6191f64d7f4ba6d1df273928e6ade33fd7966b5245987ac6a10c509",
+    "hostSourcePaths": 10846,
+    "sourceAndBinaryUnchanged": true,
+    "red": [
+      {"receipt": "red2-results.json", "failedTestsAndSubtests": 16, "passedRegressions": 4, "passedNeighbors": 10, "logSHA256": "cdb1dba4ff0a44bcbf3cc0e4287a6014770c760f86c7cb25750ca39d1447cdc1"},
+      {"receipt": "red3-results.json", "failedTestsAndSubtests": 1, "passedNeighbors": 17, "logSHA256": "8b4c80d35425b006c5cb5423402c4341473880a5c659b003ce2d54c619c7d738"}
+    ],
+    "gates": {"receipt": "accept-results.json", "scopedRace5Passes": 130, "moduleRacePasses": 377, "causalControls": 7, "vet": "passed", "format": "passed", "defaultAndAPI8Packages": "passed", "toolOracleCases": 99, "policyOracleCases": 63},
+    "ordinaryNative": {"owner": "accept-owner/result.json", "publicForcedStreamJSONCollapse": true, "watchTypes": true, "stockSQLiteWALMedia": "accept-storage/result.json", "agentAPI9V1": "passed", "agentAPI9V2": "passed", "agentAPI8V2": "passed", "installedModules": ["opencode"]},
+    "stockLibrariesSHA256": {"defaultAPI9": "84473a25d66958d1b9484d02b7757351b85f98477d03ea06a9465b0afe6e8f85", "explicitAPI8": "b4019ed3398071d2a5ca7c7a57b72835f02981d5386113bd3744de4f7e76d804"},
+    "fixtureLibrarySHA256": "1742f9ff025313f4cedc4e588d5183a1291b6c174ba010f9fc183424e2d106f1",
+    "fixtureBoundary": "Full owner/agent replay substitutes synthetic endpoint and sanitized logging entrypoint; stock distribution is used by the actual SQLite/WAL/media proof. Native executable is a fixture, not official OpenCode",
+    "actualOpenCodeExecutable": false,
+    "liveVendors": false,
+    "dependenciesChanged": false,
+    "rankedBoundaries": "HOST_GAPS.md: rendered browser consent/media, conditional shared native Console sign-in; remote policy/skills/session wake remain native-owned"
+  },
+  "agentMetadataAcceptance": {
+    "state": "passed bounded synthetic native verification",
+    "checkedAt": "2026-11-14",
+    "hostCommit": null,
+    "hostBaseCommit": "6508c079b84b2a21acad5fd415eab142eaaf7b0c",
+    "hostTree": "013b3ab2d4cb863c3150af3110a377718402f38b",
+    "hostSourceArchiveSHA256": "faa0e751d0e4149a5313c60800a374f826a34517ed86cd65db9d5d0e801bcb15",
+    "hostSourcePaths": 10807,
+    "hostBinarySHA256": "8e05515c1be2c49a0669cbd970bd6503ebbe3edfd5047a3bc4c6115f7eba59df",
+    "moduleBaseCommit": "376fa22493d5874ceb18e39d27f19cc8e258caa5",
+    "behaviorSourceArchiveSHA256": "3753700f7dd5e2f5e23cc0ec35aa9d2bd49a4b96651ae7b09b6bda067981bc78",
+    "nativeProofSourceArchiveSHA256": "3b4050748b99cdc3b72486ab0d9f511e39d6854cadb0cc0195666db9ee05148a",
+    "snapshotBoundary": "The native proof differs from the reviewed behavioral snapshot only in a V1 fixture assertion that now compares JSON object members without ordering. Final documentation/provenance packaging has a separate inventory; no future host commit is substituted for the tested physical tree.",
+    "packet": "usbox:/tmp/magpie-opencode-metadata-repair.T6xHh5YL",
+    "record": "EVIDENCE.md",
+    "behavioralRed": {"receipt": "old-red-results.json", "exit": 1, "failedTestsAndSubtests": 6, "logSHA256": "64a882f1ab9a7dc3d91ec25544c81c2902f9e09b21c7187b7c097c75ebc36517"},
+    "gates": {"receipt": "green-results.json", "agentRace20Passes": 500, "moduleRacePasses": 271, "vet": "passed", "format": "passed", "defaultBuildAndPackage": "passed", "api8BuildAndPackage": "passed"},
+    "ordinaryNative": {"receipt": "owner2-results.json", "defaultAPI9V1": "passed", "defaultAPI9V2": "passed", "explicitAPI8V2": "passed"},
+    "ordinaryRoutes": ["native-install", "agent-connect", "agent-reapply", "model-spec-edit", "prior-models", "local-output-variants-preservation", "idempotent-sync", "api8-metadata-off"],
+    "stockLibrariesSHA256": {"defaultAPI9": "e74c4f44fd78725571c3f1ab560d50f5e23d2d93d294d45b4253c47e604474ab", "explicitAPI8": "a608c3fe1514f4c1c208dd4097a21b631fcdb06e4ffe6191ac9d62b70b70079a"},
+    "fixtureLibrarySHA256": "049f04a206ac7fe6fc130e3dbb153adb01c2e3f2d36c2856bafbff6c49cc2ced",
+    "endpointFixture": "The existing native entry-point wrapper substitutes synthetic loopback endpoints and logs sanitized public model options; stock distribution and fixture library hashes are distinct",
+    "actualOpenCodeBinary": false,
+    "liveVendorAcceptance": false,
+    "scope": "Module-only effective agent metadata and explicit API8 compatibility; no newer host attribution, full host/domain replay, new modalities contract or Mac runtime acceptance"
+  },
+  "hostAcceptance": {
+    "checkedAt": "2026-11-14",
+    "hostCommit": null,
+    "hostBaseCommit": "c11acbc2bebec1fb213ef562900d35188cdf55fe",
+    "hostTree": "8fe78ab9df13d733d61462eacce19bff523c1e58",
+    "hostSourceArchiveSHA256": "01117ce6f6f8842d16fcd81224dad1795020b3b5c4d69b9145d562fd88171e37",
+    "hostSourcePaths": 10758,
+    "hostBinarySHA256": "c018c44332ff9238779d1d01340dfd751209c2c694942fd0406e4d6a3c96cc86",
+    "moduleBaseCommit": "ff695da85887b239721f2fac527d56920141ece6",
+    "testedModuleInventorySHA256": "cea8bfe0a3412e80f20960c28e5dde75a2f0c2b84bd6f81a2de51970d15187a9",
+    "snapshotBoundary": "Immutable module commit before this documentation-only repin; final package source inventories are retained separately in the packet. The physical host tree is not attributed to its base or a future commit.",
+    "packet": "usbox:/tmp/magpie-two-owner-repin-20261114.SK7PeIJJ",
+    "record": "EVIDENCE.md",
+    "ordinaryRoutes": ["native-install", "window-auth", "selected-go-zen-gateway", "agent-launch-library", "config-off-reload-package-replacement", "usage-requests-trace", "default-package-sqlite-wal-storage"],
+    "endpointFixture": "The full-owner runner recompiles only its test entry point with synthetic loopback endpoints and handler logging; ordinary storage uses the stock default library",
+    "domainSuiteRerun": false,
+    "actualVendorClient": false,
+    "liveVendors": false
+  },
+  "hostAcceptanceHistory": [{
+    "checkedAt": "2026-11-14",
+    "hostCommit": "46756a48c9c9f204a8369638dc63cbcb83d02031",
+    "hostTree": "db40ddbf8944b54f9f689d444644af4c3bc76881",
+    "hostSourceArchiveSHA256": "e188abd5d115c7da3167a6296e7d07f9bd31766a738ea4e6326ff093e4a74a61",
+    "hostBinarySHA256": "32fbdeabd20ed3059f61a91f7614a51a2ac9b908b12dd637c204a82918a28256",
+    "moduleBaseCommit": "67c590172ffe96e34665645c3b5aea3000062169",
+    "testedModuleInventorySHA256": "e34e5381b99140b95a35e7a45f6c28fff93ebac54950b6172207510f639dc879",
+    "snapshotBoundary": "Wire metadata correction and regression before this documentation/provenance update; packet retains exact inventories and final package records separately",
+    "packet": "usbox:/tmp/magpie-final-two-repin-20261114.XsY2ZV5a",
+    "record": "EVIDENCE.md",
+    "ordinaryRoutes": ["native-install", "window-auth", "selected-go-zen-gateway", "agent-launch-library", "config-off-reload-package-replacement", "usage-requests-trace", "default-package-sqlite-wal-storage"],
+    "endpointFixture": "The full-owner runner recompiles only its test entry point with synthetic loopback endpoints and handler logging; ordinary storage uses the stock default library",
+    "actualVendorClient": false,
+    "liveVendors": false
+  }],
+  "validation": {
+    "hostBaseCommit": "ae957e5a8a77553a6cf6f484c8b58a69393f3887",
+    "hostSourceInventorySHA256": "09caf3576ee155383c082480e3508a25218519eabcaca93b2d82860cc9a4d8bd",
+    "hostSourceArchiveSHA256": "f63c06ce1e35c46755e35c1c012bce529e4afea6907ae83ea2e1cff3d7e0f08b",
+    "hostSource": "Parent-accepted inventoried shared WIP; the base commit alone does not contain the rooted implementation and the parent's final API9 commit is not invented",
+    "acceptedStorageHandoffSHA256": "760627a8ed9f3537a15168290bc9c8c542009383cd5a0dbca8bf42c13be40c89",
+    "proofPacket": "usbox:/tmp/magpie-opencode-full-default-ew4s4dpd",
+    "donorFixtures": "testdata/donors/provenance.json"
+  },
+  "toolWork": {
+    "identity": "Selected opencode-zen-free public account only; personal Go/Zen and Gemini native bodies remain unchanged",
+    "protocols": ["chat", "responses", "messages"],
+    "hostTree": "43b7e290d9c3370881780b23ad49222f5d27f44b",
+    "hostBaseCommit": "9e88f10982a1d66c1b402fba27caddda8ac4ac4e",
+    "hostSource": "Reuses the existing parent-frozen storage proof source and host binary; CLI-only overlay has separate handoff. No acceptance claim against the pending merged host",
+    "donorCases": 99,
+    "fixtures": ["testdata/donors/zen-tool-request.js.txt", "testdata/donors/zen-tool-response.mjs", "testdata/donors/zen-tools.json"],
+    "tests": ["zen_tools_test.go", "testdata/zen_tools_oracle.mjs", "testdata/negative_zen.py", "testdata/full_e2e.py"],
+    "bounds": {"requestBytes": 16777216, "replyBytes": 33554432, "eventBytes": 1048576, "positions": 10000},
+    "excluded": ["cut-short success synthesis", "retry or account fallback"],
+    "evidence": "EVIDENCE.md"
+  },
+  "darwinWork": {
+    "activation": "Ordinary 0.6.0/API1.8 default after parent acceptance of the exact owned storage hashes; no history flag or companion installation",
+    "hostBaseCommit": "ae957e5a8a77553a6cf6f484c8b58a69393f3887",
+    "hostSource": "Shared dirty source over the merged host, verified by packet inventory; base commit alone does not contain the implementation",
+    "initialArchiveSHA256": "615ecd392ec2285722eb4073a877bc7739604783a7a1cccc6caf25f67e188d4b",
+    "testedHostInventorySHA256": "09caf3576ee155383c082480e3508a25218519eabcaca93b2d82860cc9a4d8bd",
+    "testedHostArchiveSHA256": "f63c06ce1e35c46755e35c1c012bce529e4afea6907ae83ea2e1cff3d7e0f08b",
+    "packet": "usbox:/tmp/magpie-opencode-darwin-resumed.hzF62V1E",
+    "platforms": {"linux": "Actual rooted/native/SQLite WAL and ordinary owner acceptance", "darwin": "arm64/amd64 CGO0 source build and vet; actual native loading and lock interoperability unproven", "other": "Explicit rooted native/VFS refusal"},
+    "hostOwned": ["pkg/extension/native/storage_reader.go", "pkg/extension/native/storage_reader_unix.go", "pkg/extension/native/storage_reader_other.go", "pkg/extension/native/storage_reader_unix_test.go", "internal/extension/storage_grant.go", "internal/extension/storage_grant_unix.go", "internal/extension/storage_grant_other.go", "internal/extension/storage_grant_lifetime.go", "internal/extension/storage_grant_lifetime_linux_test.go", "internal/sessions/extension_storage_root_unix.go", "internal/sessions/extension_storage_root_other.go", "docs/subsystems/extension-storage-sources.md"],
+    "sharedHooks": {"internal/extension/client.go": ["trackStorageCall(ctx) after pending registration", "endStorageCall(pending.ctx) after validated terminal and outside client mutex"]},
+    "runtimeAdditions": [
+      {"module": "github.com/mattn/go-isatty", "version": "v0.0.24", "sum": "h1:tGZZoVgT/KiqK1c8ocVLeDS8BSWMRd47J3Lbz7vsReI="},
+      {"module": "github.com/ncruces/go-strftime", "version": "v1.1.0", "sum": "h1:vtPmPWMkb539RGV9WpWT9EwJGvrOCKvMNI4obWL47Hk="}
+    ],
+    "runtimeConstraint": "Both Darwin transitives already selected and checksummed in the host lock; no newly selected module or version",
+    "tests": ["history_lock_linux_test.go", "history_sqlite_linux_test.go", "testdata/verify_darwin.py", "testdata/negative_storage_darwin.py", "testdata/verify_storage.py", "testdata/full_e2e.py"],
+    "evidence": "EVIDENCE.md"
+  },
+  "storageWork": {
+    "activation": "Ordinary 0.6.0/API1.8 constructor, native entry point and manifest include history; EnableHistory remains an explicit compatibility helper",
+    "hostTree": "43b7e290d9c3370881780b23ad49222f5d27f44b",
+    "hostBaseCommit": "9e88f10982a1d66c1b402fba27caddda8ac4ac4e",
+    "hostSource": "Parent-frozen shared dirty tree; the base commit alone does not contain storage",
+    "hostFollowUp": {
+      "kind": "Uncommitted storage CLI parity overlay; final shared host freeze remains parent-owned",
+      "files": ["internal/cli/main.go", "internal/cli/session_sources_cli.go", "internal/cli/settings_parity_test.go", "internal/cli/storage_sources_cli_test.go"],
+      "evidence": "EVIDENCE.md"
+    },
+    "sdkMinimum": "1.8",
+    "capability": "session-storage-source",
+    "platform": "linux",
+    "runtime": [
+      {"module": "modernc.org/sqlite", "version": "v1.61.0", "sum": "h1:sQi63oLQ9uquAUA4CzOisH35Q3pEszkPBuHM0tFL8CY="},
+      {"module": "modernc.org/libc", "version": "v1.79.0", "sum": "h1:9Dvvv++bAMSkSuBzuOFAatbTV5OIoq6Y6FohmD3e7q8="},
+      {"module": "github.com/dustin/go-humanize", "version": "v1.1.0", "sum": "h1:dbKTrvD0klcbBV/h4AWJdMuZogJACoMlvWIWZ5b2xWg="},
+      {"module": "github.com/google/uuid", "version": "v1.6.0", "sum": "h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0="},
+      {"module": "github.com/remyoudompheng/bigfft", "version": "v0.0.0-20230129092748-24d4a6f8daec", "sum": "h1:W09IVJc94icq4NjY3clb7Lk8O1qJ8BdBEF8z0ibU0rE="},
+      {"module": "golang.org/x/sys", "version": "v0.49.0", "sum": "h1:XbzkgYJHdqh/8m2Uu0W/dQv8nktxx4BFHp1M0gROTXA="},
+      {"module": "modernc.org/mathutil", "version": "v1.7.1", "sum": "h1:GCZVGXdaN8gTqB1Mf/usp1Y/hSqgI2vAGGP4jZMCxOU="},
+      {"module": "modernc.org/memory", "version": "v1.12.1", "sum": "h1:nFMiWrpStgZczNl6XI9GnIk/rWhYIyHGUaR04pGbp9g="}
+    ],
+    "evidence": "EVIDENCE.md",
+    "tests": ["history_sqlite_linux_test.go", "history_bounds_linux_test.go", "testdata/storage_writer.py", "testdata/storage_e2e.py", "testdata/verify_storage.py"]
+  },
+  "sources": [
+    {
+      "id": "opencode",
+      "role": "Native application target and vendor protocol/schema authority",
+      "repository": "https://github.com/anomalyco/opencode",
+      "commit": "38bd73789a43bf043599d6196af96583228035d7",
+      "version": "2.3.0",
+      "paths": ["packages/cli/package.json", "packages/cli/src/database-path.ts", "packages/util/src/global-roots.ts", "packages/core/src/plugin/provider/opencode.ts", "packages/core/src/console-access.ts", "packages/core/src/credential.ts", "packages/schema/src/config/provider.ts", "packages/core/src/v1/config/migrate.ts", "packages/core/src/v1/config/provider-options.ts", "packages/core/src/config/plugin/provider.ts", "packages/core/src/model-resolver.ts", "packages/core/src/session/sql.ts", "packages/core/src/session/history.ts", "packages/core/src/session/stored.ts", "packages/core/src/session/blob.ts", "packages/core/src/session/instruction-state.ts", "packages/core/src/database/v1-migration.bun.ts"],
+      "checkedAt": "2026-11-15"
+    },
+    {
+      "id": "community-zen-free",
+      "role": "Pinned Zen Free routes, eligibility, retirement and literal tool transcripts; no runtime dependency",
+      "repository": "https://github.com/magpie-community/plugins",
+      "commit": "57d1cc6a9f49389d495ea9be8d986c70de7767bf",
+      "version": "0.1.27",
+      "paths": ["packages/zen-free/package.json", "packages/zen-free/provider.mjs", "packages/zen-free/models.mjs", "packages/zen-free/stream.mjs", "packages/zen-free/tool-response.mjs", "packages/zen-free/tool-fixtures.mjs", "packages/zen-free/fixtures"],
+      "checkedAt": "2026-11-15"
+    },
+    {
+      "id": "host-sdk",
+      "role": "Accepted API9 closure base; current history/browser overlay is inventoried separately in currentAcceptance and is not attributed to this commit; older proof sources retain their own pins",
+      "repository": "https://github.com/TransmuteLabs/magpie",
+      "commit": "66ac2f7fdaeb208e8f4d60f53aea7b33ed396c55",
+      "version": "1.9",
+      "paths": ["pkg/extension", "sdk/js", "internal/extension", "internal/agent", "internal/library", "internal/gui"],
+      "checkedAt": "2026-11-15"
+    },
+    {
+      "id": "archive-baseline",
+      "role": "Archived fork vendor/config/Library extraction donor; no exact release tag",
+      "repository": "https://github.com/TransmuteLabs/magpie",
+      "commit": "893f560cccdeb8fa2e98eadb60427990c10eedcc",
+      "version": null,
+      "paths": ["internal/provider/opencode_oauth.go", "internal/provider/opencode_client.go", "internal/provider/opencode_endpoints.go", "internal/provider/opencode_go_free.go", "internal/agent/agents.go", "internal/agent/opencode_v2.go", "internal/agent/opencode_providers.go", "internal/library/targets.go", "internal/sessions/opencode.go"],
+      "checkedAt": "2026-11-14"
+    }
+  ],
+  "watch": [
+    {
+      "source": "opencode",
+      "paths": ["packages/core/src/plugin/provider/opencode.ts", "packages/core/src/console-access.ts", "packages/core/src/credential.ts", "packages/cli/package.json"],
+      "behaviors": ["Unchanged 2.3.0 device/poll/refresh fields", "Selected organization and stable account identity", "Pinned 2.3.0 request client version", "Vendor refresh coordinator is not copied; the SDK owns publication"],
+      "tests": ["client_test.go", "refresh_test.go", "headers_test.go", "reauthorize_test.go", "testdata/window_e2e.mjs"]
+    },
+    {
+      "source": "opencode",
+      "paths": ["packages/schema/src/config/provider.ts", "packages/core/src/v1/config/migrate.ts", "packages/core/src/v1/config/provider-options.ts", "packages/core/src/config/plugin/provider.ts", "packages/core/src/model-resolver.ts"],
+      "behaviors": ["2.3.0 v2 providers/settings/package and ordered variants", "Effective host context/output and model settings.reasoningEffort; V1 options.reasoningEffort migrates to settings", "Unknown effort lists omit variants; explicitly empty lists suppress generated variants", "Prior generated metadata updates without overwriting independent output/settings/variant edits", "Decision-model envelope remains separate from conversational config; actual pinned runtime effort is unclaimed", "V1 migration preserves explicit baseURL and partial capabilities; no new host modalities contract"],
+      "tests": ["agent_test.go", "agent_metadata_test.go", "testdata/agent_cli.py", "testdata/full_e2e.py", "testdata/agent_metadata_e2e.py"]
+    },
+    {
+      "source": "opencode",
+      "paths": ["packages/core/src/plugin/provider/opencode.ts", "packages/core/src/plugin/provider/opencode-watches.ts"],
+      "behaviors": ["Console header-presence gates, bounded independent caches and explicit consoleWatches flag", "Zen OAuth, service keys and public identity remain provider-bound", "HTTP watch list/types/poll and one-use account-generation receipt ACK; no automatic session wake", "Safe skill redirects retain signed queries and strip cross-origin credentials; optional/quoted/literal/folded scalar frontmatter and scalar metadata accepted, unsupported YAML refused explicitly"],
+      "tests": ["zen_test.go", "console_test.go", "console_features_test.go", "testdata/window_e2e.mjs", "testdata/donors/provenance.json", "HOST_GAPS.md"]
+    },
+    {
+      "source": "archive-baseline",
+      "paths": ["internal/agent/agents.go", "internal/agent/opencode_v2.go", "internal/agent/opencode_providers.go", "internal/library/targets.go"],
+      "behaviors": ["v1/v2 overlay schema and model variants", "User overrides and disconnect", "Native launch and Library ownership"],
+      "tests": ["agent_test.go", "testdata/agent_cli.py", "testdata/full_e2e.py"]
+    },
+    {
+      "source": "community-zen-free",
+      "paths": ["packages/zen-free/models.mjs", "packages/zen-free/provider.mjs", "packages/zen-free/stream.mjs", "packages/zen-free/tool-response.mjs"],
+      "behaviors": ["Separate explicit public identity, eligible free-model filtering and unknown suffix-free Chat bootstrap", "Native Chat/Responses/Messages/Gemini paths, selected signing and strict terminal/truncation checks", "Public-only stand-in schemas, collision-safe refused-name aliases in declarations/history/choice, caller-name restoration and unambiguous name folding", "Fragmented Chat tool arguments and colliding IDs remain separate; nameless calls become notes, unknown named calls remain visible", "Public upstream streaming, caller JSON/SSE shape, optional configured environment facts; personal Go/Zen/Gemini wire remains unchanged, no retry/account fallback/cut-short synthesis", "Client attribution pinned to native 2.3.0; no remote updater or models.dev discovery"],
+      "tests": ["zen_test.go", "zen_tools_test.go", "zen_policy_test.go", "zen_collapse_test.go", "testdata/zen_policy_oracle.mjs", "testdata/zen_tools_oracle.mjs", "testdata/negative_zen.py", "testdata/full_e2e.py", "testdata/donor_replies.mjs", "testdata/donors/provenance.json", "HOST_GAPS.md"]
+    },
+    {
+      "source": "host-sdk",
+      "paths": ["pkg/extension", "sdk/js/ui.js", "sdk/js/account-selection.js", "sdk/js/errors.js", "internal/agent", "internal/library", "internal/gui"],
+      "behaviors": ["Ordinary0.8.0 full package declares API1.9 for effective agent metadata; explicit0.8.0 API1.8 variant does not receive new metadata; immutable prior releases are not rebuilt", "Historical API1.3 provider and API1.5 agent remain compatibility artifacts, native ABI stays 1", "Selected account generations and one-use auth receipts", "Off/config/update revocation and agent restoration", "Actual SDK browser sources with existing pinned Bun classic bootstrap; no browser backend or runtime dependency", "Loopback-only fixture preserves observed root ownership; hidden-root reload refusal stays strict", "Per-run fixture URL namespace rejects unrelated loopback probes while undeclared vendor paths still fail"],
+      "tests": ["module_test.go", "window_test.go", "full_package_test.go", "source_version_test.go", "testdata/check_distribution.py", "testdata/full_e2e.py", "testdata/loopback_guard.c"]
+    },
+    {
+      "source": "host-sdk",
+      "paths": ["sdk/js/ui.js", "sdk/js/ui.d.ts", "internal/gui/pagebridge.js", "internal/gui/assets/extensionwindows.js", "internal/gui/extension_window_history.go", "internal/sessions/extension_storage_window.go", "internal/sessions/extension_storage_window_records.go", "internal/settings/session_reads_cas.go"],
+      "behaviors": ["Optional session-history-v1 hello, legacy unsupported path and unchanged native SDK floor", "Server-derived package/config/page/component/source ownership; issued finite root/session/read/media refs", "Trusted cancel-default confirmation, independent persisted gates and exact-row release", "Bounded inert module transcript/raster/text rendering with visibility/selection/late-reply invalidation", "Scoped native SQLite/WAL/media owner and ordinary CLI/HTTP neighbors; no account consent, global Find, CSP widening or companion"],
+      "tests": ["testdata/history_ui.test.mjs", "testdata/history_browser.cjs", "testdata/storage_e2e.py", "testdata/check_distribution.py", "HISTORY_UI.md"]
+    },
+    {
+      "source": "host-sdk",
+      "paths": ["pkg/extension/session_source.go", "internal/sessions/extension_source_snapshot.go", "pkg/extension/account_operations.go"],
+      "behaviors": ["Source1.6 remains JSONL-only; the ACKed API1.8 storage seam is recorded separately in storageWork", "Native account operations select provider/account authority and do not grant history storage access"],
+      "tests": ["history_contract_test.go", "HISTORY_CONTRACT.md", "MIGRATION.md"]
+    },
+    {
+      "source": "opencode",
+      "paths": ["packages/cli/src/database-path.ts", "packages/core/src/session/sql.ts", "packages/core/src/session/history.ts", "packages/core/src/session/stored.ts", "packages/core/src/session/blob.ts", "packages/core/src/session/instruction-state.ts", "packages/core/src/database/v1-migration.bun.ts"],
+      "behaviors": ["Default Unix real readonly SQLite/WAL transaction after explicit host root consent/bind, V2 precedence and completed-migration suppression of V1", "Ordered session_part before inline content and selected SHA/MIME/length-checked deduplicated blob hydration", "2.3.0 instruction baseline epoch and bounded local compaction projection; full replay equivalence unclaimed", "Linux OFD and Darwin coordinated POSIX descriptor ownership; Linux actual runtime and Darwin static evidence remain distinct", "Unsupported platforms retain the declared source and explicitly refuse rooted WAL access rather than silently omitting history"],
+      "tests": ["full_package_test.go", "history_platform_other_test.go", "history_sqlite_linux_test.go", "history_bounds_linux_test.go", "history_lock_linux_test.go", "testdata/storage_writer.py", "testdata/storage_e2e.py", "testdata/verify_darwin.py", "testdata/negative_storage_darwin.py", "testdata/donors/provenance.json", "HISTORY_CONTRACT.md", "MIGRATION.md"]
+    }
+  ],
+  "limits": [
+    "Documentation and build provenance only; never a runtime authorization or auto-update source",
+    "Ordinary no-flag build is one full package0.8.0/SDK1.9, containing ready Go/Zen/agent/UI and actual storage/history; explicit API8 compatibility is also0.8.0; optional browser history feature has its own negotiation; prior release identities remain immutable; this is not full vendor parity",
+    "Provider-only 0.2.0/SDK1.3 and headless agent 0.3.0/SDK1.5 remain explicit compatibility/test artifacts, not additional packages to install",
+    "Go/agent/window fixtures are synthetic; historical host f423 launch/Library failures and hidden-root strict reload refusal are retained separately from ordinary lifecycle acceptance",
+    "Zen identities/native wire, public tool shaping, forced streaming/JSON collapse and optional explicit environment facts are implemented; no environment facts are invented; full YAML and automatic watch delivery remain incomplete",
+    "Native Console policy/config/skill/watch owners remain enabled with the native client's own connection and flag. Magpie HTTP inspection is not enforcement/publication/wake; shared single sign-in is conditional and not implemented",
+    "Actual Unix module SQLite/WAL reader is part of the default package; installation grants no storage authority. The rendered consent/media adapter is independently negotiated and its actual gates are recorded in currentAcceptance; Darwin source/static gates do not establish Mac runtime interoperability, other platforms explicitly refuse",
+    "No live vendor, user database, account or credential was used",
+    "Archive baseline has no exact release tag; null version records this instead of inventing a release"
+  ]
+}

@@ -1,0 +1,297 @@
+{
+  "schema": 1,
+  "plugin": {"id": "omp-sessions", "version": "0.1.0", "sdkMinimum": "1.10", "nativeABI": 1},
+  "promptHistoryFollowUp": {
+    "checkedAt": "2026-11-17",
+    "source": "omp",
+    "comparedCommit": "7a53f0a2d36e160f9255d80626ed757f41280b76",
+    "previousReviewedCommit": "9cb7eaee6128ecf6b5b084700e342062218bee75",
+    "version": "18.22.1",
+    "commitsSinceReview": 7,
+    "changedPathsSinceReview": 41,
+    "paths": ["packages/coding-agent/src/session/history-storage.ts"],
+    "decision": "Deferred writes, search and close behavior concern the native prompt-history database. The module consumes captured session journals and assets. Their serialization and replay policy are unchanged.",
+    "runtimePort": false,
+    "freshClientExecuted": false
+  },
+  "latestCommittedDonorReview": {
+    "checkedAt": "2026-11-17",
+    "method": "Read-only comparison against fetched official branch objects; source extraction and historical acceptance pins are retained",
+    "references": [
+      {
+        "source": "omp",
+        "extractionCommit": "90935366da0c368a437da4343ae748b03a2ffe97",
+        "comparedCommit": "1bdbf6d242d99ca62bdf2feeff4519ff992f647d",
+        "version": "18.22.0",
+        "commits": 449,
+        "changedPaths": 665,
+        "portableJournalObjectsUnchanged": 9
+      },
+      {
+        "source": "openai-codex",
+        "extractionCommit": "aea4c6ee4b652d84b416731b11c2b8299d767209",
+        "comparedCommit": "59ac39addbbcd3499319c805a916846ca8ac5fef",
+        "declaredWorkspaceVersion": "0.0.0",
+        "commits": 93,
+        "changedPaths": 827,
+        "persistedDeclarationsUnchanged": 9
+      },
+      {
+        "source": "codex-infinity",
+        "extractionCommit": "2ecc8a92fe18fd43552529856078999d3f6888c9",
+        "comparedCommit": "2ecc8a92fe18fd43552529856078999d3f6888c9",
+        "version": "0.159.3-infinity.1",
+        "changedPaths": 0
+      }
+    ],
+    "decision": "No required portable-session format port identified; native pause scheduling, input preparation and lazy database ancestry paging remain harness-owned",
+    "runtimePort": false,
+    "packageVersionChanged": false,
+    "freshClientExecuted": false,
+    "report": "SOURCES.md",
+    "sourceAudit": {
+      "packet": "sol-harness-refresh-20261117-01",
+      "reportSHA256": "61591206301a5667cdf6f3bc8a1fd2f81206f2b414e384536c81f8752c74f383",
+      "deliverySHA256": "2f94574dfa97702b568c513df2b893fe66d1139b029aa204d941bf38d954344b"
+    }
+  },
+  "nativeReplaySource": {
+    "checkedAt": "2026-11-17",
+    "source": "omp",
+    "comparedCommit": "9cb7eaee6128ecf6b5b084700e342062218bee75",
+    "version": "18.22.1",
+    "policyCommit": "9bed2a4d8ffa6526ddd81d2dab0033d9266c2174",
+    "phaseCommit": "56ba77ff8408f37b96d0eb2cbb1b77411b478ba7",
+    "paths": ["packages/agent/src/replay-policy.ts", "packages/agent/src/agent-loop.ts", "packages/ai/src/providers/openai-shared.ts", "packages/ai/src/types.ts", "packages/ai/test/openai-message-phase.test.ts"],
+    "ported": ["Exact refusal and sensitive assistant filtering", "Neutral error text for paired provider-error tool placeholders", "Omit provider-error placeholders absent from a selected call group"],
+    "tests": ["src/source_watch_regression_test.go"],
+    "limits": ["Archive and Source transcript preserve recorded errors", "Text phases need target compatibility evidence", "Fixture conversion only"]
+  },
+  "sourceWatch": {
+    "checkedAt": "2026-11-16",
+    "record": "docs/SOURCE-WATCH-20261116.md",
+    "packet": "usbox:/tmp/magpie-omp-watch-sol-20261116.rj2fdtm6",
+    "comparisonSHA256": "b05f731e79716f788430bd84cc72f738bdb01f0d1cf432a58463be87d7f8ebfb",
+    "lineageRecord": "docs/CODEX-LINEAGE.md",
+    "lineageEvidenceSHA256": "f6bac0ef65fa60dc38c3246c861c8e70bc6e584526ef242fd92d1d43c3e5102b",
+    "method": "Parent-fetched exact origin/main refs; read-only git show/diff comparison, no donor checkout or installed CLI execution",
+    "previous": [
+      {"source": "omp", "commit": "7c49c11aa5bbaf3f418406583096168ad5b8c6dc", "version": "18.20.2"},
+      {"source": "openai-codex", "commit": "81b995a6c9a4c978f399775cfa5ce50702368749", "version": null, "declaredWorkspaceVersion": "0.0.0"},
+      {"source": "codex-infinity", "commit": "2ecc8a92fe18fd43552529856078999d3f6888c9", "version": "0.159.3-infinity.1"}
+    ],
+    "previousComparison": {
+      "checkedAt": "2026-11-15",
+      "packet": "usbox:/tmp/magpie-omp-current-20261115.RKcxeFiQ",
+      "comparisonSHA256": "dfec4a56c7bd91884aea80f63eaf92701732f1e6638a7faa547407237db63467",
+      "previous": [
+        {"source": "omp", "commit": "40985e10a8c24e936ab3fd062ee6fd2c1f09aade", "version": "17.3.5"},
+        {"source": "openai-codex", "commit": "7c2ce90716335c889a5076ded9a630459f9c9899", "version": null, "declaredWorkspaceVersion": "0.0.0"},
+        {"source": "codex-infinity", "commit": "9c474c076aa0910932cfd3c8735dbfbf8c7c9966", "version": "0.56.0"}
+      ]
+    },
+    "portableFormatDelta": false,
+    "runtimeCorrection": "Pre-existing Codex-to-OMP shell round-trip completion bug: keep immediately preceding assistant text with its native tool call instead of fabricating a completed answer",
+    "tests": ["src/source_watch_regression_test.go", "src/current_harness_test.go", "src/codex_lineage_test.go", "src/codex_export_regression_test.go", "src/native_read_test.go", "src/source_preview_test.go"],
+    "limits": [
+      "Current source-derived compatibility tests are distinct from historical installed Codex0.160.0 acceptance",
+      "Sparse Codex session_meta.history_base requires the opt-in API1.10 codex-rollout-lineage carrier; a single supplied child journal is refused",
+      "Source preserves developer records as branch parents but omits their instructions from the public conversation projection",
+      "Private redactedThinking blocks are omitted; visible narration, native tool/result history and images retain their existing semantics"
+    ]
+  },
+  "lineageAcceptance": {
+    "checkedAt": "2026-11-15",
+    "kind": "physical-source-sdk1.10-synthetic-installed-package-replay",
+    "capability": "session-related-inputs",
+    "carrier": {"version": 1, "kind": "codex-rollout-lineage"},
+    "hostCommit": null,
+    "hostBaseCommit": "66ac2f7fdaeb208e8f4d60f53aea7b33ed396c55",
+    "hostBaseTree": "94ec4c8de4e5b366a6e3fb854df2176007587ab8",
+    "hostPhysicalTree": "9686156f09408c5bccbed6a1a9f52d87a59eec22",
+    "hostArchiveSHA256": "621d000877cf34f4680d1e80d31c8ab2696ebe705f5cdb63b5b15bf2ee4679ae",
+    "moduleBaseCommit": "7674189f8ba33bff3821ede378a0a0bb6c8c9194",
+    "modulePhysicalTree": "5a427c3901ef0bf7326058181d2e179c4147b17b",
+    "moduleArchiveSHA256": "ded87639ac7c8843b1b0e2c5c8a7e5327c5541fc75baa5ec613a4a25f1f6bf28",
+    "moduleInventorySHA256": "2a85f474f4cad9a080351ce5065b7e56d0b0e33554c266df37cea8410639aca8",
+    "packet": "usbox:/tmp/magpie-codex-lineage-20261115.d0BvXEV3",
+    "checkpoint": "carrier-real4",
+    "record": "docs/history/VERIFICATION.md",
+    "domainResultsSHA256": "95169c32feb1079d9549390ca93a63b6acbc8535d5858e50587ce4c4be945375",
+    "installedResultsSHA256": "7860bd17400ff1c2ff5ca42a6d6280ee5b64eeac13b615a486a959430a1715ce",
+    "nativeLibrarySHA256": "7e49b94895da748445a4eeff3112b62ed02faf866bc38639a8c97df68725ae48",
+    "moduleMaterialization": true,
+    "sessionInputsV1Unchanged": true,
+    "clientAcceptanceRerun": false,
+    "liveVendors": false,
+    "snapshotBoundary": "Exact dirty physical sources, not the bytes of either parent commit; acceptance metadata follows the capture and final package receipts are separate",
+    "limits": [
+      "Full SDK Go Serve authoring hook, legacy external minor assertion, JS/type parity and final integrated host pin remain leader-owned at this checkpoint",
+      "Subsequent Windows created-directory key normalization has separate source capture; no Windows native runtime acceptance",
+      "Source-derived and synthetic native-package replay does not establish current installed Codex or OMP client acceptance"
+    ]
+  },
+  "hostAcceptance": {
+    "checkedAt": "2026-11-15",
+    "hostCommit": null,
+    "hostBaseCommit": "adcf4ce5edbe2fe9595c4fceb9e809c23f74d60d",
+    "hostTree": "36f8e629b1092b089d4d59e0f9d8473a1f602ff8",
+    "hostSourceArchiveSHA256": "5f07aab7ab2a782131789197fe3c26778e33f9ee3d54e459ba63f62ef9fecdfc",
+    "hostSourcePaths": 10846,
+    "hostBinarySHA256": "0bd335b7b6191f64d7f4ba6d1df273928e6ade33fd7966b5245987ac6a10c509",
+    "hostStatus": "Physical candidate only; leader merge/review and host broad completion are not asserted",
+    "moduleDomainCommit": "f8bbec4b09a92a729caaa42a807c811e874b5f35",
+    "testedModuleInventorySHA256": "15dc84c1f5fc6bc47844e4046968d31af0720ba0d84c8cdd2a53031a520209b1",
+    "snapshotBoundary": "Physical module snapshot before this provenance-only update; final package records are separate. Neither host nor module physical source is attributed to a parent or future merge commit.",
+    "packet": "usbox:/tmp/magpie-omp-current-20261115.RKcxeFiQ",
+    "record": "docs/history/VERIFICATION.md",
+    "ordinaryRoutes": ["native-install", "cli-preview-apply-roundtrip", "source-list-find-transcript-search-stats-resume", "source-to-codex-carryover", "native-claude-codex-conversions", "source-descendants", "config-consent-off-revocation"],
+    "domainSuiteRerun": true,
+    "clientAcceptanceRerun": false,
+    "liveVendors": false
+  },
+  "hostAcceptanceHistory": [{
+    "checkedAt": "2026-11-14",
+    "hostCommit": null,
+    "hostBaseCommit": "c11acbc2bebec1fb213ef562900d35188cdf55fe",
+    "hostTree": "8fe78ab9df13d733d61462eacce19bff523c1e58",
+    "hostSourceArchiveSHA256": "01117ce6f6f8842d16fcd81224dad1795020b3b5c4d69b9145d562fd88171e37",
+    "hostSourcePaths": 10758,
+    "hostBinarySHA256": "c018c44332ff9238779d1d01340dfd751209c2c694942fd0406e4d6a3c96cc86",
+    "moduleBaseCommit": "364e7f9109eb3b97afe3c3f17a56b940f0c3253d",
+    "testedModuleInventorySHA256": "1430fbb9d7d78570ab1b70fed34330ad0375edb19c3623de95e4373b0f92c0d1",
+    "snapshotBoundary": "Immutable module commit before this documentation-only repin; final package source inventories are retained separately in the packet. The physical host tree is not attributed to its base or a future commit.",
+    "packet": "usbox:/tmp/magpie-two-owner-repin-20261114.SK7PeIJJ",
+    "record": "docs/history/VERIFICATION.md",
+    "ordinaryRoutes": ["native-install", "cli-preview-apply-roundtrip", "source-list-find-transcript-search-stats-resume", "source-to-codex-carryover", "config-consent-off-revocation"],
+    "domainSuiteRerun": false,
+    "clientAcceptanceRerun": false,
+    "liveVendors": false
+  }, {
+    "checkedAt": "2026-11-14",
+    "hostCommit": "46756a48c9c9f204a8369638dc63cbcb83d02031",
+    "hostTree": "db40ddbf8944b54f9f689d444644af4c3bc76881",
+    "hostSourceArchiveSHA256": "e188abd5d115c7da3167a6296e7d07f9bd31766a738ea4e6326ff093e4a74a61",
+    "hostBinarySHA256": "32fbdeabd20ed3059f61a91f7614a51a2ac9b908b12dd637c204a82918a28256",
+    "moduleBaseCommit": "3659d78efa004cd980292fbdc55bd70832e6a2ad",
+    "testedModuleInventorySHA256": "4ed098a751dd8b66bd64c6f75e0ebc80ab1197a7e0f9421f0e82b8bd4a768f24",
+    "snapshotBoundary": "Runtime and compatibility corrections before this documentation/provenance update; packet retains exact inventories and final package records separately",
+    "packet": "usbox:/tmp/magpie-final-two-repin-20261114.XsY2ZV5a",
+    "record": "docs/history/VERIFICATION.md",
+    "ordinaryRoutes": ["native-install", "cli-preview-apply-roundtrip", "source-list-find-transcript-search-stats-resume", "source-to-codex-carryover", "native-claude-codex-conversions", "source-descendants", "config-consent-off-revocation"],
+    "clientAcceptanceRerun": false,
+    "liveVendors": false
+  }],
+  "sources": [
+    {
+      "id": "omp",
+      "role": "Native OMP v3 journal, title slot, attachment and branch schema authority",
+      "repository": "https://github.com/can1357/oh-my-pi",
+      "commit": "90935366da0c368a437da4343ae748b03a2ffe97",
+      "version": "18.20.3",
+      "paths": ["packages/coding-agent/package.json", "packages/coding-agent/src/session/session-entries.ts", "packages/coding-agent/src/session/session-context.ts", "packages/coding-agent/src/session/session-storage.ts", "packages/coding-agent/src/session/session-title-slot.ts", "packages/coding-agent/src/session/session-listing.ts", "packages/coding-agent/src/session/session-index.ts", "packages/coding-agent/src/session/blob-store.ts", "packages/coding-agent/src/session/messages.ts", "packages/utils/src/dirs.ts", "packages/agent/src/compaction/entries.ts", "docs/session.md"],
+      "checkedAt": "2026-11-16"
+    },
+    {
+      "id": "codex-infinity",
+      "role": "Read-only Codex protocol, native item and dynamic tool schema donor; workspace version is not installed-client acceptance",
+      "repository": "https://github.com/lee101/codex-infinity",
+      "commit": "2ecc8a92fe18fd43552529856078999d3f6888c9",
+      "version": "0.159.3-infinity.1",
+      "paths": ["codex-rs/Cargo.toml", "codex-rs/protocol/src/models.rs", "codex-rs/protocol/src/items.rs", "codex-rs/protocol/src/dynamic_tools.rs", "codex-rs/app-server-protocol/src/protocol/v2/mod.rs"],
+      "checkedAt": "2026-11-16"
+    },
+    {
+      "id": "openai-codex",
+      "role": "Current official response schemas, rollout persistence, compaction, rollback and sparse lineage authority; no exact release version",
+      "repository": "https://github.com/openai/codex",
+      "commit": "aea4c6ee4b652d84b416731b11c2b8299d767209",
+      "version": null,
+      "declaredWorkspaceVersion": "0.0.0",
+      "paths": ["codex-rs/Cargo.toml", "codex-rs/history/src/lib.rs", "codex-rs/history/src/rollout_payload.rs", "codex-rs/protocol/src/models.rs", "codex-rs/protocol/src/items.rs", "codex-rs/protocol/src/protocol.rs", "codex-rs/rollout/src/policy.rs", "codex-rs/rollout/src/recorder.rs", "codex-rs/rollout/src/ordinal.rs", "codex-rs/rollout/src/seekable_reader.rs", "codex-rs/rollout/src/reverse_jsonl_scanner.rs", "codex-rs/core/src/context_manager/history.rs", "codex-rs/core/src/session/rollout_reconstruction.rs", "codex-rs/core/src/compact.rs", "codex-rs/thread-store/src/local/model_context.rs", "codex-rs/thread-store/src/local/rollout_lineage.rs", "codex-rs/thread-store/src/local/rollout_lineage/ancestor_reads.rs", "codex-rs/thread-store/src/local/thread_rollout_resolver.rs", "codex-rs/thread-store/src/local/thread_history/read.rs"],
+      "checkedAt": "2026-11-16"
+    },
+    {
+      "id": "archive-baseline",
+      "role": "Archived native OMP and Claude carry extraction donor; no exact release version",
+      "repository": "https://github.com/TransmuteLabs/magpie",
+      "commit": "893f560cccdeb8fa2e98eadb60427990c10eedcc",
+      "version": null,
+      "paths": ["internal/sessions/carry_omp.go", "internal/sessions/carry_omp_read.go", "internal/sessions/carry_convert.go", "internal/sessions/omp.go"],
+      "checkedAt": "2026-11-14"
+    },
+    {
+      "id": "host-sdk",
+      "role": "Historical SDK host and sanitized Codex fixture source; not a current aggregate acceptance claim",
+      "repository": "https://github.com/TransmuteLabs/magpie",
+      "commit": "831c3d74af9358fa8a45d77eed902fe7cd02a076",
+      "version": "1.5",
+      "paths": ["pkg/extension", "pkg/protocolext", "internal/sessions", "internal/sessions/testdata/carry/codex-tools.jsonl"],
+      "checkedAt": "2026-11-14"
+    }
+  ],
+  "artifacts": [
+    {
+      "source": "host-sdk",
+      "path": "internal/sessions/testdata/carry/codex-tools.jsonl",
+      "sha256": "c2ca94642e17ac78278e51b07ec2ce0a8777f141e39fdc8b774ee45761b13dde",
+      "declaredClientVersion": "0.162.1",
+      "role": "Sanitized source evidence; not the installed acceptance client"
+    }
+  ],
+  "acceptance": {
+    "kind": "historical-scoped-linux-client-acceptance",
+    "client": "codex-cli",
+    "version": "0.160.0",
+    "record": "docs/CODEX-EXPORT.md",
+    "runner": "tests/verify_codex.py",
+    "limits": "Recorded read/resume and one offline loopback continuation; this provenance change does not rerun or extend that acceptance"
+  },
+  "watch": [
+    {
+      "source": "omp",
+      "paths": ["packages/coding-agent/src/session/session-entries.ts", "packages/coding-agent/src/session/session-context.ts", "packages/coding-agent/src/session/session-storage.ts", "packages/coding-agent/src/session/session-title-slot.ts", "packages/coding-agent/src/session/session-listing.ts", "packages/coding-agent/src/session/session-index.ts", "packages/coding-agent/src/session/blob-store.ts", "packages/coding-agent/src/session/messages.ts", "packages/utils/src/dirs.ts", "packages/agent/src/compaction/entries.ts", "packages/agent/src/replay-policy.ts", "packages/agent/src/agent-loop.ts", "packages/ai/src/providers/openai-shared.ts", "packages/ai/src/types.ts"],
+      "behaviors": ["OMP v3 title slot, parent-chain/reset/compaction projection", "Canonical home/temp buckets and attachment references", "Bounded Source summary/transcript and supplied artifact decoding", "Developer branch parents and private redactedThinking exclusion without fabricated user turns", "Default JSONL remains authoritative; index/cache and continuation resume stay harness-owned", "Native-only provider refusal filtering and paired tool placeholder normalization", "Versioned textSignature phase compatibility with target Codex"],
+      "tests": ["src/source_watch_regression_test.go", "src/current_harness_test.go", "src/codec_test.go", "src/roundtrip_regression_test.go", "src/source_inputs_test.go", "src/native_routes_test.go", "src/source_preview_test.go", "src/source_preview_permission_test.go", "src/source_distribution_test.go"]
+    },
+    {
+      "source": "codex-infinity",
+      "paths": ["codex-rs/protocol/src/models.rs", "codex-rs/protocol/src/items.rs", "codex-rs/protocol/src/dynamic_tools.rs", "codex-rs/app-server-protocol/src/protocol/v2/mod.rs"],
+      "behaviors": ["Native response items and durable item projection", "Historical tool identity and result media without dynamic tool registration", "Installed-client acceptance must be rerun for a changed target"],
+      "tests": ["src/source_watch_regression_test.go", "src/codex_export_regression_test.go", "src/native_read_test.go", "tests/verify_codex.py", "docs/CODEX-EXPORT.md"]
+    },
+    {
+      "source": "openai-codex",
+      "paths": ["codex-rs/history/src/rollout_payload.rs", "codex-rs/protocol/src/models.rs", "codex-rs/protocol/src/items.rs", "codex-rs/protocol/src/protocol.rs", "codex-rs/rollout/src/policy.rs", "codex-rs/rollout/src/recorder.rs", "codex-rs/rollout/src/ordinal.rs", "codex-rs/rollout/src/seekable_reader.rs", "codex-rs/rollout/src/reverse_jsonl_scanner.rs", "codex-rs/core/src/context_manager/history.rs", "codex-rs/core/src/session/rollout_reconstruction.rs", "codex-rs/core/src/compact.rs", "codex-rs/thread-store/src/local/model_context.rs", "codex-rs/thread-store/src/local/rollout_lineage.rs", "codex-rs/thread-store/src/local/rollout_lineage/ancestor_reads.rs", "codex-rs/thread-store/src/local/thread_rollout_resolver.rs", "codex-rs/thread-store/src/local/thread_history/read.rs"],
+      "behaviors": ["Paginated ordinals and native UI history", "Compaction replacement, metadata alignment and summary authority", "Unfinished turns and absent tool results remain unfinished", "Rollback removes whole user turns and their tool/image suffix, excludes synthetic summaries and discards removed tool status", "Sparse history_base uses exact host-captured ordered prefixes and selected metadata with module-only materialization; missing carrier, forged boundaries and suffix-only import fail"],
+      "tests": ["src/source_watch_regression_test.go", "src/current_harness_test.go", "src/codex_lineage.go", "src/codex_lineage_test.go", "src/testdata/codex-sparse-ancestor.jsonl", "src/testdata/codex-sparse-child.jsonl", "src/codex_export_regression_test.go", "src/native_read_test.go", "docs/CODEX-EXPORT.md", "docs/CODEX-LINEAGE.md"]
+    },
+    {
+      "source": "archive-baseline",
+      "paths": ["internal/sessions/carry_omp.go", "internal/sessions/carry_omp_read.go", "internal/sessions/carry_convert.go", "internal/sessions/omp.go"],
+      "behaviors": ["Native OMP/Claude routes and lossless interchange archive", "Private reasoning and off-branch records stay outside portable native context", "Pure byte conversion leaves filesystem grants to the host"],
+      "tests": ["src/claude_test.go", "src/convert_test.go", "src/native_routes_test.go", "src/roundtrip_regression_test.go"]
+    },
+    {
+      "source": "host-sdk",
+      "paths": ["pkg/extension", "pkg/protocolext", "internal/sessions"],
+      "behaviors": ["One full default SDK1.10 distribution includes Source1.9, all six routes and opt-in related-input lineage", "Native ABI1 and actual compiled-input provenance", "Source permission and selected store ownership remain host-controlled", "Unchanged session.inputs.v1 grants no ancestor lookup; original source, package, config and consent revalidate before apply"],
+      "tests": ["src/source_version_test.go", "tests/test_build_provenance.py", "tests/test_build_source_preview.py", "tests/verify_host.py", "tests/verify_source_owner.py", "docs/SOURCE-PREVIEW.md"]
+    }
+  ],
+  "limits": [
+    "Documentation and build provenance only; never runtime authorization, credential discovery or an auto-update source",
+    "Canonical module id omp-sessions, version 0.1.0, minimum SDK1.10/nativeABI1; one full default distribution",
+    "build_source_preview.py forwards to build.py; both names produce the same complete package",
+    "A declared minimum SDK contract is not a claim that every historical/current host or donor/client version passed acceptance",
+    "The sanitized Codex fixture records 0.162.1; historical installed Linux acceptance used 0.160.0, distinct from source workspace versions",
+    "CODEX-EXPORT.md, VERIFICATION.md and SOURCE-PREVIEW.md retain their own historical source inventories and acceptance limits",
+    "No live session, vendor account, credential, model call or macOS/Windows native runtime is covered by provenance packaging tests",
+    "Unknown native schema and unsupported content fail explicitly; no filesystem or native ownership grants are manufactured",
+    "Source declares API1.9 bounded journal-stem descendant acquisition; host-captured child journals contribute usage and gateway IDs, never main transcript turns",
+    "Current official source comparison and synthetic compatibility tests do not certify an installed current Codex, OMP or codex-infinity runtime",
+    "Sparse Codex rollout lineage is explicitly refused without the finite checked API1.10 related-input carrier; acquisition remains host-owned and materialization remains module-owned",
+    "SDK1.9 hostAcceptance is historical and cannot establish API1.10 carrier acceptance; new physical test snapshots are recorded separately",
+    "Capture digests detect later mutation but cannot authenticate the ancestor bytes at the original historical fork"
+  ]
+}

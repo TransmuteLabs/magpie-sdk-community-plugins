@@ -1,0 +1,28 @@
+const watchEvent = (
+  sessionID: string,
+  id: string,
+  overrides: {
+    readonly source?: string
+    readonly title?: string
+    readonly url?: string
+    readonly kind?: string
+    readonly actor?: { readonly id: string; readonly login: string; readonly bot: boolean; readonly self?: boolean }
+    readonly body?: string
+    readonly status?: string | null
+    readonly routingKey?: string
+  } = {},
+) => ({
+  id,
+  watchID: "ew_1",
+  sessionID,
+  source: overrides.source ?? "github",
+  routingKey: overrides.routingKey ?? "github:acme/app#1",
+  kind: overrides.kind ?? "review",
+  actor: overrides.actor ?? { id: "1", login: "octocat", bot: false },
+  title: overrides.title ?? "acme/app#1",
+  body: overrides.body ?? "Looks good, ship it",
+  url: overrides.url ?? "https://github.com/acme/app/pull/1",
+  status: overrides.status === undefined ? "approved" : overrides.status,
+  terminal: false,
+  occurredAt: new Date(0).toISOString(),
+})

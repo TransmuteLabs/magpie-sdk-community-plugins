@@ -1,0 +1,105 @@
+{
+  "date": "2026-11-16",
+  "implementationOwner": "SOL",
+  "reviewOwner": "Astra; reserved, not performed by implementation author",
+  "status": "Bounded API1.12 common-host gates closed; confirmed ZDR adoption implemented; independent Astra review pending",
+  "currentClosure": "LOCAL-CLOSURE-20261116.md",
+  "historicalBoundary": "The source, SDK and receipt fields below retain the earlier usbox checkpoint, including its seven then-open host gates. The currentClosure report supersedes those readiness claims without replacing historical evidence.",
+  "package": {"id": "protocol-commandcode", "version": "0.1.3", "sdkMinimum": "1.12", "nativeABI": 1, "published": false},
+  "packet": "usbox:/tmp/magpie-sol-two-policy-20261116",
+  "sourceBoundaries": {
+    "apiCheckpoint": {
+      "snapshot": "candidate04/packages/commandcode",
+      "manifest": "api12-commandcode-source.json",
+      "files": 95,
+      "manifestSHA256": "6cb8c4887e770a9341f368210fabc13a6758e0ae7935895e90799de66d16b81e"
+    },
+    "donorCheckpoint": {
+      "snapshot": "candidate06/packages/commandcode",
+      "manifest": "donor06-commandcode-source.json",
+      "files": 97,
+      "manifestSHA256": "4b400f23c92632ed5674e8526ab0f93be431148b5886078b2d2c1f01f3acb18e",
+      "runtimeDifferenceFromAPICheckpoint": "None; production src, web and build scripts are byte-identical. Later docs/source-lock and bounded test-runner selection are separate changes"
+    },
+    "finalInventory": "final-commandcode-source.json; external packet inventory includes this report, so its final SHA256 is returned separately in the handoff",
+    "finalChangeInventory": "final-commandcode-changes.json; relative to preserved input/packages/commandcode; generated AppleDouble archive metadata is counted separately, not treated as source deletion",
+    "finalReportBoundary": "This report is the only addition after the donor checkpoint; it is not a shipped runtime document"
+  },
+  "sdk": {
+    "source": "Exact original OBS candidate-01 archive extracted privately; never mutable shared candidate contents",
+    "manifestSHA256": "8724cf734d51d881f6d88561eceefeaecf9f722e1bc4e1a078fcb8f010cccdd4",
+    "archiveSHA256": "9015f443e9ea051f26c7399d6fa0292e4229d1d8f15e332d2b5fc9f4f85f4208",
+    "publicHelperSHA256": "be486205f9b4cc2e37dd003e20e0602dd27470788a1c3419ac045f3f1acd1c3d",
+    "filesVerified": 10987,
+    "hostOverlay": "Package-owned Go test file only; no production host implementation overlay",
+    "drift": "Shared directory internal/provider/extension_transport.go differed from original archive; preserved, not patched or silently substituted"
+  },
+  "adoption": [
+    "Bounded original actual code/type/message/status/timing extraction before normalization, separate from whole-execution before-effect proof",
+    "Fresh SDK RefusedExecution for initial proved subscription credit/plan/window refusals, including original selected Jev execution",
+    "Named read-only commandcode.subscription uses shared RequestWithPolicy only inside original provider.execute",
+    "Existing host smart/order selection, budget and schedule retain ownership; no package timers, account selector, retry manager or credential replay",
+    "Paid success accepts before reading output; unknown, interrupted, accepted/output and native session/tool/cache paths stay fenced",
+    "Package and manifest/provenance declare actual API1.12 capability without inventing a release version"
+  ],
+  "donors": {
+    "review": "DONOR-REVIEW-20261116.json",
+    "communityReviewed": "b35d4b35b2446bd929896ddeb58f3cb299e9e2d1",
+    "communityVersion": "0.1.24",
+    "communityTree": "305e867f7f675041d4905c951fb2495a9d00fcb3",
+    "extractionCommit": "26ea8faf7793ca66dd8e7a8b90128a5235552a1f",
+    "decision": "Full subtree identical; no-op, preserve extraction pin",
+    "officialHarness": "Parent checked npm latest on November16: command-code1.89.1, identical shasum/integrity; no download or repeated reverse engineering"
+  },
+  "checks": {
+    "regressionFirst": "REQUEST-POLICY-PLAN.md precedes runtime edits; meaningful old-runtime unit and actual-host assertion failures are retained, successful compilation required",
+    "oldRuntimeUnit": "red-fixed-01: original final refusal missing in Chat/Responses/Messages/Jev",
+    "oldRuntimeInstalledModule": "native-red-fixed-01: one dispatch and409 instead of eligible sibling; compiling old native package, not a compile-error red",
+    "finalScopedRace": {"phase": "green-donor-06", "passTestsAndSubtests": 96, "fail": 0, "skip": 0},
+    "finalVetBuildFormat": "Both modules go vet ./..., go build ./... and empty gofmt -l passed; Python AST checks passed",
+    "finalDefaultPackage": "Ordinary full build, browser compilation, ZIP inventory and strict standalone validation passed",
+    "donorMetadata": "donor-metadata-07: recorded Git observations, changed docs JSON and unchanged production/extraction provenance passed",
+    "ordinaryFront": {"phase": "native-final-04", "packageCases": 19, "pass": 14, "fail": 5, "combinedCases": 31, "combinedPass": 24, "combinedFail": 7},
+    "verifiedChat": ["eligible sibling in smart/order", "finite long-delay refusal", "request/content-terminal rules", "selected versus unrelated-model budget scope", "accepted/output/transport/uncertain/ambiguous fences", "original failure remains attached to its actual trace try", "named read cancellation"],
+    "verifiedJev": "Actual /v1/systemone and translated /v1/decisions succeed with one dispatch, native CLI identity and exactly41 input/3 output in ledger and Recent; interrupted answer409 with one dispatch and no replay",
+    "sourceContinuity": "Final ordinary-host audit uses checkpoint04 built artifacts. Donor changes have no runtime delta; final stock package metadata was rebuilt/validated but not reinstalled through Front"
+  },
+  "artifacts": {
+    "directory": "donor-final-06/distribution-distribution-donor-final06-commandcode",
+    "nativeSHA256": "96d50fc45b1cbd6b577640de2cbe6ad5e4ba9a944b19ee46854c12d6d8036395",
+    "nativeMatchesOrdinaryHostCheckpoint": true,
+    "archive": "donor-final-06/protocol-commandcode-0.1.3-linux-amd64.zip",
+    "archiveSHA256": "416c5ada032456acf2668d20e7394418c25e8526cafd81e8aeeb25923764c2e2",
+    "distributionInventory": "donor06-commandcode-distribution.json",
+    "distributionInventorySHA256": "8b635a3fa58f216ed0352f70f72e1b29be4c29907a0081eb13f80ae74c8f8b1c",
+    "previousArchivePreserved": "API checkpoint ZIP e84847c0b368a7d82448b1db2bcb381c847ac767c7f0d0938971d9a240363ca8 remains separate; new donor metadata is only in the final ZIP"
+  },
+  "receiptSHA256": {
+    "red-fixed-01-receipt.json": "02362a64d1b4f99291a87567802f7cba5210b761d69737087f6fef4b343e2aca",
+    "native-red-fixed-01-receipt.json": "8a39264940564dbecee1a3e142c2a416e7a8226591fe2f7900b61cef8caacaf5",
+    "green-final-04-receipt.json": "e7811bf22eb1534863ad2206e42718116753f3ae077b9e50dfe54260ff5da7df",
+    "distribution-final04-receipt.json": "ae9d9467fc6a2872ffb156a94a38ba32e9853e25e11191fec0869e5672bee10d",
+    "native-final-04-receipt.json": "ec8d86c7f613a3f879c038810843d707bb571ef6c69ceb5af283d1d42b0874a9",
+    "green-donor-06-receipt.json": "4dd242e4521cbb8ceeb4442eec9569b01695f24513ebdab259f8e71bfe525243",
+    "donor-final-06/distribution-donor-final06-receipt.json": "a855e452d829a34291faf73800bc1ed97a97f9761dbdabb689961357d56cf4ef",
+    "donor-metadata-07-receipt.json": "2bfcd02e3a09608c6e7f0eb9f5f63a7ab16b37b31cb939ff6e0f5e14231d73b8"
+  },
+  "remainingGates": [
+    {"owner": "Parent host", "cases": ["commandcode-budget", "commandcode-model-budget", "opencode-budget", "opencode-model-budget"], "observed": "Root/model exhaustion sends exactly once and retains Recent, but usage.Load returns zero ledger rows", "required": "Preserve terminal accounting in ordinary shared-policy gateway path; rerun these unchanged assertions on a new exact parent source"},
+    {"owner": "Parent host", "cases": ["commandcode-jev-budget", "commandcode-jev-request-terminal", "commandcode-jev-content-terminal"], "observed": "Actual Jev route sends policy-A then policy-B and returns429 despite maxTotalRetries0 or terminal operator rules", "source": "internal/gateway/decide_group.go serveDecideTries does not consume final shared refusal/root policy", "required": "Adopt the public final refusal in the existing Jev host owner; no package-private bypass"},
+    {"owner": "Parent", "required": "Root registry/readiness/STATUS metadata and separately owned public SDK helper permit/disable/diagnostic gates; no shared docs edited here"},
+    {"owner": "Astra", "required": "Independent combined review of exact source and controls; not performed or pre-approved by SOL"}
+  ],
+  "changedFiles": {
+    "runtime": ["src/request_policy.go", "src/transport.go", "src/systemone.go", "src/module.go", "src/cmd/manifest/main.go"],
+    "regressionsAndHarness": ["src/request_policy_test.go", "src/module_test.go", "src/provenance_test.go", "src/systemone_test.go", "tests/request_policy_host_test.go.txt", "tests/request_policy_native.py", "tests/request_policy_run.py", "tests/request_policy_snapshot.py"],
+    "packaging": ["scripts/build.py", "tests/check_package.py", "web/package.json"],
+    "documentation": ["README.md", "docs/REFERENCE.md", "docs/SOURCES.md", "docs/source-lock.json", "docs/REQUEST-POLICY.md", "docs/REQUEST-POLICY-VERIFICATION.json", "docs/DONOR-REVIEW-20261116.json", "docs/FINAL-REVIEW.json"],
+    "boundary": "Relative to preserved input source; pre-runtime plan/test scaffolding already in input remains preserved. No source deletion"
+  },
+  "simplifications": "One strict refusal helper serves Chat/Responses/Messages and Jev; existing forwarding/accounting/session owners are reused. No new dependencies or duplicate scheduler/selector/refresh owner",
+  "excludedRecovery": "REQUEST-POLICY.md lists transport/ambiguous/vendor acceptance, native Go-plan/pause/tool/cache, successful paid output, auth and non-execution reads with explicit reasons",
+  "notVerified": ["live vendor/credentials", "installed vendor applications", "non-Linux runtime", "broad host suites", "SDK publication", "final metadata package reinstallation through Front", "separate SDK helper permit/disable diagnostic fixes", "independent review"],
+  "execution": "Regular usbox uid1000 only, isolated HOME/XDG, offline pinned Go1.26.8, existing descendant network guard. No Mac/adm testing/build/gofmt, staging/commit/merge/push/branch/worktree, source deletion, dependencies, host/sibling/root metadata writes or target-warden termination",
+  "nonProofSetupAttempts": "Early compile/setup failures, candidate05 AppleDouble snapshot decode and donor-metadata-06 missing /sbin were retained separately and are not counted as old-red or product regression evidence"
+}

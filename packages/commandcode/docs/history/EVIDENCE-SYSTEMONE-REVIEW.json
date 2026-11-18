@@ -1,0 +1,431 @@
+{
+  "schema": 1,
+  "date": "2026-11-14",
+  "scope": "module-only SystemOne proposal, current refusal regressions, donor wire and packaged fixture inventory; no host implementation",
+  "module": {
+    "parentCommit": "5c0efe290b8c5ec08c4512c4894ae72e524cbc2d",
+    "id": "protocol-commandcode",
+    "version": "0.1.0",
+    "minimumSDK": "1.5",
+    "nativeABI": 1,
+    "runtimeGoChanged": false,
+    "inputFilesMatched": 37,
+    "inputFingerprintSHA256": "4ae1dcfd7ee2e17ccf04d86c8b63f3f9f34eb04c5c358e6456cb2c1d16d6cb01",
+    "sourceLockSHA256": "f9e964770c05234fc2b87656c6b293f3797bd83986adc8815f5c602bb10542ac",
+    "fixtureSHA256": "94b35faba3bf107060c78c8abb147ca8817ef1d477d3100f36458daf9e09ed4c"
+  },
+  "host": {
+    "source": "../magpie",
+    "testedContractBaseline": "d07078c7926daf6f33af09c40297c941bd39da92",
+    "executionSource": "/tmp/magpie-sdk-final-base-6bb0rob6/source",
+    "frozenHead": "31984c880acbf341b213be3ffab2fa680fbf8658",
+    "frozenTree": "f536d8202e40aae4b0fc36630aa3c1eb496d58d5",
+    "frozenArchiveSHA256": "388fb72a3644c68363832e0b83a7a2346ad896f5afe5b648fafefc07a7448d42",
+    "sdk": "1.6",
+    "pinnedSDKFilesMatched": 18,
+    "productionEdits": false,
+    "stagingOrCommit": false,
+    "broadSuiteRepeated": false
+  },
+  "executor": {
+    "server": "usbox",
+    "root": "/tmp/magpie-commandcode-systemone.8S8u2P1e",
+    "temporaryHomeXDGPerCheck": true,
+    "network": "each execution entered unshare -Urn; only loopback enabled",
+    "GOPATH": "/Users/maratkarimov/go",
+    "GOMODCACHE": "/Users/maratkarimov/go/pkg/mod",
+    "GOCACHE": "/Users/maratkarimov/.cache/go-build",
+    "GOPROXY": "off",
+    "GOSUMDB": "off",
+    "GOTOOLCHAIN": "local",
+    "GOWORK": "off",
+    "GOMAXPROCS": "4",
+    "GOFLAGS": "-mod=readonly -p=4"
+  },
+  "toolchain": {
+    "go": "go version go1.27.3 linux/amd64",
+    "node": "v22.23.4",
+    "typescript": "Version 7.0.2"
+  },
+  "tests": {
+    "topLevel": 26,
+    "includingSubtests": 57,
+    "race20Passes": 1140,
+    "race20Failures": 0,
+    "race20Skips": 0,
+    "newTopLevelTests": [
+      "TestSystemOneCurrentContractRefusesBeforeNetwork",
+      "TestJevAliasesCannotBecomeConversationModels"
+    ],
+    "currentSDKRefusalBeforeNetwork": true,
+    "allFourJevAliasesRefusedForAllThreeConversationalProtocols": true,
+    "causalNegatives": [
+      "action not-started changed to uncertain",
+      "decision-model transport guard removed"
+    ],
+    "negativeExpectedExits": [
+      1,
+      1
+    ],
+    "restoredPasses": 21
+  },
+  "checks": {
+    "smoke": {
+      "name": "smoke",
+      "arguments": [
+        "/usr/bin/go",
+        "test",
+        "-race",
+        "-run",
+        "^(TestSystemOneCurrentContractRefusesBeforeNetwork|TestJevAliasesCannotBecomeConversationModels)$",
+        "-count=1",
+        "-timeout=90s",
+        "-json",
+        "."
+      ],
+      "exit": 0,
+      "expectedExit": 0,
+      "seconds": 2.467,
+      "passes": 21,
+      "failures": 0,
+      "skips": 0,
+      "logSHA256": "0cb492ff171fed290b2b993e3153a0d35e34616c2f966b8f918794e22f15c2d1"
+    },
+    "race20": {
+      "name": "race20",
+      "arguments": [
+        "/usr/bin/go",
+        "test",
+        "-race",
+        "-count=20",
+        "-timeout=3m",
+        "-json",
+        "./..."
+      ],
+      "exit": 0,
+      "expectedExit": 0,
+      "seconds": 2.526,
+      "passes": 1140,
+      "failures": 0,
+      "skips": 0,
+      "logSHA256": "e3ea9423ca68796453969d05ac735d2832cea6330543252f1c2f9fd4072a6a85"
+    },
+    "negative-action": {
+      "name": "negative-action",
+      "arguments": [
+        "/usr/bin/go",
+        "test",
+        "-race",
+        "-overlay",
+        "/tmp/magpie-commandcode-systemone.8S8u2P1e/negative-action-overlay.json",
+        "-run",
+        "^TestSystemOneCurrentContractRefusesBeforeNetwork$",
+        "-count=1",
+        "-timeout=90s",
+        "-json",
+        "."
+      ],
+      "exit": 1,
+      "expectedExit": 1,
+      "seconds": 0.665,
+      "passes": 2,
+      "failures": 2,
+      "skips": 0,
+      "logSHA256": "09a256e934260e575b842d2a2351a9895264b2cda891ee5db0afce4fc6f7dcef"
+    },
+    "negative-conversation": {
+      "name": "negative-conversation",
+      "arguments": [
+        "/usr/bin/go",
+        "test",
+        "-race",
+        "-overlay",
+        "/tmp/magpie-commandcode-systemone.8S8u2P1e/negative-conversation-overlay.json",
+        "-run",
+        "^TestJevAliasesCannotBecomeConversationModels$",
+        "-count=1",
+        "-timeout=90s",
+        "-json",
+        "."
+      ],
+      "exit": 1,
+      "expectedExit": 1,
+      "seconds": 0.715,
+      "passes": 0,
+      "failures": 17,
+      "skips": 0,
+      "logSHA256": "3195eeb8e7af73c8a48ac5ed7d03562c5e532708793865e980bbc179e7f4fcc4"
+    },
+    "restored": {
+      "name": "restored",
+      "arguments": [
+        "/usr/bin/go",
+        "test",
+        "-race",
+        "-run",
+        "^(TestSystemOneCurrentContractRefusesBeforeNetwork|TestJevAliasesCannotBecomeConversationModels)$",
+        "-count=1",
+        "-timeout=90s",
+        "-json",
+        "."
+      ],
+      "exit": 0,
+      "expectedExit": 0,
+      "seconds": 1.316,
+      "passes": 21,
+      "failures": 0,
+      "skips": 0,
+      "logSHA256": "bc49bd3439c4889b057224ea7d4f885b6cf14d1d68ad28d1099a1f213b092c41"
+    },
+    "vet": {
+      "name": "vet",
+      "arguments": [
+        "/usr/bin/go",
+        "vet",
+        "./..."
+      ],
+      "exit": 0,
+      "expectedExit": 0,
+      "seconds": 0.715,
+      "passes": 0,
+      "failures": 0,
+      "skips": 0,
+      "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "build": {
+      "name": "build",
+      "arguments": [
+        "/usr/bin/go",
+        "build",
+        "./..."
+      ],
+      "exit": 0,
+      "expectedExit": 0,
+      "seconds": 0.615,
+      "passes": 0,
+      "failures": 0,
+      "skips": 0,
+      "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "format": {
+      "name": "format",
+      "arguments": [
+        "/usr/bin/gofmt",
+        "-l",
+        "systemone_contract_test.go",
+        "provenance_test.go"
+      ],
+      "exit": 0,
+      "expectedExit": 0,
+      "seconds": 0.003,
+      "passes": 0,
+      "failures": 0,
+      "skips": 0,
+      "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "donor-systemone": {
+      "name": "donor-systemone",
+      "arguments": [
+        "/usr/bin/node",
+        "verify/systemone_donor.mjs",
+        "/tmp/magpie-commandcode.ogjQFhdz/v4-sdk16/sources/community"
+      ],
+      "exit": 0,
+      "expectedExit": 0,
+      "seconds": 0.114,
+      "passes": 0,
+      "failures": 0,
+      "skips": 0,
+      "logSHA256": "be819da700dda03857936e866e482ff4a7b28caa0a56153c3013f2584c7e66cd"
+    },
+    "source-provenance": {
+      "name": "source-provenance",
+      "arguments": [
+        "/usr/bin/python3",
+        "verify/check_sources.py",
+        "--source",
+        "community-commandcode=/tmp/magpie-commandcode.ogjQFhdz/v4-sdk16/sources/community",
+        "--source",
+        "cliproxyapi-maintained=/tmp/magpie-commandcode-systemone.8S8u2P1e/cliproxy",
+        "--source",
+        "sdk-tested-host=/tmp/magpie-sdk-final-base-6bb0rob6/source"
+      ],
+      "exit": 0,
+      "expectedExit": 0,
+      "seconds": 0.032,
+      "passes": 0,
+      "failures": 0,
+      "skips": 0,
+      "logSHA256": "090b248e14edca639d229368d5213f00e7ba61e5f41f9726dfb1b4ef872af8fd"
+    },
+    "python-syntax": {
+      "name": "python-syntax",
+      "arguments": [
+        "/usr/bin/python3",
+        "-c",
+        "import ast; from pathlib import Path; [ast.parse(Path(path).read_text(), filename=path) for path in ['build.py', 'verify/check_sources.py', 'verify/check_package.py']]"
+      ],
+      "exit": 0,
+      "expectedExit": 0,
+      "seconds": 0.032,
+      "passes": 0,
+      "failures": 0,
+      "skips": 0,
+      "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "package-build": {
+      "name": "package-build",
+      "arguments": [
+        "/usr/bin/python3",
+        "build.py",
+        "--output",
+        "/tmp/magpie-commandcode-systemone.8S8u2P1e/dist/package"
+      ],
+      "exit": 0,
+      "expectedExit": 0,
+      "seconds": 0.965,
+      "passes": 0,
+      "failures": 0,
+      "skips": 0,
+      "logSHA256": "9f223510c454ccd169580ab685f7af89f461e5986af7cb6cabe8c3d4354e107b"
+    },
+    "package-provenance": {
+      "name": "package-provenance",
+      "arguments": [
+        "/usr/bin/python3",
+        "verify/check_package.py",
+        "/tmp/magpie-commandcode-systemone.8S8u2P1e/dist/protocol-commandcode-0.1.0-linux-amd64.zip"
+      ],
+      "exit": 0,
+      "expectedExit": 0,
+      "seconds": 0.114,
+      "passes": 0,
+      "failures": 0,
+      "skips": 0,
+      "logSHA256": "80df96fd6f1df79d9d83df47bf52625ac60797d752e9fdbf35965010256a91ce"
+    }
+  },
+  "donor": {
+    "donorCommit": "26ea8faf7793ca66dd8e7a8b90128a5235552a1f",
+    "donorVersion": "0.1.24",
+    "wireSourceSHA256": "ef6f9e6f9241dfa5deddde5326408e1560cfd653b41b2eead3a0f85f11af9631",
+    "fixtureSourceSHA256": "67d94f5369c7cda8f5a52f95d1224063db8b3914a61e395487a6268a0d0c6b78",
+    "route": "POST /provider/v1/systemone",
+    "cliHeader": "1.88.2",
+    "aliases": [
+      "jev",
+      "jev-latest",
+      "typesafe-ai/jev",
+      "typesafe/jev"
+    ],
+    "canonicalRequest": {
+      "model": "typesafe/jev",
+      "state": {
+        "text": "ping"
+      },
+      "questions": {
+        "ok": {
+          "type": "noul",
+          "instructions": "Is this a test?"
+        }
+      }
+    },
+    "preservedAnswer": {
+      "model": "typesafe/jev",
+      "answers": {
+        "ok": {
+          "type": "noul",
+          "noul": 0.93
+        }
+      },
+      "usage": {
+        "input_tokens": 41,
+        "output_tokens": 3
+      }
+    },
+    "exactCLIHeaders": true,
+    "syntheticResponseHeadersPreserved": true,
+    "zdr": true,
+    "invalidJSONBeforeDispatch": true,
+    "planRefusal400To403": true,
+    "goRefusalKeepsAccount": true,
+    "fixtureDispatches": 7,
+    "pendingHostCases": 10,
+    "pendingUsageCases": 5,
+    "pendingAgentCases": 6,
+    "proposedHostCasesExecuted": 0,
+    "vendorCalls": 0
+  },
+  "provenance": {
+    "sourceFilesMatched": 29,
+    "lockedFixtures": 5,
+    "sources": [
+      {
+        "id": "community-commandcode",
+        "commit": "26ea8faf7793ca66dd8e7a8b90128a5235552a1f",
+        "version": "0.1.24"
+      },
+      {
+        "id": "cliproxyapi-maintained",
+        "commit": "7638884b40a60c3fb534126b334b178f3b3bbcbb",
+        "version": "go.mod v8; captured CLI transport 1.74.1"
+      },
+      {
+        "id": "sdk-tested-host",
+        "commit": "d07078c7926daf6f33af09c40297c941bd39da92",
+        "version": "SDK API 1.6 / native ABI 1"
+      }
+    ]
+  },
+  "package": {
+    "standalonePackage": true,
+    "files": 13,
+    "sources": 3,
+    "sourceLockSHA256": "f9e964770c05234fc2b87656c6b293f3797bd83986adc8815f5c602bb10542ac",
+    "packageSHA256": "93bdf1a57048108b9e43c0747d16075e867a89bba7cf8b1cc3b0676726a77a49",
+    "remotePath": "/tmp/magpie-commandcode-systemone.8S8u2P1e/dist/protocol-commandcode-0.1.0-linux-amd64.zip",
+    "localPath": "dist/systemone-contract-sdk16/protocol-commandcode-0.1.0-linux-amd64.zip",
+    "realNativeInstallRepeated": false,
+    "strictTypeScriptAndCSharedBuild": true,
+    "additionalRuntimeDependency": false
+  },
+  "proposal": {
+    "minor": "1.7",
+    "status": "unimplemented; host owner acceptance required",
+    "hostCasesPending": 10,
+    "usageCasesPending": 5,
+    "agentCasesPending": 6,
+    "proposedCasesExecuted": 0
+  },
+  "emptyCoreRegression": {
+    "evidence": "usbox:/tmp/magpie-empty-core-regression.N2bFbVMO/evidence.json",
+    "testedHead": "31984c880acbf341b213be3ffab2fa680fbf8658",
+    "testedTree": "31086f8a87ca1daf2f9006dbdb55d4d30a371f3f",
+    "testedScope": "archived host plus the gateway-test overlay; unrelated provider test WIP excluded",
+    "race20Passes": 80,
+    "race20Failures": 0,
+    "race20Skips": 0,
+    "mutantExit": 1,
+    "mutantBehavior": "GET /v1/models fails with HTTP 503 when ordinary core delegation requires a native module",
+    "restoredExit": 0,
+    "testPath": "internal/gateway/extension_runtime_test.go",
+    "testSHA256": "748746d58616a41042b3fd461569ada514d6de22b4fbd140ce411503c7d5c28b",
+    "frozenTestBytesMatch": true,
+    "newHostTestsRunInThisSlice": false
+  },
+  "preserved": [
+    "verify/EVIDENCE.json",
+    "verify/EVIDENCE-SDK16.json",
+    "previous failed logs and distributions",
+    "deferred Google-schema PLAN WIP",
+    "frozen gateway test"
+  ],
+  "notVerified": [
+    "proposed SystemOne provider operation, SDK 1.7 gates, live/cold selected-account decision catalog or fallback fences",
+    "effective own-model metadata wire and agent lifecycle cases",
+    "native host integration re-execution in this proposal-only slice",
+    "live vendor or account entitlement, real browser/CLI/UI and non-Linux execution",
+    "Google nested-reference schema normalization",
+    "host-wide baseline, broad suite and independent plugin-free deployment"
+  ]
+}

@@ -1,0 +1,133 @@
+{
+  "schema": 1,
+  "packages": {
+    "claude-desktop": {
+      "id": "agent-claude-desktop",
+      "description": "Claude Desktop third-party gateway agent configuration",
+      "platforms": [
+        "darwin/arm64",
+        "darwin/amd64"
+      ],
+      "checks": [
+        {
+          "command": [
+            "{python}",
+            "-I",
+            "tests/provenance_test.py"
+          ]
+        }
+      ]
+    },
+    "commandcode": {
+      "id": "protocol-commandcode",
+      "description": "Command Code provider, agent and decision models",
+      "checks": [
+        {
+          "command": [
+            "{python}",
+            "tests/typecheck.py",
+            "--sdk",
+            "{sdk}"
+          ]
+        }
+      ]
+    },
+    "devin": {
+      "id": "devin-inbound",
+      "description": "Devin native protocol, provider and agent",
+      "checks": [
+        {
+          "command": [
+            "{python}",
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            "tests",
+            "-p",
+            "*_test.py"
+          ]
+        }
+      ]
+    },
+    "minimax": {
+      "id": "minimax",
+      "description": "MiniMax Code China and Global providers, tools, media and search",
+      "checks": []
+    },
+    "omp": {
+      "id": "omp-sessions",
+      "description": "OMP session conversion and history sources",
+      "checks": [
+        {
+          "command": [
+            "{python}",
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            "tests",
+            "-p",
+            "test_*.py"
+          ]
+        }
+      ]
+    },
+    "opencode": {
+      "id": "opencode",
+      "description": "OpenCode provider, agent, history and interface",
+      "checks": [
+        {
+          "command": [
+            "node",
+            "tests/zen_tools_oracle.mjs",
+            "--check"
+          ]
+        },
+        {
+          "command": [
+            "node",
+            "tests/zen_policy_oracle.mjs",
+            "--check"
+          ]
+        }
+      ]
+    },
+    "zcode": {
+      "id": "zcode",
+      "description": "ZCode native protocol, provider, agent and interface",
+      "checks": [
+        {
+          "command": [
+            "{python}",
+            "-I",
+            "src/testdata/agent/cleanup_test.py"
+          ]
+        },
+        {
+          "command": [
+            "{python}",
+            "-I",
+            "src/testdata/agent/ingress_test.py"
+          ]
+        },
+        {
+          "command": [
+            "{python}",
+            "-I",
+            "src/testdata/native-contract/peer_test.py"
+          ]
+        },
+        {
+          "command": [
+            "{python}",
+            "-I",
+            "tests/browser.py",
+            "--sdk",
+            "{sdk}"
+          ]
+        }
+      ]
+    }
+  }
+}

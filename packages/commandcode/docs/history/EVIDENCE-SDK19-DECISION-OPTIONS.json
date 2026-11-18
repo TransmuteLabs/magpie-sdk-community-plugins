@@ -1,0 +1,118 @@
+{
+  "schema": 1,
+  "date": "2026-11-14",
+  "scope": "CommandCode API9 public decision options validation, conversation isolation and exact consolidated-host packaging",
+  "status": "scoped module, installed native gates and final default package passed on the exact consolidated host; broad release acceptance remains parent-owned",
+  "module": {
+    "id": "protocol-commandcode",
+    "version": "0.1.2",
+    "sdkMinimum": "1.9",
+    "systemOneOperationMinimum": "1.7",
+    "nativeABI": 1,
+    "baseCommit": "2145c1a44ded0a62a10512a29c4b8e76cdf2e36e",
+    "runtimeSourceSHA256": "0bf1caf9b5cfcc1a8b97ea56c3204183f7c56bf9e7712a8cb2fe186b8cd99ef2",
+    "runtimeArchiveSHA256": "83b2b07d9e859a60660db9ae9cec879c8a70d9f1889af5d1bcb8182bea0d5940",
+    "laterStatusDocumentsOutsideRuntimeSnapshot": [
+      "PLAN.md",
+      "SOURCES.md",
+      "VERIFICATION.md",
+      "OWN-MODEL-METADATA-API9.md",
+      "verify/EVIDENCE-SDK19-DECISION-OPTIONS.json"
+    ]
+  },
+  "host": {
+    "commit": "46756a48c9c9f204a8369638dc63cbcb83d02031",
+    "tree": "db40ddbf8944b54f9f689d444644af4c3bc76881",
+    "revisionKind": "committed-tree",
+    "source": "usbox:/tmp/magpie-sdk-final-base-eg014lri/source",
+    "fileCount": 10751,
+    "sourceSHA256": "423ad62b2299f78b66c5970093acf7ddcd2d35ec70ea941fced2e0513b56f97a",
+    "archiveSHA256": "e188abd5d115c7da3167a6296e7d07f9bd31766a738ea4e6326ff093e4a74a61",
+    "receiptSHA256": "cf630604f3c719338a5c8c05ac6c035d1da435602b5b5008486ee27d7ea92b54"
+  },
+  "environment": {
+    "server": "usbox",
+    "isolatedHomeAndXDG": true,
+    "pinnedExistingOfflineCaches": true,
+    "nativeInitialUserNamespace": true,
+    "descendantLoopbackNetworkGuard": true,
+    "liveVendorCalls": 0,
+    "sharedHostWrites": false,
+    "broadHostSuite": false,
+    "activation": false
+  },
+  "remoteRoot": "usbox:/tmp/magpie-agent-decisions.7tS2kyJ7",
+  "behavioralRed": {
+    "receipt": "proof-commandcode-decision-options-red3/evidence.json",
+    "receiptSHA256": "416306b3504a82c373bc8c7c2e284e0f12de8a2426008c824850aa19e945209c",
+    "pass": 3,
+    "fail": 43,
+    "skip": 0,
+    "compiled": true,
+    "positiveControlsPassed": true,
+    "reason": "old production silently ignored invalid decision catalogs in agent.inspect and agent.plan",
+    "logSHA256": "40843df5dcf282b60bf3e2d4946d79b6f5d0f4e5c67c31d70f1460d331c94982"
+  },
+  "moduleGates": {
+    "receipt": "proof-commandcode-decision-options-green1/evidence.json",
+    "receiptSHA256": "7dd01d2bb5f9ea738cedcbfaf6934d7f90c6da98de704716e3493b43fa41dae3",
+    "moduleRace20": {"exit": 0, "pass": 2340, "fail": 0, "skip": 0},
+    "formattingExit": 0,
+    "vetExit": 0,
+    "buildExit": 0,
+    "sourceProvenanceExit": 0,
+    "pinnedSourceHashes": 61,
+    "completeRunGreen": false,
+    "preservedLaterFailure": "ZIP rejected 1970 timestamps assigned by the archive harness; no module production change was needed"
+  },
+  "installedNativeGates": {
+    "receipt": "proof-commandcode-decision-options-green2/evidence.json",
+    "receiptSHA256": "e64169e802fdeea0b5a56800c35d1dabd0930390c9907b7c301d8a3fd1fe5513",
+    "completeRunExit": 0,
+    "runtimeSourceUnchangedFromModuleGates": true,
+    "packageBuildAndStrictTypesExit": 0,
+    "packageValidationExit": 0,
+    "nativeAgentRace20": {
+      "exit": 0, "pass": 20, "fail": 0, "skip": 0,
+      "logSHA256": "ee5b9ae2e885096fadd048e04927b9113ec972f417392dfd480cac4207562ef8",
+      "decisionProviderAndGroupPresent": true,
+      "conversationConfigUnchangedByDecisionCatalog": true
+    },
+    "nativeSystemOneRace20": {
+      "exit": 0, "pass": 20, "fail": 0, "skip": 0,
+      "logSHA256": "f1c634b5ff164df4a70c5db535927a61764ec6a5ada36d46d0d1df4e5b796aec"
+    },
+    "nativeOwnerAndQuotaExit": 0,
+    "nativeOwnerLogSHA256": "638a06bd83f199b21c425b98f8ab5b8b46e9ca1976949c423af6dec90b2234b1",
+    "defaultZip": "proof-commandcode-decision-options-green2/dist/protocol-commandcode-0.1.2-linux-amd64.zip",
+    "defaultZipSHA256": "8d5e7b0f165f3781db0c3f22d6d45fe5c4006895f31075582db0e29a44ccecae",
+    "nativeControllerSHA256": "9582b39a85c060d56bdd8c9587568a44d2e562b7201a0fb88f7892959d84950d"
+  },
+  "finalStatusPackage": {
+    "receipt": "proof-commandcode-decision-options-final1/evidence.json",
+    "receiptSHA256": "6a8f098c7c0adc9d47b7562cc6906dbe4b90e94c47c0af617b634e66ed02c33f",
+    "pending": false,
+    "sourceSHA256": "485700786516939ed36d49187b9c0ec80fd598e8fd77340145c723eb13d4f8dc",
+    "archiveSHA256": "831122db77b101f13782bd1de6cb2ff5f9e4032c1f3ab3233cc33339462f8de4",
+    "sourceChangesSinceNativeProofAreStatusDocumentsOnly": true,
+    "provenanceRegressionExit": 0,
+    "sourceProvenanceExit": 0,
+    "packageBuildAndStrictTypesExit": 0,
+    "packageValidationExit": 0,
+    "nativeAndRuntimePackageBytesMatchReplayedArtifact": true,
+    "defaultZip": "proof-commandcode-decision-options-final1/dist/protocol-commandcode-0.1.2-linux-amd64.zip",
+    "defaultZipSHA256": "bba41db352f5be09d68fa3744d9e6b1e3c61f755288ac60d4e3daf3623b53917",
+    "nativeControllerSHA256": "9582b39a85c060d56bdd8c9587568a44d2e562b7201a0fb88f7892959d84950d",
+    "thisReceiptCompletionIsOutsideTheFinalPackageSnapshot": true
+  },
+  "preservedEarlierAttempts": [
+    "proof-commandcode-decision-options-red1: test fixture used revision 0 with connected=true",
+    "proof-commandcode-decision-options-red2: passing controls and invalid DTO failures on the earlier frozen host",
+    "all prior SDK16, SDK17, SDK19 and post-fix evidence remains retained"
+  ],
+  "limits": [
+    "No recovered CommandCode decision-config schema; public decision discovery does not authorize guessed vendor fields or conversation model selection.",
+    "The donor Google nested-reference tool-schema normalizer remains deferred.",
+    "No live vendor or installed CommandCode client, real browser approval, non-Linux native execution or broad host release acceptance is claimed."
+  ]
+}

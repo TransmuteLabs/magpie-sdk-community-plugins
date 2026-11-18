@@ -1,0 +1,129 @@
+package extension
+
+import (
+	"bytes"
+	"context"
+	"encoding/json"
+	"errors"
+	"io/fs"
+	"os"
+	"path/filepath"
+	"testing"
+	"time"
+
+	sdk "github.com/yetone/magpie/pkg/extension"
+)
+
+func TestZcodeNativeSQLiteRollback(t *testing.T) {
+	distribution := os.Getenv("MAGPIE_ZCODE_SQLITE_DISTRIBUTION")
+	source, err := os.ReadFile(os.Getenv("MAGPIE_ZCODE_SQLITE_SOURCE"))
+	if err != nil || len(source) < 100 || distribution == "" {
+		t.Fatal("actual native SQLite fixture inputs are required")
+	}
+	for _, scenario := range []string{"cancel-after-write", "foreign-during-rollback", "stale-preimage"} {
+		t.Run(scenario, func(t *testing.T) {
+			manager := NewManager(t.TempDir())
+			t.Cleanup(func() {
+				ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+				defer cancel()
+				if err := manager.Close(ctx); err != nil {
+					t.Error(err)
+				}
+			})
+			if _, err := manager.Install(t.Context(), distribution); err != nil {
+				t.Fatal(err)
+			}
+			root := t.TempDir()
+			target := filepath.Join(root, "bundle.json")
+			original := []byte("strong original target\x00\x80")
+			if os.WriteFile(target, original, 0o640) != nil || os.WriteFile(filepath.Join(root, "source.db"), source, 0o600) != nil {
+				t.Fatal("fixture source or preimage write")
+			}
+			request := sdk.SessionRequest{ID: "zcode-sqlite-history", From: "zcode-sqlite-db", To: "zcode-sqlite-bundle-v1",
+				Files:   []sdk.SessionDocument{{Path: "source.db", Format: "zcode-sqlite-db", Body: source}},
+				Options: json.RawMessage(`{"outputPath":"bundle.json"}`)}
+			actions := NewActions(manager)
+			plan, err := actions.SessionConvert(t.Context(), "zcode", sdk.Scope{}, request,
+				ActionPolicy{Root: root, Paths: []string{"bundle.json"}, BackupDir: t.TempDir()})
+			if err != nil {
+				t.Fatal("actual native module plan:", err)
+			}
+			if len(plan.Preview().Files) != 1 || plan.Preview().Files[0].BeforeHash != actionHash(actionFile{Body: original, Mode: 0o640, Exists: true}) {
+				t.Fatal("native converter plan lost the strong preimage")
+			}
+			ctx, cancel := context.WithCancel(t.Context())
+			defer cancel()
+			foreign := []byte("foreign actor owns these bytes")
+			writes := 0
+			actions.write = func(directory *os.Root, name string, body []byte, mode fs.FileMode) error {
+				writes++
+				if err := actionWrite(directory, name, body, mode); err != nil {
+					return err
+				}
+				if scenario == "foreign-during-rollback" {
+					if err := os.WriteFile(target, foreign, 0o640); err != nil {
+						return err
+					}
+				}
+				cancel()
+				return nil
+			}
+			if scenario == "stale-preimage" {
+				if err := os.WriteFile(target, foreign, 0o640); err != nil {
+					t.Fatal(err)
+				}
+			}
+			result, err := plan.Execute(ctx, plan.Preview().Revision)
+			if err == nil || result.Applied {
+				t.Fatal("canceled/stale native plan was committed")
+			}
+			expected := original
+			if scenario != "cancel-after-write" {
+				expected = foreign
+			}
+			current, readErr := os.ReadFile(target)
+			afterSource, sourceErr := os.ReadFile(filepath.Join(root, "source.db"))
+			if readErr != nil || sourceErr != nil || !bytes.Equal(current, expected) || !bytes.Equal(afterSource, source) {
+				t.Fatal("native rollback changed foreign data, source DB or original preimage")
+			}
+			if scenario == "stale-preimage" {
+				if !errors.Is(err, ErrActionChanged) || writes != 0 || result.Backup != "" {
+					t.Fatal("stale preimage reached a write or backup")
+				}
+			} else {
+				if !errors.Is(err, context.Canceled) || writes != 1 || result.Backup == "" {
+					t.Fatal("actual post-write cancellation was not observed")
+				}
+				status, statusErr := os.ReadFile(filepath.Join(result.Backup, "status"))
+				wanted := "rolled_back\n"
+				if scenario == "foreign-during-rollback" {
+					wanted = "prepared\n"
+					if !errors.Is(err, ErrActionChanged) {
+						t.Fatal("foreign change did not fence rollback")
+					}
+				}
+				if statusErr != nil || string(status) != wanted {
+					t.Fatal("rollback journal status:", string(status), statusErr)
+				}
+				var manifest struct {
+					Files []struct {
+						Backup string `json:"backup"`
+						Before string `json:"beforeHash"`
+					} `json:"files"`
+				}
+				body, readErr := os.ReadFile(filepath.Join(result.Backup, "manifest.json"))
+				if readErr != nil || json.Unmarshal(body, &manifest) != nil || len(manifest.Files) != 1 ||
+					manifest.Files[0].Before != plan.Preview().Files[0].BeforeHash {
+					t.Fatal("backup manifest changed its preimage identity")
+				}
+				saved, savedErr := os.ReadFile(filepath.Join(result.Backup, manifest.Files[0].Backup))
+				if savedErr != nil || !bytes.Equal(saved, original) {
+					t.Fatal("backup did not preserve exact binary preimage")
+				}
+			}
+			if _, retryErr := plan.Execute(t.Context(), plan.Preview().Revision); retryErr == nil {
+				t.Fatal("used native file plan was automatically replayable")
+			}
+		})
+	}
+}

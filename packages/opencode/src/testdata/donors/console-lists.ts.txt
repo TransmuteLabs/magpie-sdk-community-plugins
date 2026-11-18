@@ -1,0 +1,25 @@
+const state = { instruction: "Use tabs.", lists: 200 }
+      const server = {
+        fetch: (request: Request) => {
+          const path = new URL(request.url).pathname
+          if (path === "/api/v2/config") return Response.json({ providers: {} }, withLists)
+          if ((path === "/api/v2/instructions" || path === "/api/v2/skills") && state.lists !== 200)
+            return new Response(null, { status: state.lists })
+          if (path === "/api/v2/instructions")
+            return Response.json({ instructions: [{ id: "style", content: state.instruction }] })
+          if (path === "/api/v2/skills") return Response.json({ skills: [{ slug: "deploy", version: "1" }] })
+          if (path === "/api/v2/skills/deploy") return Response.json(skillBundle)
+          return new Response(null, { status: 404 })
+        },
+      }
+      const loaded = Effect.all([discovery.list(), skills.get(Skill.ID.make("deploy"))]).pipe(
+        Effect.map(([files, skill]) => ({
+          instructions: Array.isArray(files)
+            ? files.filter((file) => file.path.startsWith("OpenCode Console")).map((file) => file.content)
+            : [],
+          skill: skill?.description,
+        })),
+      )
+      yield* credentials.create({
+        integrationID: Integration.ID.make("opencode"),
+        value: Credential.Key.make({ type: "key", key: "secret", metadata: { server: "https://console.test" } }),

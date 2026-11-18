@@ -1,0 +1,76 @@
+{
+  "schema": 1,
+  "id": "devin-inbound",
+  "version": "0.8.0",
+  "runtime": "native",
+  "entry": "plugin.so",
+  "contract": {
+    "version": {"major": 1, "minor": 12},
+    "capabilities": ["inbound-codec", "outbound-executor", "account-auth", "model-discovery", "usage-reporter", "agent-wiring", "module-rpc", "native-account-operations", "request-policy"]
+  },
+  "compatibility": {
+    "hostAPI": "^1.12",
+    "nativeABI": 1,
+    "platforms": [
+      "darwin/amd64", "darwin/arm64",
+      "linux/amd64", "linux/arm64",
+      "windows/amd64", "windows/arm64"
+    ]
+  },
+  "window": {"metadata":"package.json"},
+  "authBindings": [{
+    "id":"page.auth.devin","from":"window:page","provider":"devin","reauthorize":true,
+    "methods":[{"id":"browser","mode":"poll"}]
+  }],
+  "providers": [{
+    "id": "devin", "name": "Devin", "protocols": ["chat", "anthropic"],
+    "options": [{
+      "key": "keepAlive",
+      "label": "Keep the cache warm",
+      "description": "Paid background requests: each ping may bill a cache read of the entire retained context plus generated output.",
+      "default": false,
+      "confirm": "Enable paid background requests? Each ping may bill a cache read of the entire retained context plus generated output."
+    }],
+    "accountTasks": [{"id": "cache-keepalive", "action": "devin.cache-keepalive"}]
+  }],
+  "actions": [
+    {"id":"devin.account.user-status","effect":"read","inputSchema":{"type":"object"}},
+    {"id":"devin.account.team-settings","effect":"read","inputSchema":{"type":"object"}},
+    {"id":"devin.account.managed-plugins","effect":"read","inputSchema":{"type":"object"}},
+    {"id":"devin.account.model-assignment","effect":"write","inputSchema":{"type":"object"}},
+    {"id":"devin.cache-keepalive","effect":"write","inputSchema":{"type":"object"}}
+  ],
+  "accountOperations": [
+    {"id":"user-status","agent":"devin-native","provider":"devin","action":"devin.account.user-status"},
+    {"id":"team-settings","agent":"devin-native","provider":"devin","action":"devin.account.team-settings"},
+    {"id":"managed-plugins","agent":"devin-native","provider":"devin","action":"devin.account.managed-plugins"},
+    {"id":"model-assignment","agent":"devin-native","provider":"devin","action":"devin.account.model-assignment"}
+  ],
+  "agents": [{
+    "id": "devin-native",
+    "name": "Devin native",
+    "bin": "devin",
+    "profile": {"target": "devin"},
+    "ua": ["devin-cli/"],
+    "fields": [{"key":"model","label":"Model"}],
+    "launch": {
+      "env": {"WINDSURF_API_SERVER_URL":"{url}", "DEVIN_API_KEY":"{key}"},
+      "model": "--model",
+      "plain": ["help", "--help", "-h", "version", "--version", "-V", "auth"]
+    }
+  }],
+  "inbounds": [
+    {"id": "devin", "path": "/exa.api_server_pb.ApiServerService/GetChatMessage"},
+    {"id": "devin.cli-models", "path": "/exa.api_server_pb.ApiServerService/GetCliModelConfigs"},
+    {"id": "devin.command-models", "path": "/exa.api_server_pb.ApiServerService/GetCommandModelConfigs"},
+    {"id": "devin.cascade-models", "path": "/exa.api_server_pb.ApiServerService/GetCascadeModelConfigs"},
+    {"id": "devin.cli-models-site", "path": "/exa.api_server_pb.ApiServerService/GetCliModelConfigsForSite"},
+    {"id": "devin.command-models-site", "path": "/exa.api_server_pb.ApiServerService/GetCommandModelConfigsForSite"},
+    {"id": "devin.cascade-models-site", "path": "/exa.api_server_pb.ApiServerService/GetCascadeModelConfigsForSite"},
+    {"id": "devin.model-statuses", "path": "/exa.api_server_pb.ApiServerService/GetModelStatuses"},
+    {"id": "devin.account.user-status", "path": "/exa.seat_management_pb.SeatManagementService/GetUserStatus"},
+    {"id": "devin.account.team-settings", "path": "/exa.seat_management_pb.SeatManagementService/GetCliTeamSettings"},
+    {"id": "devin.account.managed-plugins", "path": "/exa.api_server_pb.ApiServerService/GetAccountManagedPlugins"},
+    {"id": "devin.account.model-assignment", "path": "/exa.api_server_pb.ApiServerService/AssignModel"}
+  ]
+}

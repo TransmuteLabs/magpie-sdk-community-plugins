@@ -1,0 +1,28 @@
+:root { color-scheme: light dark; --bg: #f4f5f7; --panel: #fff; --ink: #20252c; --muted: #626a76; --line: #d9dee6; --accent: #375bb8; }
+:root[data-theme="dark"] { --bg: #181b20; --panel: #21252c; --ink: #e6e9ef; --muted: #a7b0be; --line: #3b424d; --accent: #9bb7ff; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { margin: 0; font: 15px/1.5 system-ui, sans-serif; background: var(--bg); color: var(--ink); }
+main { max-width: 980px; padding: 30px 22px 50px; margin: auto; }
+header { margin: 0 0 24px; }
+.eyebrow { color: var(--accent); letter-spacing: .1em; font-size: 12px; font-weight: 700; text-transform: uppercase; margin: 0; }
+h1 { margin: 5px 0 8px; font-size: 28px; }
+h2 { margin: 0 0 15px; font-size: 18px; }
+p { margin: 0 0 14px; }
+section { border: 1px solid var(--line); background: var(--panel); padding: 22px; border-radius: 12px; margin-bottom: 18px; }
+label { display: block; margin-bottom: 6px; font-weight: 600; }
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.row select { flex: 1; min-width: 180px; }
+input, select, button, textarea { min-height: 42px; padding: 9px 12px; font: inherit; border: 1px solid var(--line); border-radius: 7px; background: var(--panel); color: var(--ink); }
+section[aria-labelledby="native-heading"] input, textarea { display: block; width: 100%; margin-bottom: 10px; }
+button { cursor: pointer; font-weight: 600; }
+button:hover:enabled { border-color: var(--accent); color: var(--accent); }
+button:disabled, input:disabled, select:disabled, textarea:disabled { opacity: .5; cursor: default; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.hint { color: var(--muted); font-size: 13px; margin-top: 12px; }
+.actions { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.actions input, .actions select, .actions button { display: block; width: 100%; margin-bottom: 10px; }
+#status { color: var(--muted); overflow-wrap: anywhere; }
+pre { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 440px; overflow: auto; padding: 15px; margin: 0; background: var(--bg); border-radius: 7px; font-size: 12px; }
+dialog { max-width: min(520px, calc(100% - 32px)); border: 1px solid var(--line); border-radius: 12px; padding: 24px; background: var(--panel); color: var(--ink); overflow-wrap: anywhere; }
+dialog::backdrop { background: #0008; }
+@media (max-width: 620px) { main { padding: 20px 12px; } section { padding: 16px; } .actions { grid-template-columns: 1fr; gap: 12px; } h1 { font-size: 24px; } }

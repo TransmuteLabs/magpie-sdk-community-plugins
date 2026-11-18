@@ -1,0 +1,37 @@
+{
+  "date": "2026-11-16",
+  "author": "SOL; independent Astra review reserved",
+  "package": {"id": "protocol-commandcode", "version": "0.1.3", "sdkMinimum": "1.12", "published": false},
+  "community": {
+    "reviewedRef": "origin/main",
+    "reviewedCommit": "b35d4b35b2446bd929896ddeb58f3cb299e9e2d1",
+    "previousReviewCommit": "57d1cc6a9f49389d495ea9be8d986c70de7767bf",
+    "extractionCommit": "26ea8faf7793ca66dd8e7a8b90128a5235552a1f",
+    "path": "packages/commandcode",
+    "version": "0.1.24",
+    "treeAtAllThreeCommits": "305e867f7f675041d4905c951fb2495a9d00fcb3",
+    "comparison": "Full subtree git diff is empty and Git tree objects are identical, including tests and fixture paths",
+    "decision": "No-op; preserve original extraction and fixture identities",
+    "reviewedSHA256": {
+      "packages/commandcode/index.mjs": "ef6f9e6f9241dfa5deddde5326408e1560cfd653b41b2eead3a0f85f11af9631",
+      "packages/commandcode/errors.test.mjs": "d9adb8c674d1c85d2307984170818681ced1a145362f235af399f26f129d2363",
+      "packages/commandcode/package.json": "d140d387285fdcb9f538f84ec2bd84e818a4c4a1609448fb68a122e3b8c34273"
+    }
+  },
+  "officialHarness": {
+    "package": "command-code",
+    "latestVersion": "1.89.1",
+    "checkedAt": "2026-11-16",
+    "evidenceOwner": "Parent supplied npm latest/dist result; SOL did not repeat network lookup",
+    "shasum": "e5c8e74d8a1f35dfd67f0bb5980161a571d61eb1",
+    "integrity": "sha512-1evcx4rL0NqFt4LSUNCgL0kDliMIAjQkVleUnrycIrAdrTxi18bs6njirPp9U2rTkL7nCuv2aat6i+q05qTXDg==",
+    "existingArchiveSHA256": "c3d5e0b1f3d28784476a15b8041ec0181a0517bc79f06bb19257083e0e97f187",
+    "decision": "No-op; version/shasum/integrity match existing source-lock. No download or repeated whole-harness reverse engineering"
+  },
+  "runtimePort": false,
+  "packageVersionChanged": false,
+  "extractionPinsChanged": false,
+  "scope": "Read-only immutable Git objects; no fetch/checkout, source deletion, host/sibling/root metadata writes, dependencies, installed apps, credentials, vendor traffic or publication",
+  "policyCheckpoint": "REQUEST-POLICY-VERIFICATION.json",
+  "remainingGates": "The unchanged donor does not close the seven ordinary-host reds, parent metadata/helper gates or Astra review"
+}

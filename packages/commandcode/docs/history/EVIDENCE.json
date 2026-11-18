@@ -1,0 +1,143 @@
+{
+  "schema": 1,
+  "date": "2026-11-14",
+  "module": {
+    "id": "protocol-commandcode",
+    "version": "0.1.0",
+    "sdkMinimum": "1.5",
+    "nativeABI": 1,
+    "verifiedInputFiles": 34,
+    "verifiedInputSHA256": "349f8c9e29b478ecc490a3c25155f13c4765e712068141fb0c629863e0a0334c",
+    "sourceLockSHA256": "80ff47cd01d9677f68d43896f10ebc9bc3d5c42e5c841e834202abe0147ee76f"
+  },
+  "executor": {
+    "server": "usbox",
+    "root": "/tmp/magpie-commandcode.ogjQFhdz/v3",
+    "go": "go1.27.3 linux/amd64",
+    "typescript": "7.0.2",
+    "temporaryHomeXDG": true,
+    "GOPATH": "/Users/maratkarimov/go",
+    "GOMODCACHE": "/Users/maratkarimov/go/pkg/mod",
+    "GOCACHE": "/Users/maratkarimov/.cache/go-build",
+    "GOPROXY": "off",
+    "GOSUMDB": "off",
+    "GOTOOLCHAIN": "local",
+    "GOWORK": "off",
+    "GOMAXPROCS": "4",
+    "GOFLAGS": "-mod=readonly -p=4",
+    "CGO_ENABLED": "1"
+  },
+  "hosts": [
+    {
+      "commit": "84ae51afd40953280d768d7498990defb9a37595",
+      "tree": "5a9e2397db331f55220f88b8b8be94f989ebea02",
+      "role": "SDK source and native host acceptance floor",
+      "probeLog": "native-owner-final-magpie.log"
+    },
+    {
+      "commit": "e2c799fe8f3c35f2cd8d89e6ca306223a5dc06ec",
+      "tree": "bdfece9519af20b48c9c64585c5fbe0e84000634",
+      "role": "additional native host compatibility checkpoint",
+      "probeLog": "native-owner-final-host-e2c799fe.log"
+    }
+  ],
+  "tests": {
+    "command": ["go", "test", "-race", "-count=20", "-json", "./..."],
+    "scope": "this module only",
+    "distinctTopLevelTests": 24,
+    "distinctTestsIncludingSubtests": 36,
+    "passingTestEvents": 720,
+    "failingTestEvents": 0,
+    "log": "race20-clean-final.jsonl",
+    "logSHA256": "bdccd303211fc38509b02bd73d0e67f6ba4bf635ad547cac9037bd39bf16c805"
+  },
+  "checks": {
+    "goVet": true,
+    "goBuild": true,
+    "goFormat": true,
+    "nativeCSharedBuild": true,
+    "strictTypeScript": true,
+    "pythonSyntax": true,
+    "sourceFileDigests": 16,
+    "sourceFixtures": 4,
+    "staticGoModelCount": 57,
+    "staticGoTableMatchesPinnedExport": true,
+    "nativeHostProbesPassed": 2,
+    "hostWideSuite": false,
+    "combinedSDK16Acceptance": false
+  },
+  "nativeProof": {
+    "singleInstalledModule": true,
+    "ordinaryProtocols": 3,
+    "goPlan": true,
+    "hostUsageRevisions": ["0", "1", "2"],
+    "dirtyInferenceDenied": true,
+    "unknownUsageStillDenied": true,
+    "freshUsageAcknowledged": true,
+    "ordinaryQuotaAcknowledged": true,
+    "syntheticCLIImport": true,
+    "checkedAgentApplyDisconnect": true,
+    "offDenied": true,
+    "deletedAccountDenied": true,
+    "vendorCalls": 0
+  },
+  "negativeProofs": [
+    {
+      "mutation": "remove the usage revision echo",
+      "test": "TestUsageAcknowledgesTheHostRevision",
+      "result": "behavioral assertion failed",
+      "log": "missing-revision-negative.jsonl",
+      "sha256": "bd662c94aa9271b88961940a71c54c086bc441f39fe585c3c9d325b0124a819f"
+    },
+    {
+      "mutation": "set historical AsOf on a live usage read",
+      "test": "TestUsageAcknowledgesTheHostRevision",
+      "result": "behavioral assertion failed",
+      "log": "historical-asof-negative.jsonl",
+      "sha256": "26c3673a7955bf02b80fa3593e89e50f44c1336b2651781444da79270568fb98"
+    }
+  ],
+  "logs": {
+    "usage-red-v3.jsonl": "80d085fd19e11e0ca73cee66c4ab0d7aeab6a1771c4c14825949dcad1366a351",
+    "usage-green-v3.jsonl": "4336efc086072834f99fe4d4e1a1434717a0125c626c39462a1140a793430516",
+    "controls-red-v3.jsonl": "165c5bae1ffdcfcbc89c6a7c20be59623abe8cf190fa8522ce7d98ef9d738dd5",
+    "race20-final.jsonl": "f85dc20321003ca1a09dd5eafd087bc813a0b138c785d26797ed3d2fdf1b7eca",
+    "source-provenance-final.json": "055db13ade70449a656df39fa5ccf1199fdfb866a3e4e9d25917ed0db1a249b9",
+    "package-provenance-final.json": "01b547ef4a1d019abf1d728dc5f89e3df185415e7580c78a47a00cc589e5e6d2",
+    "native-owner-final-magpie.log": "de8b278bb340260d1d1206bba1648594a88d07ab203faced70ccf071fea5cb94",
+    "native-owner-final-host-e2c799fe.log": "de8b278bb340260d1d1206bba1648594a88d07ab203faced70ccf071fea5cb94",
+    "static-go-table-final.json": "9ed8c66e68f66aa246c739b801dacf6be6f03a06c18bbe02cad728df9be1e9d5"
+  },
+  "preservedPriorEvidence": {
+    "root": "/tmp/magpie-commandcode.ogjQFhdz",
+    "race20-v2.jsonl": {
+      "passingTestEvents": 580,
+      "failingTestEvents": 20,
+      "sha256": "8a02d6e7456eef1e2b5ad0fd5248e139c75414d794c72d1affad6a4d0b36cbb4"
+    },
+    "native-owner.log": {
+      "result": "usage result did not acknowledge its requested revision",
+      "sha256": "0725cc307f880b0061b7287b27fbbb1856ead831f511f6a76a6475f5444b0b61"
+    }
+  },
+  "package": {
+    "path": "dist/protocol-commandcode-0.1.0-linux-amd64.zip",
+    "files": 12,
+    "sha256": "0743c81724401a6d18d7c7d902cf011050e43940e7fb47afcf31b7c7c12a0e2d",
+    "sameAsValidatedNativeInstall": true,
+    "additionalRuntimePluginDependency": false
+  },
+  "hostBlockersAtVerifiedSDK15": [
+    "Negotiated decision model, model-operation association and non-chat SystemOne dispatch are absent; see SYSTEMONE-SDK-CONTRACT.md.",
+    "Agent model snapshots omit max-output and effort capability metadata.",
+    "The combined SDK 1.6 immutable commit has not been supplied or tested."
+  ],
+  "unverified": [
+    "live vendor requests and real subscriptions",
+    "real browser approval and real CLI credential import",
+    "actual Command Code CLI continuation and native history",
+    "GUI page rendering and non-Linux execution",
+    "Google nested-reference tool-schema normalization",
+    "host-wide and combined SDK 1.6 acceptance"
+  ]
+}

@@ -1,0 +1,217 @@
+{
+  "schema": 1,
+  "status": "proposal; host acceptance has not run",
+  "proposedSDK": "1.7",
+  "moduleMinimumSDK": "1.5",
+  "sources": {
+    "community-commandcode": {
+      "commit": "26ea8faf7793ca66dd8e7a8b90128a5235552a1f",
+      "version": "0.1.24",
+      "wire": "packages/commandcode/index.mjs",
+      "example": "packages/commandcode/jev.test.mjs"
+    },
+    "sdk-tested-host": {
+      "commit": "d07078c7926daf6f33af09c40297c941bd39da92",
+      "version": "1.6"
+    }
+  },
+  "donorWire": {
+    "route": "POST /provider/v1/systemone",
+    "aliases": ["jev", "jev-latest", "typesafe-ai/jev", "typesafe/jev"],
+    "request": {
+      "model": "typesafe/jev",
+      "state": {"text": "ping"},
+      "questions": {"ok": {"type": "noul", "instructions": "Is this a test?"}}
+    },
+    "answer": {
+      "model": "typesafe/jev",
+      "answers": {"ok": {"type": "noul", "noul": 0.93}},
+      "usage": {"input_tokens": 41, "output_tokens": 3}
+    },
+    "headers": {
+      "authorization": "Bearer synthetic-systemone-key",
+      "content-type": "application/json",
+      "user-agent": "cli",
+      "x-cli-environment": "production",
+      "x-command-code-version": "1.88.2",
+      "x-project-slug": "shop",
+      "x-taste-learning": "false"
+    },
+    "sessionHeaderPattern": "^[0-9a-f-]{36}$",
+    "zdrHeader": {"x-cmd-zdr": "1"}
+  },
+  "currentModuleRefusal": {
+    "action": {"code": "unnegotiated_capability", "outcome": "not-started"},
+    "conversationalExecute": {"code": "unnegotiated_capability", "outcome": "not-started"},
+    "operationExecuteOnSDK16": {"code": "invalid_params", "outcome": "not-started"},
+    "events": 0,
+    "upstreamRequests": 0
+  },
+  "proposedDeclaration": {
+    "provider": {"id": "commandcode-native", "protocols": ["chat", "responses", "anthropic"], "operations": ["systemone"]},
+    "model": {"id": "typesafe/jev", "kind": "decision", "protocols": [], "operations": ["systemone"]},
+    "execute": {"protocol": "", "operation": "systemone", "model": "typesafe/jev"},
+    "body": "donorWire.request, encoded by the existing SDK byte-body envelope"
+  },
+  "pendingHostAcceptance": [
+    {
+      "id": "minor-gates-at-admission-and-execute",
+      "owners": ["pkg/extension/manifest.go", "pkg/extension/provider_operations.go"],
+      "moduleMinors": [5, 6, 7],
+      "expectedAdmission": [false, false, true],
+      "expectedExecuteDispatches": [0, 0, 1],
+      "requireProviderDeclaration": true,
+      "requireSelectedAccountModelOperation": true
+    },
+    {
+      "id": "decision-only-never-inherits-chat",
+      "owners": ["pkg/extension/manifest.go", "internal/provider/extension_provider.go"],
+      "providerProtocolCases": [[], ["chat", "responses", "anthropic"]],
+      "model": {"id": "typesafe/jev", "kind": "decision", "protocols": [], "operations": ["systemone"]},
+      "expectedModelProtocols": [],
+      "expectedChatDispatches": 0,
+      "expectedDecisionDispatches": 1
+    },
+    {
+      "id": "selected-account-known-empty-live-and-cold",
+      "owners": ["internal/provider/extension_models_cache.go", "internal/provider/decide.go"],
+      "otherAccountModels": [{"id": "typesafe/jev", "kind": "decision", "operations": ["systemone"]}],
+      "selectedAccountModels": [],
+      "catalogReads": ["live", "cold"],
+      "expectedSelectedAccountModels": [],
+      "expectedSynthesizedJev": false,
+      "expectedDispatches": 0
+    },
+    {
+      "id": "stale-or-unknown-does-not-grant-operation",
+      "owners": ["internal/provider/extension_models_cache.go", "internal/provider/extension_transport.go"],
+      "catalogCases": ["unknown", "account-generation-mismatch", "package-generation-mismatch", "configuration-generation-mismatch"],
+      "expectedDispatches": 0
+    },
+    {
+      "id": "ordinary-key-model-and-account-restrictions",
+      "owners": ["internal/gateway/decide.go", "internal/gateway/decide_group.go"],
+      "routes": ["/v1/systemone", "/v1/decisions"],
+      "denials": ["key-excludes-jev", "key-excludes-account", "selected-model-has-no-systemone-operation"],
+      "expectedDispatches": 0
+    },
+    {
+      "id": "no-account-or-classifier-replay-after-acceptance",
+      "owners": ["serveDecideTries", "askDecideTries"],
+      "firstCandidateOutcomes": ["accepted-then-transport-error", "uncertain", "completed-then-invalid-answer"],
+      "secondCandidateExpectedDispatches": 0,
+      "expectedTypedOutcomePreserved": true,
+      "expectedHTTPStatus": 409,
+      "expectedHTTPHeaders": {"X-Should-Retry": "false", "X-Magpie-Operation": "fixture-operation", "X-Magpie-Extension": "protocol-commandcode"},
+      "expectedClassifierDefaultFallback": false
+    },
+    {
+      "id": "typed-transport-and-bounded-read-failures",
+      "owners": ["postDecideSent", "askJev", "askDecideTries"],
+      "firstCandidateFailures": ["typed-uncertain-transport-error", "accepted-body-io.ErrUnexpectedEOF", "accepted-body-over-limit"],
+      "expectedErrorsAsOutcome": true,
+      "expectedSuccessfulPartialAnswer": false,
+      "secondCandidateExpectedDispatches": 0
+    },
+    {
+      "id": "pre-acceptance-failure-can-use-existing-fallback",
+      "owners": ["serveDecideTries", "askDecideTries"],
+      "firstCandidateOutcome": "not-started",
+      "firstCandidateFailure": "retryable definite pre-dispatch failure",
+      "secondCandidateExpectedDispatches": 1
+    },
+    {
+      "id": "decision-headers-and-single-usage-owner",
+      "owners": ["serveDecideTries", "systemOne", "decisions_systemone.go"],
+      "syntheticResponseHeaders": {"Content-Type": ["application/json"], "Retry-After": ["7"], "X-Request-Id": ["fixture-request"], "X-Magpie-Sign-In": ["kept"]},
+      "expectedAnswer": "donorWire.answer, byte-preserved",
+      "usageCases": "pendingUsageAcceptance",
+      "expectedUsageRecordsPerExecution": 1,
+      "expectedCredentialForwarding": false
+    },
+    {
+      "id": "native-ordinary-owner",
+      "owners": ["internal/extension/native", "internal/gateway/decide.go"],
+      "module": "real installed API 1.7 native fixture, not a mocked manager",
+      "routes": ["/v1/systemone", "/v1/decisions"],
+      "expectedInstalledRuntimeModules": 1,
+      "expectedVendorCalls": 0
+    }
+  ],
+  "pendingUsageAcceptance": [
+    {
+      "id": "matching-raw-event-and-result-are-not-added",
+      "raw": {"input_tokens": 41, "output_tokens": 3},
+      "event": {"inputTokens": 41, "outputTokens": 3},
+      "result": {"inputTokens": 41, "outputTokens": 3},
+      "expectedRecord": {"inputTokens": 41, "outputTokens": 3},
+      "expectedRecords": 1
+    },
+    {
+      "id": "terminal-snapshot-replaces-event",
+      "raw": {"input_tokens": 1, "output_tokens": 1},
+      "event": {"inputTokens": 40, "outputTokens": 2},
+      "result": {"inputTokens": 41, "outputTokens": 3},
+      "expectedRecord": {"inputTokens": 41, "outputTokens": 3},
+      "expectedRecords": 1
+    },
+    {
+      "id": "nil-result-keeps-latest-measured-event",
+      "raw": null,
+      "event": {"inputTokens": 41, "outputTokens": 3},
+      "result": null,
+      "expectedRecord": {"inputTokens": 41, "outputTokens": 3},
+      "expectedRecords": 1
+    },
+    {
+      "id": "absent-normalized-usage-falls-back-to-answer",
+      "raw": {"input_tokens": 41, "output_tokens": 3},
+      "event": null,
+      "result": null,
+      "expectedRecord": {"inputTokens": 41, "outputTokens": 3},
+      "expectedRecords": 1
+    },
+    {
+      "id": "missing-usage-stays-unknown",
+      "raw": null,
+      "event": null,
+      "result": null,
+      "expectedRecord": null
+    }
+  ],
+  "pendingAgentAcceptance": [
+    {
+      "id": "custom-model-effective-output-clamped",
+      "effectiveEntry": {"id": "synthetic/custom", "context": 128000, "output": 256000, "efforts": ["low", "high"], "defaultEffort": "high"},
+      "expectedOption": {"value": "magpie/synthetic/custom", "context": 128000, "maxOutput": 128000, "efforts": ["low", "high"], "defaultEffort": "high"}
+    },
+    {
+      "id": "overrides-remove-vendor-default",
+      "effectiveEntry": {"id": "synthetic/custom", "context": 64000, "output": 48000, "efforts": ["low"], "defaultEffort": "high"},
+      "expectedOption": {"value": "magpie/synthetic/custom", "context": 64000, "maxOutput": 48000, "efforts": ["low"]}
+    },
+    {
+      "id": "unknown-efforts-and-output",
+      "effectiveEntry": {"id": "synthetic/custom", "context": 0, "output": 0, "efforts": null, "defaultEffort": ""},
+      "expectedOption": {"value": "magpie/synthetic/custom", "efforts": null}
+    },
+    {
+      "id": "explicit-empty-survives-wire-and-cold-cache",
+      "effectiveEntry": {"id": "synthetic/custom", "context": 8000, "output": 2000, "efforts": [], "defaultEffort": ""},
+      "expectedOption": {"value": "magpie/synthetic/custom", "context": 8000, "maxOutput": 2000, "efforts": []}
+    },
+    {
+      "id": "reasonless-is-explicitly-empty",
+      "effectiveEntry": {"id": "synthetic/custom", "context": 8000, "output": 2000, "efforts": null, "reasonless": true, "defaultEffort": ""},
+      "expectedOption": {"value": "magpie/synthetic/custom", "context": 8000, "maxOutput": 2000, "efforts": []}
+    },
+    {
+      "id": "checked-options-use-the-same-effective-facts",
+      "owners": ["buildVia", "sameOption", "extensionAgentOptions"],
+      "paths": ["provider-option", "routing-group-option", "cached-option", "agent.inspect", "agent.plan"],
+      "lifecycle": ["connect", "sync", "disconnect"],
+      "expectedForeignMetadataPreserved": true,
+      "expectedSubsequentUserEditsPreserved": true
+    }
+  ]
+}

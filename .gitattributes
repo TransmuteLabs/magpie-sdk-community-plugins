@@ -1,0 +1,5 @@
+packages/opencode/src/testdata/donors/** -text
+packages/opencode/src/testdata/donors/history-schema.sql whitespace=-blank-at-eol,-blank-at-eof
+packages/opencode/src/testdata/donors/history-legacy-roots.go.txt whitespace=-blank-at-eof
+packages/devin/docs/migration/RELOCATION.md whitespace=-blank-at-eof
+packages/zcode/src/testdata/api9/parent-public-fields.patch whitespace=-blank-at-eol,-space-before-tab

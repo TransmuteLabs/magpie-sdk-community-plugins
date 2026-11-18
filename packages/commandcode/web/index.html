@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Command Code</title>
+<style>
+:root{color-scheme:light dark;font:15px system-ui}body{max-width:760px;margin:32px auto;padding:0 20px}button,input,select{font:inherit;margin:4px;padding:8px}pre{white-space:pre-wrap;overflow-wrap:anywhere}label{display:block;margin:16px 0}
+</style>
+<h1>Command Code</h1>
+<label>Account <select id="account"><option value="">Choose an account</option></select> <button id="refresh">Refresh</button></label>
+<label>API key <input id="key" type="password" autocomplete="off"><button id="key-signin">Sign in</button></label>
+<button id="browser">Browser sign-in</button><button id="import">Import CLI sign-in</button>
+<div id="auth-address" hidden>
+<label>Approval URL <input id="auth-url" type="text" readonly style="width:100%;box-sizing:border-box"></label>
+<button id="auth-select" type="button">Select URL to copy</button>
+<p>Copy this address into a new browser tab to approve sign-in, then return here and choose Check sign-in.</p>
+</div>
+<button id="finish" hidden>Check sign-in</button><button id="cancel" hidden>Cancel sign-in</button>
+<p id="zdr">Zero Data Retention is managed in Providers → Command Code.</p>
+<button id="status">Read account status</button>
+<pre role="status" id="output">Loading module…</pre>
+<script type="module" src="app.js"></script>
+</html>

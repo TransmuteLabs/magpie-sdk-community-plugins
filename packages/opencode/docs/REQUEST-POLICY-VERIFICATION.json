@@ -1,0 +1,48 @@
+{
+  "date": "2026-11-16",
+  "author": "SOL; Astra review reserved",
+  "status": "adapter and distribution checks pass; ordinary-host budget accounting gate remains",
+  "package": {"id": "opencode", "version": "0.8.0", "sdkMinimum": "1.12", "nativeABI": 1, "published": false},
+  "packet": "usbox:/tmp/magpie-sol-two-policy-20261116",
+  "source": {
+    "snapshot": "candidate04/packages/opencode",
+    "manifest": "api12-opencode-source.json",
+    "manifestSHA256": "d7ca43ba1bbafd0f9495eea437ba98e6998eb7a9942735ec1cdc14af6cf4e913",
+    "files": 154,
+    "boundary": "Exact tested package; this verification file and subsequent donor audit are separate additions"
+  },
+  "host": {
+    "selection": "Original OBS candidate-01 archive, exact10987 paths, extracted into packet/sdk-obs-original",
+    "manifestSHA256": "8724cf734d51d881f6d88561eceefeaecf9f722e1bc4e1a078fcb8f010cccdd4",
+    "archiveSHA256": "9015f443e9ea051f26c7399d6fa0292e4229d1d8f15e332d2b5fc9f4f85f4208",
+    "testOverlay": "Package-owned test injection only; no production host changes"
+  },
+  "controls": {
+    "oldRuntimeUnit": "red-fixed-01: old module returns completed429 without original final-refusal facts",
+    "oldRuntimeOrdinaryHost": "native-red-fixed-01: old installed native module stops at409 with one send rather than selecting eligible sibling",
+    "race": {"passedTestsAndSubtests": 251, "fail": 0, "skip": 0},
+    "vetBuildFormat": "pass",
+    "ordinaryFullPackageBuildAndDistributionValidation": "pass",
+    "opencodeOrdinaryHost": {"cases": 12, "pass": 10, "fail": 2}
+  },
+  "artifacts": {
+    "defaultNativeSHA256": "0c90435b69a2c789a72ff247aec7e18a7586792055fc60905ed4ae74dffed9f6",
+    "ordinaryHostEndpointFixtureSHA256": "6d19e384818406f241bd2848b30de6f19685569988d9b8763aba092b8b48539b",
+    "boundary": "Default full package is built and validated. Actual Front installs a copy with only the native entrypoint rebuilt to set the compiled synthetic loopback endpoint; NewWindowModule and all production handlers are unchanged"
+  },
+  "receiptSHA256": {
+    "red-fixed-01-receipt.json": "02362a64d1b4f99291a87567802f7cba5210b761d69737087f6fef4b343e2aca",
+    "native-red-fixed-01-receipt.json": "8a39264940564dbecee1a3e142c2a416e7a8226591fe2f7900b61cef8caacaf5",
+    "green-final-04-receipt.json": "e7811bf22eb1534863ad2206e42718116753f3ae077b9e50dfe54260ff5da7df",
+    "distribution-final04-receipt.json": "ae9d9467fc6a2872ffb156a94a38ba32e9853e25e11191fec0869e5672bee10d",
+    "native-final-04-receipt.json": "ec8d86c7f613a3f879c038810843d707bb571ef6c69ceb5af283d1d42b0874a9"
+  },
+  "remainingParentGates": [
+    "Root/model retry-budget exhaustion sends once and records Recent, but creates zero usage ledger rows; same fixed-host defect reproduced with CommandCode",
+    "Root metadata still belongs to parent; every rebuilt constructor now requires API1.12",
+    "Astra combined review and SDK helper permit/disable/diagnostic acceptance remain separate"
+  ],
+  "verified": ["eligible sibling in smart/order", "finite long-delay refusal without long sleep", "request/content terminal rules", "selected versus other-model budget scope", "accepted/output/transport/uncertain/ambiguous no-replay fences", "original failure stays with its actual trace try", "all constructors declare their actual capability floor"],
+  "notVerified": ["live vendor or credentials", "installed vendor apps", "non-Linux execution", "broad host suites", "SDK publication", "independent review"],
+  "execution": "Regular usbox uid1000, isolated HOME/XDG, pinned offline Go1.26.8 and existing descendant network guard; no source deletion, staging, commits, branches, worktrees or dependencies"
+}

@@ -1,0 +1,196 @@
+package gateway
+
+import (
+	"context"
+	"encoding/json"
+	"flag"
+	"fmt"
+	"io"
+	"net/http"
+	"net/http/httptest"
+	"strings"
+	"sync/atomic"
+	"testing"
+	"time"
+
+	extensionhost "github.com/yetone/magpie/internal/extension"
+	"github.com/yetone/magpie/internal/provider"
+	"github.com/yetone/magpie/internal/usage"
+)
+
+var commandcodeDistribution = flag.String("commandcode-sdk17-distribution", "", "")
+
+func TestCommandCodeNativeSystemOneSDK17(test *testing.T) {
+	if *commandcodeDistribution == "" {
+		test.Fatal("a packaged native module is required")
+	}
+	fresh(test)
+	test.Setenv("MAGPIE_NO_ACCOUNTS", "")
+	test.Setenv("MAGPIE_ADDR", "")
+	var calls atomic.Int64
+	var mode atomic.Value
+	mode.Store("")
+	upstream := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		switch request.URL.Path {
+		case "/alpha/billing/subscriptions":
+			io.WriteString(writer, `{"data":{"planId":"individual-pro","status":"active"}}`)
+		case "/alpha/billing/credits":
+			io.WriteString(writer, `{"credits":{"monthlyCredits":9,"purchasedCredits":0,"freeCredits":0},"windowLimits":{"fiveHour":{"used":1,"cap":10}}}`)
+		case "/provider/v1/models":
+			io.WriteString(writer, `{"data":[{"id":"fixture-chat","supported_endpoints":["/chat/completions"]}]}`)
+		case "/provider/v1/systemone":
+			calls.Add(1)
+			if request.Header.Get("Authorization") != "Bearer synthetic-systemone-key" ||
+				request.Header.Get("x-api-key") != "" || request.Header.Get("Cookie") != "" ||
+				request.Header.Get("x-command-code-version") != "1.88.2" || request.Header.Get("x-cmd-zdr") != "1" {
+				test.Error("ordinary native decision lost its selected account or CLI identity")
+			}
+			var input map[string]json.RawMessage
+			if json.NewDecoder(request.Body).Decode(&input) != nil || string(input["model"]) != `"typesafe/jev"` {
+				test.Error("ordinary native decision changed its selected model")
+			}
+			writer.Header().Set("Content-Type", "application/json")
+			writer.Header().Set("X-Request-Id", "native-systemone")
+			switch mode.Load().(string) {
+			case "refused":
+				writer.WriteHeader(400)
+				io.WriteString(writer, `{"error":{"message":"MODEL_NOT_IN_PLAN: fixture refusal"}}`)
+			case "interrupted":
+				writer.Header().Set("Content-Length", "4096")
+				io.WriteString(writer, `{"answers":`)
+			default:
+				io.WriteString(writer, `{"model":"typesafe/jev","answers":{"ok":{"type":"noul","noul":0.93}},"usage":{"input_tokens":41,"output_tokens":3}}`)
+			}
+		default:
+			if request.Method == http.MethodGet && request.URL.Path == "/" && request.URL.RawQuery == "" &&
+				request.ContentLength == 0 && request.Header.Get("Authorization") == "" &&
+				request.Header.Get("X-Api-Key") == "" && request.Header.Get("Cookie") == "" &&
+				request.Header.Get("X-Command-Code-Version") == "" && request.UserAgent() == "Go-http-client/1.1" {
+				test.Log("refused an anonymous loopback root probe")
+				writer.WriteHeader(http.StatusUnauthorized)
+				return
+			}
+			test.Errorf("decision used another vendor transport: method=%s path=%s authPresent=%t userAgent=%q",
+				request.Method, request.URL.Path, request.Header.Get("Authorization") != "", request.UserAgent())
+			writer.WriteHeader(500)
+		}
+	}))
+	test.Cleanup(upstream.Close)
+	response, err := http.Get(upstream.URL)
+	if err != nil {
+		test.Fatal(err)
+	}
+	if err := response.Body.Close(); err != nil {
+		test.Fatal(err)
+	}
+	if response.StatusCode != http.StatusUnauthorized || calls.Load() != 0 {
+		test.Fatalf("an anonymous request acquired vendor authority: status=%d calls=%d", response.StatusCode, calls.Load())
+	}
+	manager := extensionhost.Default()
+	test.Cleanup(func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		if err := manager.Close(ctx); err != nil {
+			test.Error(err)
+		}
+	})
+	entry, err := manager.Install(test.Context(), *commandcodeDistribution)
+	if err != nil {
+		test.Fatal(err)
+	}
+	installed, err := manager.List()
+	if err != nil || len(installed) != 1 || entry.Manifest.Runtime != "native" || entry.Manifest.Contract.Version.Minor != 9 {
+		test.Fatalf("the fixture is not a single negotiated native package: %+v %v", installed, err)
+	}
+	config, _ := json.Marshal(map[string]any{"apiURL": upstream.URL, "studioURL": "https://commandcode.ai",
+		"workingDirectory": "/synthetic/shop", "zdr": true})
+	if _, err := manager.CompareAndSwapModuleConfig(test.Context(), entry.Manifest.ID, "0", config); err != nil {
+		test.Fatal(err)
+	}
+	if _, err := manager.Store().SaveAccount(extensionhost.Account{Plugin: entry.Manifest.ID,
+		Provider: "commandcode-native", ID: "synthetic-account", Auth: json.RawMessage(`{"apiKey":"synthetic-systemone-key"}`)}, 0); err != nil {
+		test.Fatal(err)
+	}
+	provider.Changed()
+	accounts, err := provider.ExtensionProviders()
+	if err != nil || len(accounts) != 1 {
+		test.Fatalf("native account did not join the ordinary provider owner: %+v %v", accounts, err)
+	}
+	catalog, err := accounts[0].Fetch(test.Context())
+	if err != nil || len(catalog) != 2 || catalog[1].ID != "typesafe/jev" || !catalog[1].Decides ||
+		len(catalog[1].APIs) != 0 {
+		test.Fatalf("module Jev fact inherited chat or disappeared: %+v %v", catalog, err)
+	}
+	provider.Changed()
+	observer := &fakeObserver{}
+	test.Cleanup(usage.Observe(observer))
+	server := New()
+	test.Cleanup(server.idle.stop)
+	id := provider.ExtensionProviderID(entry.Manifest.ID, "commandcode-native")
+	request := httptest.NewRequest(http.MethodGet, "/v1/models", nil)
+	request.RemoteAddr = "127.0.0.1:12345"
+	request.Header.Set(provider.DecidersHeader, "true")
+	models := httptest.NewRecorder()
+	server.Front().ServeHTTP(models, request)
+	if models.Code != 200 || !strings.Contains(models.Body.String(), id+"/typesafe/jev") ||
+		!strings.Contains(models.Body.String(), `"/v1/systemone"`) {
+		test.Fatalf("native decision has no ordinary model endpoint: %d %s", models.Code, models.Body)
+	}
+	for index, sample := range []struct {
+		mode string
+		path string
+	}{
+		{"", "/v1/systemone"}, {"", "/v1/decisions"},
+		{"refused", "/v1/systemone"}, {"interrupted", "/v1/systemone"},
+	} {
+		mode.Store(sample.mode)
+		body := `{"model":"` + id + `/typesafe/jev","state":{"text":"ping"},"questions":{"ok":{"type":"noul","instructions":"Is this a test?"}}}`
+		if sample.path == "/v1/decisions" {
+			body = `{"model":"` + id + `/typesafe/jev","input":"ping","questions":[{"name":"ok","type":"predicate","instructions":"Is this a test?"}]}`
+		}
+		request := httptest.NewRequest(http.MethodPost, sample.path, strings.NewReader(body))
+		request.RemoteAddr = "127.0.0.1:12345"
+		request.Header.Set("Content-Type", "application/json")
+		session := fmt.Sprintf("native-commandcode-systemone-%d", index)
+		request.Header.Set("X-Magpie-Session", session)
+		request.Header.Set("Cookie", "caller-must-not-reach-vendor=secret")
+		reply := httptest.NewRecorder()
+		server.Front().ServeHTTP(reply, request)
+		expected := 200
+		if sample.mode != "" {
+			expected = 409
+		}
+		if reply.Code != expected || calls.Load() != int64(index+1) {
+			test.Fatalf("ordinary native decision failed or replayed: mode=%s status=%d calls=%d body=%s",
+				sample.mode, reply.Code, calls.Load(), reply.Body)
+		}
+		if expected == 409 && (reply.Header().Get("X-Should-Retry") != "false" ||
+			reply.Header().Get("X-Magpie-Operation") == "" || reply.Header().Get("X-Magpie-Extension") != entry.Manifest.ID) {
+			test.Fatalf("terminal native decision lost its operation receipt: %v", reply.Header())
+		}
+		var rows []usage.Record
+		for _, row := range usage.Load(time.Time{}) {
+			if row.Session == session {
+				rows = append(rows, row)
+			}
+		}
+		if len(rows) != 1 || rows[0].Status != expected || rows[0].Provider != id ||
+			rows[0].ProviderAccount != "synthetic-account" || rows[0].ResponseID != "" {
+			test.Fatalf("ordinary native decision lost its single selected-account ledger row: %+v", rows)
+		}
+		if expected == 200 && (rows[0].Input != 41 || rows[0].Output != 3) {
+			test.Fatalf("raw and normalized native usage were counted twice or lost: %+v", rows[0])
+		}
+		recent := server.Recent()
+		if len(recent) != index+1 || recent[0].Status != expected ||
+			recent[0].Usage.Input != rows[0].Input || recent[0].Usage.Output != rows[0].Output ||
+			recent[0].Usage.ResponseID != "" || rows[0].RouteID == 0 {
+			test.Fatalf("native decision recent calls disagree with its ledger row: %+v %+v", recent, rows)
+		}
+	}
+	observer.mu.Lock()
+	defer observer.mu.Unlock()
+	if len(observer.rows) != 4 || len(server.trace.routes) != 4 {
+		test.Fatalf("native decision lost observer or route projections: rows=%+v routes=%+v", observer.rows, server.trace.routes)
+	}
+}

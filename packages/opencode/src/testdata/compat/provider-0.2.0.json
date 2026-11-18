@@ -1,0 +1,83 @@
+{
+  "schema": 1,
+  "id": "opencode",
+  "version": "0.2.0",
+  "runtime": "native",
+  "entry": "lib/opencode.so",
+  "contract": {
+    "version": {"major": 1, "minor": 3},
+    "capabilities": ["account-auth", "model-discovery", "outbound-executor", "usage-reporter"]
+  },
+  "compatibility": {"hostAPI": "^1.3", "nativeABI": 1},
+  "providers": [{
+    "id": "opencode-go",
+    "name": "OpenCode Go OAuth",
+    "protocols": ["chat", "gemini"],
+    "models": [
+      {
+        "id": "deepseek-v4.1-flash",
+        "name": "DeepSeek V4.1 Flash",
+        "protocols": ["chat"],
+        "contextWindow": 1000000,
+        "maxOutput": 384000,
+        "tools": true,
+        "vision": true,
+        "reasoning": true,
+        "efforts": ["low", "high", "max"],
+        "kind": "chat",
+        "inputModalities": ["text", "image"],
+        "outputModalities": ["text"],
+        "released": "2026-09-10",
+        "temperature": true
+      },
+      {
+        "id": "glm-5.2",
+        "name": "GLM-5.2",
+        "protocols": ["chat"],
+        "contextWindow": 1000000,
+        "maxOutput": 131072,
+        "tools": true,
+        "reasoning": true,
+        "efforts": ["high", "max"],
+        "kind": "chat",
+        "inputModalities": ["text"],
+        "outputModalities": ["text"],
+        "released": "2026-06-13",
+        "temperature": true
+      },
+      {
+        "id": "kimi-k3",
+        "name": "Kimi K3",
+        "protocols": ["chat"],
+        "contextWindow": 1048576,
+        "maxOutput": 131072,
+        "tools": true,
+        "vision": true,
+        "reasoning": true,
+        "efforts": ["max"],
+        "kind": "chat",
+        "inputModalities": ["text", "image", "video"],
+        "outputModalities": ["text"],
+        "released": "2026-07-16",
+        "temperature": false,
+        "dynamicTools": true
+      },
+      {
+        "id": "gemini-4-argon",
+        "name": "Gemini 4 Argon",
+        "protocols": ["gemini"],
+        "contextWindow": 1048576,
+        "maxOutput": 65536,
+        "tools": true,
+        "vision": true,
+        "reasoning": true,
+        "efforts": ["low", "medium", "high"],
+        "kind": "chat",
+        "inputModalities": ["text", "image", "audio", "video", "pdf"],
+        "outputModalities": ["text"],
+        "released": "2026-10-13",
+        "temperature": false
+      }
+    ]
+  }]
+}

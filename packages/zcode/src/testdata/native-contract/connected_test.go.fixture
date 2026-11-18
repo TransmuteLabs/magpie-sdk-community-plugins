@@ -1,0 +1,287 @@
+package cli
+
+import (
+	"bufio"
+	"bytes"
+	"context"
+	"encoding/json"
+	"os"
+	"path/filepath"
+	"slices"
+	"strings"
+	"testing"
+	"time"
+
+	"github.com/yetone/magpie/internal/agent"
+	"github.com/yetone/magpie/internal/extension"
+	"github.com/yetone/magpie/internal/proc"
+	"github.com/yetone/magpie/internal/provider"
+	"github.com/yetone/magpie/internal/sessions"
+	sdk "github.com/yetone/magpie/pkg/extension"
+)
+
+type zcodeConnectedFixture struct {
+	home, cwd, config, log string
+	manager                *extension.Manager
+	consent                sessions.StorageSourceConsent
+}
+
+func zcodeConnectedInstall(t *testing.T, connect bool) *zcodeConnectedFixture {
+	t.Helper()
+	distribution, writer, peer, python := os.Getenv("ZCODE_STORAGE_DIST"), os.Getenv("ZCODE_STORAGE_WRITER"),
+		os.Getenv("ZCODE_NATIVE_PEER"), os.Getenv("ZCODE_NATIVE_PYTHON")
+	if distribution == "" || writer == "" || peer == "" || !filepath.IsAbs(python) {
+		t.Fatal("requires actual ZCode distribution and explicit synthetic native fixtures")
+	}
+	home := helpHome(t)
+	fixture := &zcodeConnectedFixture{home: home, cwd: filepath.Join(home, "selected work's directory"),
+		config: filepath.Join(home, ".zcode/v2/provider_config.json"), log: filepath.Join(home, "peer.jsonl")}
+	for _, directory := range []string{fixture.cwd, filepath.Dir(fixture.config), filepath.Join(home, "bin")} {
+		if err := os.MkdirAll(directory, 0o700); err != nil {
+			t.Fatal(err)
+		}
+	}
+	for _, name := range []string{".bashrc", ".zshrc"} {
+		if err := os.WriteFile(filepath.Join(home, name), []byte("# synthetic personal shell\n"), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	t.Setenv("SHELL", "/bin/bash")
+	t.Setenv("PATH", filepath.Join(home, "bin")+string(os.PathListSeparator)+os.Getenv("PATH"))
+	t.Setenv("MAGPIE_ADDR", "127.0.0.1:19931")
+	if err := os.WriteFile(fixture.config, []byte(`{"schemaVersion":1,"config":{"providerConfigRules":{"providerRules":[]},"modelConfigRules":{"providerModelRules":[],"manualProviderModelRules":[]}}}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	encodedPeer, _ := json.Marshal(peer)
+	encodedLog, _ := json.Marshal(fixture.log)
+	encodedMode, _ := json.Marshal(filepath.Join(home, "peer-case"))
+	launcher := "#!" + python + "\nimport os,runpy,sys\n" +
+		"if sys.argv[1:]==['--version']: print('0.17.1'); raise SystemExit(0)\n" +
+		"from pathlib import Path\n" +
+		"os.environ['ZCODE_CONTRACT_LOG']=" + string(encodedLog) + "\n" +
+		"mode=Path(" + string(encodedMode) + ")\n" +
+		"os.environ['ZCODE_CONTRACT_CASE']=mode.read_text() if mode.exists() else 'adoption'\n" +
+		"runpy.run_path(" + string(encodedPeer) + ",run_name='__main__')\n"
+	if err := os.WriteFile(filepath.Join(home, "bin/zcode"), []byte(launcher), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := provider.Save(provider.Provider{ID: "native-fixture", Name: "Native fixture", Key: "synthetic",
+		Chat: "http://127.0.0.1:19932/v1", Models: []string{"fixture-model"}}); err != nil {
+		t.Fatal(err)
+	}
+	fixture.manager = extension.Default()
+	t.Cleanup(func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		if err := fixture.manager.Close(ctx); err != nil {
+			t.Error(err)
+		}
+		if err := extension.Default().Close(ctx); err != nil {
+			t.Error(err)
+		}
+	})
+	if _, err := fixture.manager.Install(t.Context(), distribution); err != nil {
+		t.Fatal("actual ZCode package installation", err)
+	}
+	directory := filepath.Join(home, ".zcode/cli/db")
+	writerContext, cancelWriter := context.WithTimeout(context.Background(), 2*time.Minute)
+	command := proc.CommandContext(writerContext, python, "-I", "-S", writer, directory, fixture.cwd)
+	input, err := command.StdinPipe()
+	if err != nil {
+		t.Fatal(err)
+	}
+	output, err := command.StdoutPipe()
+	if err != nil {
+		t.Fatal(err)
+	}
+	var stderr bytes.Buffer
+	command.Stderr = &stderr
+	if err := command.Start(); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		input.Close()
+		if err := command.Wait(); err != nil {
+			t.Error("synthetic WAL writer", err, stderr.String())
+		}
+		cancelWriter()
+	})
+	var initial map[string]any
+	if err := json.NewDecoder(bufio.NewReader(output)).Decode(&initial); err != nil {
+		t.Fatal(err)
+	}
+	if err := sessions.SetReads(nil, map[string]bool{"zcode": true}); err != nil {
+		t.Fatal(err)
+	}
+	roots, _, err := sessions.InspectStorageSources(t.Context())
+	if err != nil || len(roots) != 1 {
+		t.Fatal("actual native storage root", roots, err)
+	}
+	root := roots[0]
+	if err := sessions.BindStorageSource(t.Context(), root.Plugin, root.Source, root.RootSlot, root.RootRef, root.Revision); err != nil {
+		t.Fatal(err)
+	}
+	_, consents, err := sessions.InspectStorageSources(t.Context())
+	if err != nil || len(consents) != 1 {
+		t.Fatal("actual source consent", consents, err)
+	}
+	fixture.consent = consents[0]
+	if connect {
+		zcodeConnectProfile(t)
+	}
+	return fixture
+}
+
+func zcodeConnectProfile(t *testing.T) {
+	t.Helper()
+	selected, err := agent.Find("zcode-native")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := selected.ConnectHow(); err != nil {
+		t.Fatal("ordinary actual ZCode profile connection", err)
+	}
+	selected, err = agent.Find("zcode-native")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, field := range selected.Fields {
+		if field.Key == "model" {
+			if err := field.Set("magpie/native-fixture/fixture-model"); err != nil {
+				t.Fatal("ordinary model selection", err)
+			}
+		}
+	}
+}
+
+func zcodeConnectedResumeArguments(t *testing.T) []string {
+	t.Helper()
+	if err := sessions.PrepareSessionSources(t.Context()); err != nil {
+		t.Fatal(err)
+	}
+	selected, found := sessions.Find("zcode", "ses_one")
+	if !found {
+		t.Fatal("ordinary ZCode Find did not select actual native history")
+	}
+	line := sessions.ResumeNow(selected)
+	_, token, found := strings.Cut(line, " --expected ")
+	token = strings.Trim(token, "'")
+	if !found || len(token) != 64 {
+		t.Fatal("actual ZCode ResumeNow has no checked source recipe", line)
+	}
+	return []string{"zcode", "ses_one", "--expected", token}
+}
+
+func TestInstalledZCodeConnectedProfileResumeLaunchesOnce(t *testing.T) {
+	fixture := zcodeConnectedInstall(t, true)
+	arguments := zcodeConnectedResumeArguments(t)
+	before, err := os.ReadFile(fixture.config)
+	if err != nil {
+		t.Fatal(err)
+	}
+	originalExec := startExec
+	t.Cleanup(func() { startExec = originalExec })
+	launches := 0
+	startExec = func(path, name string, args, environment []string) error {
+		launches++
+		if path != filepath.Join(fixture.home, "bin/zcode") || name != "zcode" {
+			t.Fatal("source resume changed the connected profile executable", path, name)
+		}
+		command := proc.CommandContext(t.Context(), path, args...)
+		command.Env = environment
+		body, err := command.CombinedOutput()
+		if err != nil {
+			t.Fatalf("actual synthetic ZCode resume child: %v\n%s", err, body)
+		}
+		var proof struct {
+			Argv   []string `json:"argv"`
+			Cwd    string   `json:"cwd"`
+			PID    int      `json:"pid"`
+			Config string   `json:"config"`
+		}
+		if json.Unmarshal(body, &proof) != nil || !slices.Equal(proof.Argv, []string{"--resume", "ses_one"}) ||
+			proof.Cwd != fixture.cwd || proof.PID <= 0 || proof.PID == os.Getpid() || proof.Config != fixture.config {
+			t.Fatalf("source resume lost native argv/cwd/profile binding: %s", body)
+		}
+		return nil
+	}
+	if err := sessionResumeIn(t.Context(), arguments); err != nil {
+		t.Fatal("ordinary source resume CLI", err)
+	}
+	after, err := os.ReadFile(fixture.config)
+	if err != nil || !bytes.Equal(before, after) || launches != 1 {
+		t.Fatal("source resume rewrote its profile or launched more than once", launches, err)
+	}
+}
+
+func TestInstalledZCodeConnectedResumeRefusesRevokedAuthority(t *testing.T) {
+	for _, change := range []string{"disconnected", "cancel", "reads", "consent", "config", "off", "profile"} {
+		t.Run(change, func(t *testing.T) {
+			fixture := zcodeConnectedInstall(t, change != "disconnected")
+			arguments := zcodeConnectedResumeArguments(t)
+			ctx, cancel := context.WithCancel(t.Context())
+			defer cancel()
+			switch change {
+			case "cancel":
+				cancel()
+			case "reads":
+				if err := sessions.SetReads(nil, map[string]bool{"zcode": false}); err != nil {
+					t.Fatal(err)
+				}
+			case "consent":
+				if err := sessions.UnbindStorageSource(t.Context(), "zcode", fixture.consent.Identity); err != nil {
+					t.Fatal(err)
+				}
+			case "config":
+				config, err := fixture.manager.ModuleConfig(t.Context(), "zcode")
+				if err != nil {
+					t.Fatal(err)
+				}
+				if _, err := fixture.manager.CompareAndSwapModuleConfig(t.Context(), "zcode",
+					config.Version, json.RawMessage(`{"freeFirst":false}`)); err != nil {
+					t.Fatal(err)
+				}
+			case "off":
+				if err := fixture.manager.SetEnabled(t.Context(), "zcode", false); err != nil {
+					t.Fatal(err)
+				}
+			case "profile":
+				if err := agent.Starter("zcode-native").Disconnect(); err != nil {
+					t.Fatal(err)
+				}
+			}
+			originalExec := startExec
+			t.Cleanup(func() { startExec = originalExec })
+			startExec = func(string, string, []string, []string) error {
+				t.Fatal("revoked actual ZCode owner reached launch", change)
+				return nil
+			}
+			if err := sessionResumeIn(ctx, arguments); err == nil {
+				t.Fatal("revoked actual ZCode resume was accepted", change)
+			}
+		})
+	}
+}
+
+func TestInstalledZCodeDeclaresForegroundProcess(t *testing.T) {
+	fixture := zcodeConnectedInstall(t, true)
+	entries, err := fixture.manager.List()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, entry := range entries {
+		if entry.Manifest.ID != "zcode" {
+			continue
+		}
+		if !entry.Manifest.Contract.Has(sdk.AgentProcess) || len(entry.Manifest.Processes) != 1 {
+			t.Fatal("actual installed ZCode has no declared owned foreground process")
+		}
+		recipe := entry.Manifest.Processes[0]
+		if recipe.ID != "native.run" || recipe.Agent != "zcode-native" ||
+			!slices.Equal(recipe.Argv, []string{"app-server", "--stdio"}) {
+			t.Fatal("actual ZCode process changed literal vendor launch or profile owner", recipe)
+		}
+		return
+	}
+	t.Fatal("actual ZCode package is absent")
+}

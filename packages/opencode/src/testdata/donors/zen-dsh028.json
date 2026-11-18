@@ -1,0 +1,43 @@
+[
+  {
+    "name": "edit",
+    "description": "Edit an existing UTF-8 text file by replacing literal text.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "file_path": {"type": "string"},
+        "old_string": {"type": "string"},
+        "new_string": {"type": "string"},
+        "replace_all": {"type": "boolean"},
+        "sandbox_permissions": {"type": "string"},
+        "justification": {"type": "string"}
+      }
+    },
+    "servedName": "text_replace",
+    "servedDescription": "Replace an exact piece of text in a UTF-8 file that already exists."
+  },
+  {
+    "name": "read",
+    "description": "Read a UTF-8 text file and return line-numbered content.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "file_path": {"type": "string"},
+        "offset": {"type": "integer"},
+        "limit": {"type": "integer"}
+      }
+    },
+    "servedName": "file_view",
+    "servedDescription": "Read a UTF-8 text file. Each line comes back with its number."
+  },
+  {
+    "name": "skill",
+    "description": " Load the full instructions for a skill. Call it before acting on a task that names or clearly matches a skill in the session skill catalog. ",
+    "parameters": {
+      "type": "object",
+      "properties": {"name": {"type": "string"}}
+    },
+    "servedName": "skill",
+    "servedDescription": "Open a skill's whole instructions. Use it first when a task names a skill from the session's skill catalog, or plainly fits one."
+  }
+]

@@ -1,0 +1,357 @@
+package sessions
+
+import (
+	"bufio"
+	"bytes"
+	"context"
+	"encoding/json"
+	"os"
+	"path/filepath"
+	"strings"
+	"sync"
+	"testing"
+	"time"
+
+	"github.com/yetone/magpie/internal/extension"
+	"github.com/yetone/magpie/internal/proc"
+)
+
+type zcodeAutomaticFixture struct {
+	manager   *extension.Manager
+	entry     extension.Installed
+	input     *json.Encoder
+	output    *json.Decoder
+	initial   map[string]any
+	consent   StorageSourceConsent
+	directory string
+}
+
+func zcodeAutomaticInstall(t *testing.T) *zcodeAutomaticFixture {
+	t.Helper()
+	distribution, script := os.Getenv("ZCODE_STORAGE_DIST"), os.Getenv("ZCODE_STORAGE_WRITER")
+	if distribution == "" || script == "" {
+		t.Fatal("ZCode automatic history requires its exact package and synthetic writer")
+	}
+	consentHome(t)
+	if err := SetReads(nil, map[string]bool{"zcode": true}); err != nil {
+		t.Fatal(err)
+	}
+	directory := filepath.Join(ZCodeDir(), "cli", "db")
+	writerContext, cancelWriter := context.WithCancel(context.Background())
+	command := proc.CommandContext(writerContext, "python3", "-I", "-S", script, directory)
+	input, err := command.StdinPipe()
+	if err != nil {
+		t.Fatal(err)
+	}
+	output, err := command.StdoutPipe()
+	if err != nil {
+		t.Fatal(err)
+	}
+	stderr := &bytes.Buffer{}
+	command.Stderr = stderr
+	if err := command.Start(); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		defer cancelWriter()
+		input.Close()
+		if err := command.Wait(); err != nil {
+			t.Error("synthetic writer exit:", err, stderr.String())
+		}
+	})
+	fixture := &zcodeAutomaticFixture{input: json.NewEncoder(input),
+		output: json.NewDecoder(bufio.NewReader(output)), directory: directory}
+	if err := fixture.output.Decode(&fixture.initial); err != nil ||
+		fixture.initial["pid"] == float64(os.Getpid()) || fixture.initial["mainOnly"] != float64(0) {
+		t.Fatal("separate SQLite WAL writer setup:", err, fixture.initial)
+	}
+	fixture.manager = extension.Default()
+	t.Cleanup(func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		if err := fixture.manager.Close(ctx); err != nil {
+			t.Error(err)
+		}
+	})
+	fixture.entry, err = fixture.manager.Install(t.Context(), distribution)
+	if err != nil {
+		t.Fatal("ordinary composite native installation:", err)
+	}
+	roots, consents, err := InspectStorageSources(t.Context())
+	if err != nil || len(roots) != 1 || len(consents) != 0 {
+		t.Fatal("unconsented finite native source:", err, roots, consents)
+	}
+	root := roots[0]
+	for _, selection := range []struct{ reference, revision string }{
+		{"foreign", fixture.entry.Revision}, {root.RootRef, "stale"},
+	} {
+		if err := BindStorageSource(t.Context(), "zcode", root.Source, root.RootSlot, selection.reference, selection.revision); err == nil {
+			t.Fatal("foreign or stale root binding accepted")
+		}
+	}
+	if err := BindStorageSource(t.Context(), "zcode", root.Source, root.RootSlot, root.RootRef, fixture.entry.Revision); err != nil {
+		t.Fatal(err)
+	}
+	_, consents, err = InspectStorageSources(t.Context())
+	if err != nil || len(consents) != 1 {
+		t.Fatal("checked root consent:", err, consents)
+	}
+	fixture.consent = consents[0]
+	return fixture
+}
+
+func (fixture *zcodeAutomaticFixture) ask(t *testing.T, command string) map[string]any {
+	t.Helper()
+	if err := fixture.input.Encode(command); err != nil {
+		t.Fatal(err)
+	}
+	var result map[string]any
+	if err := fixture.output.Decode(&result); err != nil {
+		t.Fatal(err)
+	}
+	return result
+}
+
+func zcodeAutomaticSelected(t *testing.T) Session {
+	t.Helper()
+	selected, found := Find("zcode", "ses_one")
+	if !found || selected.source == nil || selected.source.storage == nil {
+		t.Fatal("ordinary Find did not select actual ZCode automatic SQLite source")
+	}
+	return selected
+}
+
+func TestZCodeAutomaticHistoryInstalledListTranscriptAndWAL(t *testing.T) {
+	fixture := zcodeAutomaticInstall(t)
+	selected := zcodeAutomaticSelected(t)
+	if selected.Title != "Committed WAL session" || selected.Input != 9007199254740993 ||
+		selected.Output != 7 || selected.CacheRead != 11 || selected.CacheWrite != 2 ||
+		!strings.HasPrefix(selected.Path, "storage:") || len(ListAgent("zcode")) != 5 {
+		t.Fatal("ordinary list lost exact WAL/native metadata:", selected)
+	}
+	transcript, err := TranscriptOf(selected)
+	encoded, _ := json.Marshal(transcript)
+	body := string(encoded)
+	if err != nil || !strings.Contains(body, "first reasoning") || !strings.Contains(body, "tool fixture") ||
+		!strings.Contains(body, "media unavailable") || strings.Contains(body, "opaque-synthetic-signature") ||
+		strings.Contains(body, "must-not-open") {
+		t.Fatal("ordinary native transcript:", err, body)
+	}
+	hit, found, err := SearchSession(t.Context(), selected, NeedleOf("Original user text"))
+	if err != nil || !found || hit.Match == "" {
+		t.Fatal("ordinary source search:", err, hit)
+	}
+	after := fixture.ask(t, "state")
+	for _, name := range []string{"db", "wal", "shm"} {
+		if after[name] != fixture.initial[name] {
+			t.Fatal("installed reader wrote source family:", name)
+		}
+	}
+	fixture.ask(t, "uncommitted")
+	transcript, err = TranscriptOf(zcodeAutomaticSelected(t))
+	encoded, _ = json.Marshal(transcript)
+	if err != nil || bytes.Contains(encoded, []byte("uncommitted secret")) {
+		t.Fatal("uncommitted writer crossed ordinary publication:", err)
+	}
+	fixture.ask(t, "rollback")
+	fixture.ask(t, "append")
+	changed := zcodeAutomaticSelected(t)
+	if changed.Title != "Updated WAL session" {
+		t.Fatal("fresh ordinary refresh lost committed WAL:", changed)
+	}
+	if _, err := TranscriptOf(selected); err == nil {
+		t.Fatal("old selected session retained authority after WAL metadata changed")
+	}
+	transcript, err = TranscriptOf(changed)
+	encoded, _ = json.Marshal(transcript)
+	if err != nil || !bytes.Contains(encoded, []byte("later committed message")) {
+		t.Fatal("fresh ordinary transcript omitted committed WAL:", err)
+	}
+	if state := fixture.ask(t, "checkpoint"); state["busy"] != float64(0) {
+		t.Fatal("installed reader retained writer checkpoint locks:", state)
+	}
+	if _, err := TranscriptOf(zcodeAutomaticSelected(t)); err != nil {
+		t.Fatal("reopen after WAL reset:", err)
+	}
+}
+
+func zcodeAutomaticRecord(t *testing.T) *sessionSourceRecord {
+	t.Helper()
+	if err := PrepareSessionSources(t.Context()); err != nil {
+		t.Fatal("ordinary storage preparation:", err)
+	}
+	view := sourceView.Load()
+	if view == nil || !view.owners["zcode"] || len(view.records) != 5 {
+		t.Fatal("ordinary rooted storage catalog did not publish its selected owner")
+	}
+	for _, record := range view.records {
+		if sourceRecordID(record) == "ses_one" && record.storage != nil {
+			return record
+		}
+	}
+	t.Fatal("ordinary rooted source record is absent")
+	return nil
+}
+
+func TestZCodeAutomaticHistoryInstalledRootedOwnerPreservesFamily(t *testing.T) {
+	fixture := zcodeAutomaticInstall(t)
+	selected := zcodeAutomaticRecord(t)
+	if selected.summary.Title != "Committed WAL session" || !selected.usageKnown {
+		t.Fatal("actual installed source omitted committed WAL metadata")
+	}
+	result, err := storageSourceRead(t.Context(), selected)
+	if err != nil || !result.Cut || !bytes.Contains(mustJSONZCode(result.Parts), []byte("first reasoning")) {
+		t.Fatal("actual installed rooted transcript:", err, result)
+	}
+	after := fixture.ask(t, "state")
+	for _, name := range []string{"db", "wal", "shm"} {
+		if fixture.initial[name] != after[name] {
+			t.Fatal("installed rooted source changed DB/WAL/SHM:", name)
+		}
+	}
+	fixture.ask(t, "uncommitted")
+	result, err = storageSourceRead(t.Context(), zcodeAutomaticRecord(t))
+	if err != nil || bytes.Contains(mustJSONZCode(result.Parts), []byte("uncommitted secret")) {
+		t.Fatal("actual installed rooted source admitted uncommitted WAL:", err)
+	}
+	fixture.ask(t, "rollback")
+	fixture.ask(t, "append")
+	fresh := zcodeAutomaticRecord(t)
+	if fresh.summary.Title != "Updated WAL session" {
+		t.Fatal("actual installed source missed a fresh WAL commit")
+	}
+	if _, err := storageSourceRead(t.Context(), selected); err == nil {
+		t.Fatal("old selected source published after replacement")
+	}
+	result, err = storageSourceRead(t.Context(), fresh)
+	if err != nil || !bytes.Contains(mustJSONZCode(result.Parts), []byte("later committed message")) {
+		t.Fatal("actual installed source missed the fresh transcript:", err)
+	}
+	if state := fixture.ask(t, "checkpoint"); state["busy"] != float64(0) {
+		t.Fatal("actual installed source retained WAL locks:", state)
+	}
+}
+
+func mustJSONZCode(value any) []byte {
+	body, err := json.Marshal(value)
+	if err != nil {
+		panic(err)
+	}
+	return body
+}
+
+func TestZCodeAutomaticHistoryInstalledDatabaseRotationRejectsOldSelection(t *testing.T) {
+	fixture := zcodeAutomaticInstall(t)
+	for _, change := range []string{"identity", "replace"} {
+		selected := zcodeAutomaticRecord(t)
+		fixture.ask(t, change)
+		if _, err := storageSourceRead(t.Context(), selected); err == nil {
+			t.Fatal("installed source accepted a locator from a different database incarnation:", change)
+		}
+		fresh := zcodeAutomaticRecord(t)
+		if fresh == selected || !bytes.Equal(mustJSONZCode(fresh.summary), mustJSONZCode(selected.summary)) {
+			t.Fatal("same-metadata rotation reused an old selected owner:", change)
+		}
+		before := fixture.ask(t, "state")
+		if _, err := storageSourceRead(t.Context(), fresh); err != nil {
+			t.Fatal("installed fresh database selection failed:", change, err)
+		}
+		after := fixture.ask(t, "state")
+		for _, name := range []string{"db", "wal", "shm"} {
+			if before[name] != after[name] {
+				t.Fatal("installed rotated database was written by the reader:", change, name)
+			}
+		}
+	}
+}
+
+func TestZCodeAutomaticHistoryDelegatedOwnerPreventsNativeEnumeration(t *testing.T) {
+	zcodeAutomaticInstall(t)
+	zcodeAutomaticRecord(t)
+	calls := 0
+	allFilesWith(&filesKept{}, func() []file {
+		calls++
+		return nil
+	})
+	if calls != 0 {
+		t.Fatal("delegated ZCode storage owner still invokes the native database enumerator:", calls)
+	}
+}
+
+func TestZCodeAutomaticHistoryInstalledPublicationRejectsChangedOwners(t *testing.T) {
+	for _, change := range []string{"reads", "consent", "config", "off", "root", "cancel", "foreign-off"} {
+		t.Run(change, func(t *testing.T) {
+			fixture := zcodeAutomaticInstall(t)
+			selected := zcodeAutomaticSelected(t)
+			ctx, cancel := context.WithCancel(t.Context())
+			defer cancel()
+			var once sync.Once
+			sourceBeforePublish = func() {
+				once.Do(func() {
+					var err error
+					switch change {
+					case "reads":
+						err = SetReads(nil, map[string]bool{"zcode": false})
+					case "consent":
+						err = UnbindStorageSource(t.Context(), "zcode", fixture.consent.Identity)
+					case "config":
+						config, configErr := fixture.manager.ModuleConfig(t.Context(), "zcode")
+						if configErr != nil {
+							t.Fatal(configErr)
+						}
+						_, err = fixture.manager.CompareAndSwapModuleConfig(t.Context(), "zcode",
+							config.Version, json.RawMessage(`{"freeFirst":false}`))
+					case "off":
+						err = fixture.manager.SetEnabled(t.Context(), "zcode", false)
+					case "root":
+						err = os.Rename(fixture.directory, fixture.directory+".replaced")
+						if err == nil {
+							err = os.MkdirAll(fixture.directory, 0700)
+						}
+					case "cancel":
+						cancel()
+					case "foreign-off":
+						command := proc.CommandContext(t.Context(), os.Getenv("ZCODE_STORAGE_HOST"), "plugin", "sdk", "off", "zcode")
+						command.Env = os.Environ()
+						if output, commandErr := command.CombinedOutput(); commandErr != nil {
+							t.Fatal("foreign off:", commandErr, string(output))
+						}
+					}
+					if err != nil {
+						t.Fatal(err)
+					}
+				})
+			}
+			t.Cleanup(func() { sourceBeforePublish = nil })
+			if _, err := storageSourceRead(ctx, selected.source); err == nil {
+				t.Fatal("installed native history published after owner changed:", change)
+			}
+			sourceBeforePublish = nil
+		})
+	}
+}
+
+func TestZCodeAutomaticHistoryInstalledRejectsSidecarSymlinkAndMissingSHM(t *testing.T) {
+	for _, change := range []string{"symlink", "missing-shm"} {
+		t.Run(change, func(t *testing.T) {
+			fixture := zcodeAutomaticInstall(t)
+			selected := zcodeAutomaticSelected(t)
+			name := "db.sqlite-wal"
+			if change == "missing-shm" {
+				name = "db.sqlite-shm"
+			}
+			original, moved := filepath.Join(fixture.directory, name), filepath.Join(fixture.directory, "saved-sidecar")
+			if err := os.Rename(original, moved); err != nil {
+				t.Fatal(err)
+			}
+			if change == "symlink" {
+				if err := os.Symlink(moved, original); err != nil {
+					t.Fatal(err)
+				}
+			}
+			if _, err := storageSourceRead(t.Context(), selected.source); err == nil {
+				t.Fatal("installed rooted reader accepted missing or symlink sidecar:", change)
+			}
+		})
+	}
+}

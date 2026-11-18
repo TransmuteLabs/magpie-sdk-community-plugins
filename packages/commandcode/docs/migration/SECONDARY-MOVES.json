@@ -1,0 +1,52 @@
+[
+  {
+    "originalMapTarget": "tests/EVIDENCE-COMPLETION.json",
+    "finalTarget": "docs/history/EVIDENCE-COMPLETION.json",
+    "sha256": "3b2edf02f2783ab0742e96f61ca033e8c98a34c937bfd11c93edf56a27f7ce47"
+  },
+  {
+    "originalMapTarget": "tests/EVIDENCE-SDK16.json",
+    "finalTarget": "docs/history/EVIDENCE-SDK16.json",
+    "sha256": "0ced590268b90313e8341be67a96af8d9606e316e82bc5263aeab9847dbf6575"
+  },
+  {
+    "originalMapTarget": "tests/EVIDENCE-SDK17.json",
+    "finalTarget": "docs/history/EVIDENCE-SDK17.json",
+    "sha256": "65c9a115a750c3e7864979f4b061df9afb5535442ce2cc4050fee87ceab1a051"
+  },
+  {
+    "originalMapTarget": "tests/EVIDENCE-SDK19-DECISION-OPTIONS.json",
+    "finalTarget": "docs/history/EVIDENCE-SDK19-DECISION-OPTIONS.json",
+    "sha256": "4d5b0780c00fda9a59099518f3e2a6c4bc160b1526421214c7d2a87637c89ce4"
+  },
+  {
+    "originalMapTarget": "tests/EVIDENCE-SDK19-FINAL-REPIN.json",
+    "finalTarget": "docs/history/EVIDENCE-SDK19-FINAL-REPIN.json",
+    "sha256": "0ee31646b1c4192990b56c77fe6d9a2416a06eb4f92e55e911d93f133ed556bf"
+  },
+  {
+    "originalMapTarget": "tests/EVIDENCE-SDK19-POSTFIX.json",
+    "finalTarget": "docs/history/EVIDENCE-SDK19-POSTFIX.json",
+    "sha256": "9e11737109d5c9ca991962e0448330243058a5d737d1d83c0e0843088d8088cd"
+  },
+  {
+    "originalMapTarget": "tests/EVIDENCE-SDK19.json",
+    "finalTarget": "docs/history/EVIDENCE-SDK19.json",
+    "sha256": "c2d7dcb1790c1eba99c86c36d3181ca669713814c3bc5fbda8f83c74f01531dd"
+  },
+  {
+    "originalMapTarget": "tests/EVIDENCE-SYSTEMONE-REVIEW.json",
+    "finalTarget": "docs/history/EVIDENCE-SYSTEMONE-REVIEW.json",
+    "sha256": "4261cddd597c3f30c61c13daca80aa39de17aecf3daca46362304ec0bf8e21d8"
+  },
+  {
+    "originalMapTarget": "tests/EVIDENCE.json",
+    "finalTarget": "docs/history/EVIDENCE.json",
+    "sha256": "752af570c717dec5ec804484cd3f32145e827421049ac6ac8504196bcbd1f8cd"
+  },
+  {
+    "originalMapTarget": "tests/HOST-CONTRACT-BLOCKER.md",
+    "finalTarget": "docs/history/HOST-CONTRACT-BLOCKER.md",
+    "sha256": "5eb1d0665a00388a62b959f17fe20e335f5a1b18a2400b594a13c2a00136a3ca"
+  }
+]

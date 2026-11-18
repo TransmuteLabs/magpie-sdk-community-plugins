@@ -1,0 +1,92 @@
+{
+  "build": {
+    "exit": 0,
+    "seconds": 5.84,
+    "command": [
+      "/usr/bin/python3",
+      "scripts/build.py",
+      "all",
+      "--sdk",
+      "/tmp/magpie-astra-combined-20261115-v4/source",
+      "--output",
+      "/tmp/magpie-monorepo-final-20261115/dist"
+    ]
+  },
+  "host-build": {
+    "exit": 0,
+    "seconds": 2.64,
+    "command": [
+      "go",
+      "build",
+      "-mod=readonly",
+      "-tags",
+      "nogui",
+      "-o",
+      "/tmp/magpie-monorepo-final-20261115/magpie",
+      "."
+    ]
+  },
+  "install": {
+    "exit": 0,
+    "seconds": 2.29,
+    "command": [
+      "/usr/bin/python3",
+      "/tmp/magpie-monorepo-final-20261115/install.py",
+      "/tmp/magpie-monorepo-final-20261115/magpie",
+      "/tmp/magpie-monorepo-final-20261115/dist"
+    ]
+  },
+  "initialCheck": {
+    "exit": 1,
+    "seconds": 14.07,
+    "command": [
+      "/usr/bin/python3",
+      "scripts/check.py",
+      "all",
+      "--sdk",
+      "/tmp/magpie-astra-combined-20261115-v4/source",
+      "--race"
+    ]
+  },
+  "check": {
+    "exit": 0,
+    "seconds": 78.71,
+    "command": [
+      "/usr/bin/python3",
+      "scripts/check.py",
+      "all",
+      "--sdk",
+      "/tmp/magpie-astra-combined-20261115-v4/source",
+      "--race"
+    ]
+  },
+  "sourceContentSHA256": "be05a2f6ae4b1f12d3b93f66c94482869d414d75fac2484e0763a53eb3c92b58",
+  "knownBaselineIssue": "ZCode TestCompletionPaidBusyRetriesOnlyConfirmedUnusedCaps is intermittently red in both original and relocated race/count20 runs; unchanged and unresolved.",
+  "finalSourceContentSHA256": "33414d905947f6de486bd07abc002e85f10bdae0689c2243e9e18dd9d7c893ee",
+  "attributesRed": {
+    "exit": 1,
+    "seconds": 0.16,
+    "command": [
+      "/usr/bin/python3",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "tests",
+      "-v"
+    ]
+  },
+  "attributesGreen": {
+    "exit": 0,
+    "seconds": 0.17,
+    "command": [
+      "/usr/bin/python3",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "tests",
+      "-v"
+    ]
+  }
+}

@@ -1,0 +1,11 @@
+  const native = entries.findLast((entry) => isNativeCompaction(entry.message))
+  // The instruction baseline covers every update before its epoch. A committed revert that removes an
+  // update clears the state, so the next baseline is rendered fresh and covers every surviving update.
+  const epoch = (yield* InstructionState.epochStart(db, sessionID)) ?? Number.POSITIVE_INFINITY
+  // Skipped native checkpoints are not textual summaries. Their original transcript remains available.
+  return entries.filter(
+    (entry) =>
+      !(entry.message.type === "system" && native && entry.seq < native.seq) &&
+      !(entry.message.type === "system" && entry.message.metadata?.notice === "instructions" && entry.seq < epoch) &&
+      replayable(entry.message, boundary),
+  )

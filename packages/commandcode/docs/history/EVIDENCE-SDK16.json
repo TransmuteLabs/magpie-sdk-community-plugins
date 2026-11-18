@@ -1,0 +1,166 @@
+{
+  "schema": 1,
+  "date": "2026-11-14",
+  "module": {
+    "id": "protocol-commandcode",
+    "version": "0.1.0",
+    "sdkMinimum": "1.5",
+    "nativeABI": 1,
+    "previousCommit": "24e80e3be1cfe363bab8ce25eb7762decee7f3bb",
+    "verifiedInputFiles": 35,
+    "verifiedInputSHA256": "75cc1d4c9b703051b294260aeffe22c2f341c3483805b8e201da152b4859d513",
+    "sourceLockSHA256": "2d79e929baef7668c400e57ad6c48d9b1070f3ac354aab40f3949775549477a3"
+  },
+  "host": {
+    "commit": "d07078c7926daf6f33af09c40297c941bd39da92",
+    "tree": "ed28dfd65eca68d15e9400b56660bbbf5e7bc319",
+    "sdk": "1.6",
+    "source": "../magpie",
+    "trackedArchiveFilesMatched": 10420,
+    "extraSourceFiles": 0,
+    "readOnlySharedSource": "/tmp/magpie-opencode-d070.u3uFHcvw/magpie",
+    "probeUsesGoOverlay": true,
+    "hostEdits": false
+  },
+  "compatibleSuccessor": {
+    "commit": "b5e4494f6ae7b69b0333925e21e9eaf709a7acf9",
+    "tree": "1880ea418af8c65318afbcc4c7e396aa9cb5dd12",
+    "executionBaseline": "d07078c7926daf6f33af09c40297c941bd39da92",
+    "changedPaths": ["AGENTS.md"],
+    "runtimeIdentical": true,
+    "newExecutionClaimed": false
+  },
+  "executor": {
+    "server": "usbox",
+    "root": "/tmp/magpie-commandcode.ogjQFhdz/v4-sdk16",
+    "temporaryHomeXDG": true,
+    "offlineExistingCaches": true,
+    "GOPATH": "/Users/maratkarimov/go",
+    "GOMODCACHE": "/Users/maratkarimov/go/pkg/mod",
+    "GOCACHE": "/Users/maratkarimov/.cache/go-build",
+    "GOPROXY": "off",
+    "GOSUMDB": "off",
+    "GOTOOLCHAIN": "local",
+    "GOWORK": "off",
+    "GOMAXPROCS": "4",
+    "GOFLAGS": "-mod=readonly -p=4",
+    "CGO_ENABLED": "1"
+  },
+  "toolchain": {
+    "go": "go version go1.27.3 linux/amd64",
+    "typescript": "Version 7.0.2",
+    "node": "v22.23.4"
+  },
+  "tests": {
+    "command": ["go", "test", "-race", "-count=20", "-timeout=3m", "-json", "./..."],
+    "distinctTopLevelTests": 24,
+    "distinctTestsIncludingSubtests": 36,
+    "passingTestEvents": 720,
+    "failingEvents": 0,
+    "scope": "this module only"
+  },
+  "checks": {
+    "goVet": true,
+    "goBuild": true,
+    "goFormat": true,
+    "nativeProbeFormat": true,
+    "strictTypeScript": true,
+    "nativeCSharedBuild": true,
+    "pythonSyntax": true,
+    "sourceFileDigests": 23,
+    "sourceFixtures": 4,
+    "standalonePackage": true,
+    "hostWideSuite": false,
+    "liveVendorAcceptance": false,
+    "coldPersistentCatalogRead": false
+  },
+  "nativeProof": {
+    "native": true,
+    "singleInstalledModule": true,
+    "ordinaryProtocols": 3,
+    "goPlan": true,
+    "quota": true,
+    "hostUsageRevisions": ["0", "1", "2"],
+    "dirtyInferenceDenied": true,
+    "unknownUsageStillDenied": true,
+    "freshUsageAcknowledged": true,
+    "ordinaryQuotaAcknowledged": true,
+    "systemOneExplicitlyBlocked": true,
+    "hostDecisionContractAbsent": true,
+    "syntheticCLIImport": true,
+    "checkedAgentApplyDisconnect": true,
+    "offDenied": true,
+    "deletedAccountDenied": true,
+    "vendorCalls": 0
+  },
+  "donorWireProof": {
+    "donorCommit": "26ea8faf7793ca66dd8e7a8b90128a5235552a1f",
+    "donorVersion": "0.1.24",
+    "wireSourceSHA256": "ef6f9e6f9241dfa5deddde5326408e1560cfd653b41b2eead3a0f85f11af9631",
+    "fixtureSourceSHA256": "67d94f5369c7cda8f5a52f95d1224063db8b3914a61e395487a6268a0d0c6b78",
+    "route": "POST /provider/v1/systemone",
+    "cliHeader": "1.88.2",
+    "aliases": ["jev", "jev-latest", "typesafe-ai/jev", "typesafe/jev"],
+    "canonicalRequest": {
+      "model": "typesafe/jev",
+      "state": {"text": "ping"},
+      "questions": {"ok": {"type": "noul", "instructions": "Is this a test?"}}
+    },
+    "preservedAnswer": {
+      "model": "typesafe/jev",
+      "answers": {"ok": {"type": "noul", "noul": 0.93}},
+      "usage": {"input_tokens": 41, "output_tokens": 3}
+    },
+    "exactCLIHeaders": true,
+    "zdr": true,
+    "invalidJSONBeforeDispatch": true,
+    "planRefusal400To403": true,
+    "goRefusalKeepsAccount": true,
+    "fixtureDispatches": 7,
+    "vendorCalls": 0
+  },
+  "package": {
+    "path": "dist/sdk16-d07078c79/protocol-commandcode-0.1.0-linux-amd64.zip",
+    "files": 12,
+    "sha256": "92c29ff97c484aedde222da6fb536e37780e923183f7c44da07896832ad603c4",
+    "additionalRuntimePluginDependency": false,
+    "sameAsValidatedNativeInstall": true
+  },
+  "logs": {
+    "race20.jsonl": "ddf00debf2c2609fc155a5f52fe39109ff85f4320ec4f6de037be979cb900520",
+    "vet.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "build.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "format.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "format-probe.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "donor-systemone.json": "6c82257f606e63378c6e4015130faa6c354d6e557a7a02f36e3b8baa6404c8ae",
+    "source-provenance.json": "ab2aa580f0f8512b7b60e70f2cfe0cb233f00e97026a1343d0addb7fd01a5aa5",
+    "package-build.json": "24f2463176f9c2b59d725382de4142e4e0900832fb37a5fdfe60466181c6373b",
+    "package-provenance.json": "15e62f83b2cd9ae2818ec57c687d78d8d631b067e4d85cd70fcda83c1df7f17e",
+    "native-build.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "native-owner.json": "e69d72c012397daad04ce52d23f1533b43afe403029d0f561780d90b7f45d9b6",
+    "host-source-verification.json": "01eadd1935fd1f7af3d52e72621c19575d677b147108485b343df92595db4716",
+    "module-inputs.json": "42ae37cd872e6c190171e8e050de7199b015e65c41f29284feb60f4147f5277d",
+    "toolchain.json": "8916e750c0faec10bc3ca34b106a3eed92b2c6f7e3fb185d71213af9254855bc",
+    "results.json": "f54b57d5e6dd364cb0411425b6690a16158059981414aa2e1e3f9fde2d5a9685",
+    "host-successor.json": "22f5295c68ac7d6490d1a1ad8a0213fd401165bd9fd4d7e8f4f1d2f7db9aaf10"
+  },
+  "preservedPriorEvidence": {
+    "record": "verify/EVIDENCE.json",
+    "root": "/tmp/magpie-commandcode.ogjQFhdz",
+    "sdk15Artifact": "dist/protocol-commandcode-0.1.0-linux-amd64.zip",
+    "failedLogsRetained": true
+  },
+  "contractBlockers": [
+    "SystemOne provider operation, decision model-operation metadata and ordinary adapter dispatch are absent in SDK 1.6.",
+    "Ordinary agent model options omit own-model maxOutput, efforts and defaultEffort."
+  ],
+  "unverified": [
+    "live vendor requests and subscriptions",
+    "real browser approval or real CLI credential import",
+    "actual Command Code CLI continuation and native history",
+    "GUI page rendering and non-Linux execution",
+    "Google nested-reference tool-schema normalization",
+    "cold persistent model-catalog reads",
+    "first host deployment with zero plugins and host-wide final acceptance"
+  ]
+}

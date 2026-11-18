@@ -1,0 +1,8 @@
+{"type":"title","v":1,"title":"","updatedAt":"2026-10-25T03:50:25.123Z","pad":"                                                                                                                                                                              "}
+{"type":"session","version":3,"id":"019a0000-0000-7000-8000-00000000000a","timestamp":"2026-10-25T03:50:25.123Z","cwd":"/work/omp","title":"Original"}
+{"type":"model_change","id":"model","parentId":null,"timestamp":"2026-10-25T03:50:25.123Z","model":"anthropic/claude-opus-5-5","role":"default"}
+{"type":"message","id":"u","parentId":"model","timestamp":"2026-10-25T03:50:26.123Z","message":{"role":"user","content":[{"type":"text","text":"Recovered summary"}]}}
+{"type":"message","id":"a","parentId":"u","timestamp":"2026-10-25T03:50:27.123Z","message":{"role":"assistant","model":"claude-opus-5-5","usage":{"input":100,"output":50,"cacheRead":1000,"cacheWrite":200,"totalTokens":1350,"cost":{"total":999}},"content":[{"type":"text","text":"Working"}]}}
+{"type":"model_usage","id":"aux","parentId":"a","timestamp":"2026-10-25T03:50:28.123Z","model":"claude-haiku-5","purpose":"title","usage":{"input":20,"output":5,"cacheRead":0,"cacheWrite":0,"totalTokens":25,"cost":{"total":999}}}
+{"type":"message","id":"b","parentId":"a","timestamp":"2026-10-25T03:50:29.123Z","message":{"role":"assistant","model":"claude-opus-5-5","usage":{"input":10,"output":5,"cacheRead":500,"cacheWrite":0,"totalTokens":515},"content":[{"type":"text","text":"Done"}]}}
+{"type":"title_change","id":"title","parentId":"b","timestamp":"2026-10-25T03:50:30.123Z","title":"Recovered summary"}

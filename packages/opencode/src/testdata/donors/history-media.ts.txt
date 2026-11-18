@@ -1,0 +1,20 @@
+const unavailable = (mime: string, name?: string) =>
+  `[media unavailable: ${name === undefined ? mime : `${name} (${mime})`}]`
+
+function unavailableFile(file: SessionStored.FileRef): FileAttachment {
+  const { uri: _, ...rest } = file
+  return { ...rest, data: Buffer.from(unavailable(file.mime, file.name)).toString("base64"), mime: "text/plain" }
+}
+
+const unavailableToolItem = (item: Tool.Content & { readonly type: "file" }): Tool.Content => ({
+  type: "text",
+  text: unavailable(item.mime, item.name),
+})
+
+function inlineFile(file: SessionStored.File, blobs: Blobs): SessionStored.File {
+  if (!isFileRef(file)) return file
+  const data = blobs.get(SessionStored.refHash(file.uri))
+  if (data === undefined) return unavailableFile(file)
+  const { uri: _, ...rest } = file
+  return { ...rest, data }
+}

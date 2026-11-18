@@ -1,0 +1,462 @@
+{
+  "hostSource": "usbox:/tmp/magpie-astra-combined-20261115-v4/source",
+  "hostContentSHA256": "609a7b5a1bfd8da599639900e19a2635296b5f5d1ce85bcbd8df0df702d5b493",
+  "remoteEvidence": "usbox:/tmp/magpie-commandcode-monorepo-20261115",
+  "phases": {
+    "results": {
+      "environment": {
+        "GOCACHE": "/Users/maratkarimov/.cache/go-build",
+        "GOMODCACHE": "/Users/maratkarimov/go/pkg/mod",
+        "GOPATH": "/Users/maratkarimov/go",
+        "GOROOT": "/tmp/magpie-sdk-v11-usbox-niq306rt/go-toolchain-1.26.8",
+        "HOME": "/tmp/magpie-commandcode-monorepo-20261115/isolated-home-iaxfeh39",
+        "USERPROFILE": "/tmp/magpie-commandcode-monorepo-20261115/isolated-home-iaxfeh39",
+        "TMPDIR": "/tmp/magpie-commandcode-monorepo-20261115/isolated-home-iaxfeh39",
+        "PATH": "/tmp/magpie-sdk-v11-usbox-niq306rt/go-toolchain-1.26.8/bin:/usr/bin:/bin:/usr/sbin:/Users/maratkarimov/.local/bin",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOTOOLCHAIN": "local",
+        "GOWORK": "off",
+        "GOENV": "off",
+        "CGO_ENABLED": "1",
+        "GOMAXPROCS": "2",
+        "GOOS": "linux",
+        "GOARCH": "amd64",
+        "LANG": "C.UTF-8",
+        "GOTELEMETRY": "off",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "SHELL": "/bin/bash",
+        "XDG_CONFIG_HOME": "/tmp/magpie-commandcode-monorepo-20261115/isolated-home-iaxfeh39/xdg_config_home",
+        "XDG_CONFIG_DIRS": "/tmp/magpie-commandcode-monorepo-20261115/isolated-home-iaxfeh39/xdg_config_dirs",
+        "XDG_CACHE_HOME": "/tmp/magpie-commandcode-monorepo-20261115/isolated-home-iaxfeh39/xdg_cache_home",
+        "XDG_DATA_HOME": "/tmp/magpie-commandcode-monorepo-20261115/isolated-home-iaxfeh39/xdg_data_home",
+        "XDG_DATA_DIRS": "/tmp/magpie-commandcode-monorepo-20261115/isolated-home-iaxfeh39/xdg_data_dirs",
+        "XDG_STATE_HOME": "/tmp/magpie-commandcode-monorepo-20261115/isolated-home-iaxfeh39/xdg_state_home",
+        "APPDATA": "/tmp/magpie-commandcode-monorepo-20261115/isolated-home-iaxfeh39/appdata",
+        "LOCALAPPDATA": "/tmp/magpie-commandcode-monorepo-20261115/isolated-home-iaxfeh39/localappdata"
+      },
+      "sdk": "/tmp/magpie-astra-combined-20261115-v4/source",
+      "steps": [
+        {
+          "name": "format-apply",
+          "command": [
+            "gofmt",
+            "-w",
+            "provenance_test.go",
+            "systemone_contract_test.go"
+          ],
+          "cwd": "/tmp/magpie-commandcode-monorepo-20261115/workspace/packages/commandcode/src",
+          "exit": 0,
+          "expected": 0,
+          "seconds": 0.010787487030029297,
+          "log": "/tmp/magpie-commandcode-monorepo-20261115/results/format-apply.log",
+          "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "name": "format-check",
+          "command": [
+            "gofmt",
+            "-l",
+            "."
+          ],
+          "cwd": "/tmp/magpie-commandcode-monorepo-20261115/workspace/packages/commandcode/src",
+          "exit": 0,
+          "expected": 0,
+          "seconds": 0.008673667907714844,
+          "log": "/tmp/magpie-commandcode-monorepo-20261115/results/format-check.log",
+          "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "name": "go-default",
+          "command": [
+            "go",
+            "test",
+            "-json",
+            "-count=1",
+            "-timeout=180s",
+            "./..."
+          ],
+          "cwd": "/tmp/magpie-commandcode-monorepo-20261115/workspace/packages/commandcode/src",
+          "exit": 0,
+          "expected": 0,
+          "seconds": 0.8933618068695068,
+          "log": "/tmp/magpie-commandcode-monorepo-20261115/results/go-default.log",
+          "logSHA256": "332e115b71cd651c5baaba1875f2b9ae8d17b3764932a12dd324eb19aac231a9",
+          "testEvents": {
+            "pass": 206,
+            "fail": 0,
+            "skip": 0
+          }
+        },
+        {
+          "name": "go-race",
+          "command": [
+            "go",
+            "test",
+            "-race",
+            "-json",
+            "-count=1",
+            "-timeout=180s",
+            "./..."
+          ],
+          "cwd": "/tmp/magpie-commandcode-monorepo-20261115/workspace/packages/commandcode/src",
+          "exit": 0,
+          "expected": 0,
+          "seconds": 3.6101157665252686,
+          "log": "/tmp/magpie-commandcode-monorepo-20261115/results/go-race.log",
+          "logSHA256": "3ecc67b7b541b4f3c73cbb05f6dba66d418068442dd1508343e8dfc32cbbaca2",
+          "testEvents": {
+            "pass": 206,
+            "fail": 0,
+            "skip": 0
+          }
+        },
+        {
+          "name": "go-vet",
+          "command": [
+            "go",
+            "vet",
+            "./..."
+          ],
+          "cwd": "/tmp/magpie-commandcode-monorepo-20261115/workspace/packages/commandcode/src",
+          "exit": 0,
+          "expected": 0,
+          "seconds": 0.1357555389404297,
+          "log": "/tmp/magpie-commandcode-monorepo-20261115/results/go-vet.log",
+          "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "name": "fixture-tamper-negative",
+          "command": [
+            "go",
+            "test",
+            "-count=1",
+            "-run",
+            "^TestPackageProvenanceAndVersionsAgree$",
+            "."
+          ],
+          "cwd": "/tmp/magpie-commandcode-monorepo-20261115/workspace/packages/commandcode/src",
+          "exit": 1,
+          "expected": 1,
+          "seconds": 0.5171329975128174,
+          "log": "/tmp/magpie-commandcode-monorepo-20261115/results/fixture-tamper-negative.log",
+          "logSHA256": "55c352fa32084d280c208ab6f999b04879e6afaa0e14ebe455a5961ac5e73dba"
+        },
+        {
+          "name": "types",
+          "command": [
+            "tsc",
+            "--noEmit",
+            "--strict",
+            "--skipLibCheck",
+            "--target",
+            "ES2022",
+            "--module",
+            "ES2022",
+            "--moduleResolution",
+            "bundler",
+            "--lib",
+            "ES2022,DOM",
+            "web/app.ts"
+          ],
+          "cwd": "/tmp/magpie-commandcode-monorepo-20261115/workspace/packages/commandcode",
+          "exit": 1,
+          "expected": 0,
+          "seconds": 0.09537506103515625,
+          "log": "/tmp/magpie-commandcode-monorepo-20261115/results/types.log",
+          "logSHA256": "af11b1f94fba2e9961574bc9632f4e51c574f45f918ac2b9baae1217287e726b"
+        }
+      ]
+    },
+    "build-results": {
+      "environment": {
+        "GOCACHE": "/Users/maratkarimov/.cache/go-build",
+        "GOMODCACHE": "/Users/maratkarimov/go/pkg/mod",
+        "GOPATH": "/Users/maratkarimov/go",
+        "GOROOT": "/tmp/magpie-sdk-v11-usbox-niq306rt/go-toolchain-1.26.8",
+        "HOME": "/tmp/magpie-commandcode-monorepo-20261115/isolated-home-i0s8a348",
+        "USERPROFILE": "/tmp/magpie-commandcode-monorepo-20261115/isolated-home-i0s8a348",
+        "TMPDIR": "/tmp/magpie-commandcode-monorepo-20261115/isolated-home-i0s8a348",
+        "PATH": "/tmp/magpie-sdk-v11-usbox-niq306rt/go-toolchain-1.26.8/bin:/usr/bin:/bin:/usr/sbin:/Users/maratkarimov/.local/bin",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOTOOLCHAIN": "local",
+        "GOWORK": "off",
+        "GOENV": "off",
+        "CGO_ENABLED": "1",
+        "GOMAXPROCS": "2",
+        "GOOS": "linux",
+        "GOARCH": "amd64",
+        "LANG": "C.UTF-8",
+        "GOTELEMETRY": "off",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "SHELL": "/bin/bash",
+        "XDG_CONFIG_HOME": "/tmp/magpie-commandcode-monorepo-20261115/isolated-home-i0s8a348/xdg_config_home",
+        "XDG_CONFIG_DIRS": "/tmp/magpie-commandcode-monorepo-20261115/isolated-home-i0s8a348/xdg_config_dirs",
+        "XDG_CACHE_HOME": "/tmp/magpie-commandcode-monorepo-20261115/isolated-home-i0s8a348/xdg_cache_home",
+        "XDG_DATA_HOME": "/tmp/magpie-commandcode-monorepo-20261115/isolated-home-i0s8a348/xdg_data_home",
+        "XDG_DATA_DIRS": "/tmp/magpie-commandcode-monorepo-20261115/isolated-home-i0s8a348/xdg_data_dirs",
+        "XDG_STATE_HOME": "/tmp/magpie-commandcode-monorepo-20261115/isolated-home-i0s8a348/xdg_state_home",
+        "APPDATA": "/tmp/magpie-commandcode-monorepo-20261115/isolated-home-i0s8a348/appdata",
+        "LOCALAPPDATA": "/tmp/magpie-commandcode-monorepo-20261115/isolated-home-i0s8a348/localappdata"
+      },
+      "sdk": "/tmp/magpie-astra-combined-20261115-v4/source",
+      "steps": [
+        {
+          "name": "types",
+          "command": [
+            "python3",
+            "tests/typecheck.py",
+            "--sdk",
+            "/tmp/magpie-astra-combined-20261115-v4/source"
+          ],
+          "cwd": "/tmp/magpie-commandcode-monorepo-20261115/workspace/packages/commandcode",
+          "exit": 0,
+          "expected": 0,
+          "seconds": 0.12279510498046875,
+          "log": "/tmp/magpie-commandcode-monorepo-20261115/build-results/types.log",
+          "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "name": "build",
+          "command": [
+            "python3",
+            "scripts/build.py",
+            "--output",
+            "/tmp/magpie-commandcode-monorepo-20261115/distribution",
+            "--sdk",
+            "/tmp/magpie-astra-combined-20261115-v4/source"
+          ],
+          "cwd": "/tmp/magpie-commandcode-monorepo-20261115/workspace/packages/commandcode",
+          "exit": 0,
+          "expected": 0,
+          "seconds": 1.0286951065063477,
+          "log": "/tmp/magpie-commandcode-monorepo-20261115/build-results/build.log",
+          "logSHA256": "1bcb1a32746d4d00fab799b03796be0a44f07774ca2b1b977660136e3b00a093"
+        },
+        {
+          "name": "build-archive",
+          "command": [
+            "python3",
+            "scripts/build.py",
+            "--output",
+            "/tmp/magpie-commandcode-monorepo-20261115/archive-distribution",
+            "--sdk",
+            "/tmp/magpie-astra-combined-20261115-v4/source",
+            "--archive"
+          ],
+          "cwd": "/tmp/magpie-commandcode-monorepo-20261115/workspace/packages/commandcode",
+          "exit": 1,
+          "expected": 0,
+          "seconds": 0.789423942565918,
+          "log": "/tmp/magpie-commandcode-monorepo-20261115/build-results/build-archive.log",
+          "logSHA256": "2ec50b137a4fe46e0e5b576d6880d88a4562b77679262bdbd1a138806b13bb83"
+        }
+      ]
+    },
+    "archive-results": {
+      "environment": {
+        "GOCACHE": "/Users/maratkarimov/.cache/go-build",
+        "GOMODCACHE": "/Users/maratkarimov/go/pkg/mod",
+        "GOPATH": "/Users/maratkarimov/go",
+        "GOROOT": "/tmp/magpie-sdk-v11-usbox-niq306rt/go-toolchain-1.26.8",
+        "HOME": "/tmp/magpie-commandcode-monorepo-20261115/isolated-home-mpn1iew1",
+        "USERPROFILE": "/tmp/magpie-commandcode-monorepo-20261115/isolated-home-mpn1iew1",
+        "TMPDIR": "/tmp/magpie-commandcode-monorepo-20261115/isolated-home-mpn1iew1",
+        "PATH": "/tmp/magpie-sdk-v11-usbox-niq306rt/go-toolchain-1.26.8/bin:/usr/bin:/bin:/usr/sbin:/Users/maratkarimov/.local/bin",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOTOOLCHAIN": "local",
+        "GOWORK": "off",
+        "GOENV": "off",
+        "CGO_ENABLED": "1",
+        "GOMAXPROCS": "2",
+        "GOOS": "linux",
+        "GOARCH": "amd64",
+        "LANG": "C.UTF-8",
+        "GOTELEMETRY": "off",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "SHELL": "/bin/bash",
+        "XDG_CONFIG_HOME": "/tmp/magpie-commandcode-monorepo-20261115/isolated-home-mpn1iew1/xdg_config_home",
+        "XDG_CONFIG_DIRS": "/tmp/magpie-commandcode-monorepo-20261115/isolated-home-mpn1iew1/xdg_config_dirs",
+        "XDG_CACHE_HOME": "/tmp/magpie-commandcode-monorepo-20261115/isolated-home-mpn1iew1/xdg_cache_home",
+        "XDG_DATA_HOME": "/tmp/magpie-commandcode-monorepo-20261115/isolated-home-mpn1iew1/xdg_data_home",
+        "XDG_DATA_DIRS": "/tmp/magpie-commandcode-monorepo-20261115/isolated-home-mpn1iew1/xdg_data_dirs",
+        "XDG_STATE_HOME": "/tmp/magpie-commandcode-monorepo-20261115/isolated-home-mpn1iew1/xdg_state_home",
+        "APPDATA": "/tmp/magpie-commandcode-monorepo-20261115/isolated-home-mpn1iew1/appdata",
+        "LOCALAPPDATA": "/tmp/magpie-commandcode-monorepo-20261115/isolated-home-mpn1iew1/localappdata"
+      },
+      "sdk": "/tmp/magpie-astra-combined-20261115-v4/source",
+      "steps": [
+        {
+          "name": "build-archive",
+          "command": [
+            "python3",
+            "scripts/build.py",
+            "--output",
+            "/tmp/magpie-commandcode-monorepo-20261115/verified-archive",
+            "--sdk",
+            "/tmp/magpie-astra-combined-20261115-v4/source",
+            "--archive"
+          ],
+          "cwd": "/tmp/magpie-commandcode-monorepo-20261115/workspace/packages/commandcode",
+          "exit": 0,
+          "expected": 0,
+          "seconds": 0.8115036487579346,
+          "log": "/tmp/magpie-commandcode-monorepo-20261115/archive-results/build-archive.log",
+          "logSHA256": "b2cad1965c624577fb669eced1eb96904072c4f1d74e3a85b7957398351ff38e"
+        },
+        {
+          "name": "package",
+          "command": [
+            "python3",
+            "tests/check_package.py",
+            "/tmp/magpie-commandcode-monorepo-20261115/protocol-commandcode-0.1.3-linux-amd64.zip"
+          ],
+          "cwd": "/tmp/magpie-commandcode-monorepo-20261115/workspace/packages/commandcode",
+          "exit": 0,
+          "expected": 0,
+          "seconds": 0.06358838081359863,
+          "log": "/tmp/magpie-commandcode-monorepo-20261115/archive-results/package.log",
+          "logSHA256": "f2601ef8c05bffbc0e3b26306151b91fc29d6e4974f7fc7c94344eda57f65625"
+        }
+      ]
+    }
+  },
+  "testedInput": {
+    "packageFiles": {
+      "README.md": "19dceef27977bd1a5e47db943a97c1f7739eb82300cc4b16e762a5ab79ae1145",
+      "THIRD_PARTY_NOTICES": "dfa24952aa4e6e3a7c6a525e28249044b45d87700e408f9ee921124eb2e5dfe7",
+      "docs/OWN-MODEL-METADATA-API9.md": "046652e5dc5bc4ffab98a7c6e82061a60a0209d8cbe1a80ea9b788bfadfe8eab",
+      "docs/REFERENCE.md": "4053ad0e91aafe22d21237eb5502602635b08bada9034bf3041e8c1527bb03bb",
+      "docs/SOURCES.md": "4b84045a03aa3f2d51af40ac623fe5d09daf3585cfb53b95511e7d212f5b4a82",
+      "docs/SYSTEMONE-SDK-CONTRACT.md": "43733c25634c2811db9e705faf9eb98c02518fb6bfe70aa76bc0097bd6dbde40",
+      "docs/SYSTEMONE-SDK-FIXTURES.json": "94b35faba3bf107060c78c8abb147ca8817ef1d477d3100f36458daf9e09ed4c",
+      "docs/history/CONTRACT-PLAN.md": "5828c507fa30edb19b38c941014d027926742b3371ccfdd17ce3e5da0f3ebb0f",
+      "docs/history/EVIDENCE-COMPLETION.json": "3b2edf02f2783ab0742e96f61ca033e8c98a34c937bfd11c93edf56a27f7ce47",
+      "docs/history/EVIDENCE-SDK16.json": "0ced590268b90313e8341be67a96af8d9606e316e82bc5263aeab9847dbf6575",
+      "docs/history/EVIDENCE-SDK17.json": "65c9a115a750c3e7864979f4b061df9afb5535442ce2cc4050fee87ceab1a051",
+      "docs/history/EVIDENCE-SDK19-DECISION-OPTIONS.json": "4d5b0780c00fda9a59099518f3e2a6c4bc160b1526421214c7d2a87637c89ce4",
+      "docs/history/EVIDENCE-SDK19-FINAL-REPIN.json": "0ee31646b1c4192990b56c77fe6d9a2416a06eb4f92e55e911d93f133ed556bf",
+      "docs/history/EVIDENCE-SDK19-POSTFIX.json": "9e11737109d5c9ca991962e0448330243058a5d737d1d83c0e0843088d8088cd",
+      "docs/history/EVIDENCE-SDK19.json": "c2d7dcb1790c1eba99c86c36d3181ca669713814c3bc5fbda8f83c74f01531dd",
+      "docs/history/EVIDENCE-SYSTEMONE-REVIEW.json": "4261cddd597c3f30c61c13daca80aa39de17aecf3daca46362304ec0bf8e21d8",
+      "docs/history/EVIDENCE.json": "752af570c717dec5ec804484cd3f32145e827421049ac6ac8504196bcbd1f8cd",
+      "docs/history/HOST-CONTRACT-BLOCKER.md": "5eb1d0665a00388a62b959f17fe20e335f5a1b18a2400b594a13c2a00136a3ca",
+      "docs/history/ORIGINAL-AGENTS.md": "d4ebe9b191c1266fd575620deccd0be447abcb0595e76d699ce9dc3453374837",
+      "docs/history/PLAN.md": "174db136777ef5418cd329bea84f7a4932e58ef66d933c892f9010f198477dcf",
+      "docs/history/VERIFICATION.md": "1b516f6f523d78f7dd0679cbe2d1dbffece91b49636ea15d5ddadee8c3849d50",
+      "docs/migration/RELOCATION-PLAN.md": "10ac9d2401405d5c528eb27f60410c077de95ca801494e7abbbab795f772f9f1",
+      "docs/migration/SECONDARY-MOVES.json": "9a9f11198f8e022141730633cfcd329969b9fb3a7dd3975b068e96d753584401",
+      "docs/migration/gitignore-original.txt": "fe56da5f27d174b011ca65d2c1c9be83ca19ce1428e1594f8ed3ca037e8814ed",
+      "docs/source-lock.json": "20af867cc7142509c83282cb84b605b043969355946e97f82cd84ff16c3604fd",
+      "scripts/_web.py": "aadca76f2aadcd86c9161aa1de66b48fb2a7449e87ab5217a5f49a5ebc020fd8",
+      "scripts/build.py": "47886978a1b44e1579729ae39cb5f335dd185cce85275f27a9e029bef4ce4638",
+      "src/agent.go": "6b2de762b5298255ed4aba9b0775f6df2395fb47a3a700d92f844ccbcdb07aaf",
+      "src/agent_decision_models_test.go": "428b7eefe6afce853bda734bca93d943ab87d3a5bc370b3de3eea63fae091b85",
+      "src/agent_metadata_test.go": "f2577808349128aaf655c74d71fcf9fc4f3c0236eab787813b0647fc3cf52f16",
+      "src/agent_off_test.go": "34902e0e1dfd1fdbc01ebc8619bd02e04e589fec61c33d7aec87a7c676cab19e",
+      "src/agent_test.go": "37cb6ff3a0b58d2f4d6cefca43dbaefe9b5fa0b11c921a99ed36ce8afe1f3afd",
+      "src/audit_regression_test.go": "99afc86047ba6152dd7528bd49d3b45abcf075886a2a645610858efa408648b4",
+      "src/auth.go": "11188bc82942ce29cec792055c41f882e4d9e59faeb04d078cf6f0abd43ed467",
+      "src/auth_admission_test.go": "85489dab9d25e7cd7e17a9e324480feda881149430459d97e36b258eeced69ea",
+      "src/billing.go": "ead83e9a3e29d79a7d8e05a2f88f45e65516a428038e1e7e1edc30fe87582921",
+      "src/billing_test.go": "4bfef5ebcd089e4720a7dcf0a0a654526adca1c172dcd70825169a6ac972374a",
+      "src/cmd/manifest/main.go": "265c1a81c25d93372a7717223c8299be623060bbe6d38ab2fc4dd611d29f070e",
+      "src/cmd/native/main.go": "6a2dea7c8d08c89f4de25c18bb67a52dea65cc6cb42db78f83c9fb252757e604",
+      "src/generate.go": "19a9162365b3d0b891782c88ce443fc929eff0851dd7573c07097def631587c5",
+      "src/generate_completion_test.go": "11f130fe8da5882f79c577861201cadc58b608d9fed43d037f08399e7bfd0adb",
+      "src/generate_stream.go": "9f3e2c83e3feb4e3d5c99fdea0d0898b0eb206969a93c9c5588b7a4793e0dafc",
+      "src/generate_test.go": "b435a25bb57f53226c0fc4cf75b6d82c736f98fbebaca5e2716269b6cf6dce8c",
+      "src/go.mod": "bdaefe112a0fcc27eee52d134a07fa78e251d656baa18adf1e7204aafbdd0ed4",
+      "src/go.sum": "cde7b21c6627bd3cfc042453150e8eaf8b6c80aa2df25d96f48b038050945f03",
+      "src/google_schema.go": "3810882cd52a7d6adc50062ba17e941fcb549233a13d3142833959303ef65636",
+      "src/models.go": "6481279f73e6c1195c40251c34d4ba62da610f14ae9b3b67c2cb027c18232fb9",
+      "src/models_test.go": "bca6a27e7107113153f7ca25e4d665a6f149ad903e2c44429f875ba31df01f48",
+      "src/module.go": "2c3fc44604f7e5969895b3046ccffae7a6f9cb09a86d5e2d4633a446ed0f190c",
+      "src/module_test.go": "7837bd342a5f22e8f9bcbcda4fdd47fed8741e85e8d8ba92b05ebc844b1fd73f",
+      "src/provenance_test.go": "fb590fe5caf5bb4f4c7efe189630a438c24fc88abc213b329757db0b8c1c7691",
+      "src/provider_completion_test.go": "e8d76d677ec366641c7939efe6c0547439852a9295d4f390ecfa73ed40a8225e",
+      "src/provider_stream.go": "e8680fb5b12af5cd43a9d39de8e6f024645258cdb749daf04d1efa7717b4956f",
+      "src/request_boundaries_test.go": "f47359c1a739e88ab4401a9a5d9024b4eadcade69ac5d3438a9b7601d88e9a86",
+      "src/systemone.go": "ae0337d1c312ad9e8f925942c45387c5d626760ce399d0c18adc58aaf2eb0301",
+      "src/systemone_contract_test.go": "6bae5cc4bc2823a31a504e89f9ad3a3da96a6d93e3ba8b684609ffc697c70aa2",
+      "src/systemone_test.go": "f8daa002e93fb21b04d4a6ecaef61ef4a72329b52550ec90351120c6ff2c8c78",
+      "src/testdata/credits-goat.json": "6438361859b848a4cc0b299518f4c0522062bb01a6f5384a8b94b2703c28fdd7",
+      "src/testdata/go-models.json": "f8c476bc42c1db5eca35f4f6c905dbbb5e2a547b78a4d8af7af6b0a05ac8d0a3",
+      "src/testdata/models-2026-10-13.json": "51445d1c33222bf92a137c8070dbab532abd7afde4415cbdee3d53600143980d",
+      "src/testdata/subscriptions-goat.json": "1cd866e6b36034a87c43dcda226b5b15e8e304e5574cbb3994c35a18aa8d795c",
+      "src/transport.go": "81c7667011ff1f9a485e8c2d014ee0b279fe30cb902fe3c1ffe72492a00173e8",
+      "tests/astra_provider_probe_test.go.txt": "ab3f7b6fe973549dc009cd959e9ea669ddd1b7b5b593022db0002845f3ca3d1a",
+      "tests/auth_ui.test.cjs": "4cefc2957175fe863c9f416517f0fc90910721c13f759ae0fc0b1e9a7928630b",
+      "tests/check_host_snapshot.py": "0569166ec53bcc757245734ccf100449779712705f3751e9b6e1dc03cb67343f",
+      "tests/check_package.py": "24a67fa7512acd447e579d347b976cb42ed11dfbaabb32f8febe99b2bef046d2",
+      "tests/check_sources.py": "0ff4f30f1714394c2c52a930686f70008951c7ef06f3a2942a8a2dbcf1b52bc7",
+      "tests/harness_probe.mjs": "d0e204dd5c249737197dd1ced897bb9dccba7a2a3b9e6354031c4a2f84c67061",
+      "tests/install_package.py": "b687c8231ca0981d8ce1302af7cd2bc0dfbc6dd736712ddbc9f7cde2aa50f9b3",
+      "tests/native_agent_metadata_test.go.txt": "0f32a0f31e94a94d3411b8a869072b213016dccd673276946d9087e835437634",
+      "tests/native_gateway_test.go.txt": "54462081ad816ae5e832c49efd134d0a3a125e9c5724778299e0da373c4c3c94",
+      "tests/native_go_plan_test.go.txt": "efcaaca8f514c46fa604be7a06cd52631bbc94a673f38a894e43ae1e389f122b",
+      "tests/native_owner.go.txt": "9dec40bdd2adc06043a3c941fa4f0aafd301c5e0fc444ac68f3104f4f0ce223d",
+      "tests/native_token_count_test.go.txt": "63054bb46f06509c21c84a060535849de0e3b670a60d1ef1229bd4186f2ecaf4",
+      "tests/replay_native.py": "b59e7c0347481b76ca9d6f1d51f77f99cf206f5d2df8521e2031713122be8e8e",
+      "tests/run_completion.py": "5f72fe27f2a331d74aa4fcbce5a36951b142dcbd0c24e193e23d4f6772766e67",
+      "tests/run_host_completion.py": "b276bca81741ea7002b5dfdeaace45891182758852fbde7250ed92b1bca90446",
+      "tests/systemone_donor.mjs": "e543084106c657f95e1efaedf4853c0f0d4b2dc3fba6003b4d4708e59eb2bad5",
+      "tests/typecheck.py": "5f418c6e76262c6f0bb2eb8308db8e8d7a34728379c2080a5038d0d5aeefa546",
+      "web/app.ts": "b79d8ded93394ae3e79e43f30880d7a40c345f35d3414c6f3124c4ca27262e42",
+      "web/index.html": "b3278e4f3a5e2cb598bd99e71ea1e774411d1f50ee2676b09a8ddf57cc6aa7bb",
+      "web/package.json": "3bd13f0f97ee5a9e9afeca83a975fc377c4b0f9de5c3277af181b86f9758c348",
+      "web/sdk-ui.d.ts": "7fffbe183aa52626d48c8993f7c807ea0904158dbbd004e5c3ec4fe8c6385c0e"
+    },
+    "sharedHelperSHA256": "1f386b59297faeddfa9b1c1f0b8d0dd25954dbe7322de161b62f32c99060442e",
+    "sdkSource": "609a7b5a1bfd8da599639900e19a2635296b5f5d1ce85bcbd8df0df702d5b493",
+    "sourceModUnchanged": true
+  },
+  "defaultRawDirectory": "/tmp/magpie-commandcode-monorepo-20261115/distribution",
+  "defaultCreatedNoArchive": true,
+  "sharedRootDistributionValidatorPassed": true,
+  "emittedAppMatchesAuditedArtifact": true,
+  "emittedAppSHA256": "11bce8b0f2043640a42b5ab8e2ec41fd9a5482076eb7eca1cf0f62c72b6aa594",
+  "archiveResult": {
+    "standalonePackage": true,
+    "files": 17,
+    "sources": 4,
+    "sourceLockSHA256": "20af867cc7142509c83282cb84b605b043969355946e97f82cd84ff16c3604fd",
+    "packageSHA256": "636ac82495624025d4ddae19b1f86bb0db932d102c399eb41e5e358af9a59292"
+  },
+  "nativeOwnerReplayRun": false,
+  "liveVendorCalls": false,
+  "browserRuntimeRerun": false,
+  "namespaceGuard": {
+    "probe": [
+      "external denied",
+      "assigned local address allowed"
+    ],
+    "exit": 0,
+    "host": "usbox",
+    "guard": "per-descendant seccomp; loopback and exact assigned local addresses",
+    "user_namespace": false,
+    "uid": 1000,
+    "assigned_addresses": [
+      "127.0.0.1",
+      "192.0.2.1",
+      "::1",
+      "fe80::f8ed:c1ff:fe02:663a"
+    ],
+    "events": [
+      {
+        "syscall": 42,
+        "allowed": false,
+        "destination": "203.0.113.1"
+      },
+      {
+        "syscall": 42,
+        "allowed": true,
+        "destination": "192.0.2.1"
+      }
+    ],
+    "kernel_live_address_race_limit": "Not a sandbox against adversarial sockaddr mutation",
+    "root_owner": 65534
+  }
+}

@@ -1,0 +1,291 @@
+{
+  "schema": 1,
+  "date": "2026-11-14",
+  "status": "historical pre-parent-fix API1.9 observations; current scoped acceptance is in EVIDENCE-SDK19-POSTFIX.json",
+  "supersededForCurrentMetadataAcceptanceBy": "verify/EVIDENCE-SDK19-POSTFIX.json",
+  "scope": "AgentModelMetadata and the default standalone CommandCode package; no broad host acceptance, live activation or host commit",
+  "evidenceRoot": "usbox:/tmp/magpie-model-metadata.INRSn51E",
+  "module": {
+    "baseCommit": "76079a4a2995148191219fc9683e5c50951df671",
+    "version": "0.1.2",
+    "minimumSDK": "1.9",
+    "systemOneOperationFloor": "1.7",
+    "nativeABI": 1,
+    "defaultCapabilities": [
+      "Provider API Chat/Responses/Messages",
+      "native Go-plan",
+      "Jev/SystemOne decision",
+      "auth, models and usage",
+      "checked agent configuration",
+      "TS page"
+    ],
+    "additionalRuntimePlugin": false,
+    "reviewExecutionSourceSHA256": "c58d146f193a6cee4e1999829838d35a8e5dfc468460322cf08dfa70c698236f",
+    "actualExecutionSourceSHA256": "970806b130c556dbfaf24d0194b1a1123b9059cf1c66922a3666023345c0b7dd",
+    "actualInputInventory": "magpie-commandcode-sdk17-metadata-shared2.json",
+    "laterDocumentationOutsideExecutionFingerprint": [
+      "OWN-MODEL-METADATA-API9.md",
+      "PLAN.md",
+      "VERIFICATION.md",
+      "verify/EVIDENCE-SDK19.json"
+    ],
+    "offlineTransitiveSDKDependency": {
+      "module": "golang.org/x/sys",
+      "version": "v0.49.0",
+      "origin": "unchanged dependency and checksums from the pinned shared host go.mod/go.sum",
+      "downloaded": false
+    }
+  },
+  "host": {
+    "baseCommitOnly": "ae957e5a8a77553a6cf6f484c8b58a69393f3887",
+    "baseTreeOnly": "958fdab666e41dc35c41a8a061b76dba88c67aeb",
+    "ownedFilesMatchingActualCapture": [
+      "internal/agent/agent.go",
+      "internal/agent/route.go",
+      "internal/agent/extension_actions.go",
+      "internal/agent/extension_binding_store.go",
+      "internal/agent/extension_controller.go",
+      "internal/agent/extension_controller_sync.go",
+      "internal/agent/extension_ordinary_test.go",
+      "internal/agent/extension_model_metadata_test.go",
+      "internal/agent/testdata/modelmetadataworker/main.go",
+      "pkg/extension/agent_model_metadata.go",
+      "pkg/extension/agent_model_metadata_test.go",
+      "sdk/js/agent-model-metadata.js",
+      "sdk/js/agent-model-metadata.d.ts",
+      "sdk/js/test/agent-model-metadata.test.js",
+      "sdk/js/test/agent-model-metadata-types.ts",
+      "docs/subsystems/extension-agents-sessions.md"
+    ],
+    "actual": {
+      "inventory": "shared-api9-1.json",
+      "sourceIdentitySHA256": "0f712e7774eb73c09195e5f9be96c7cc8a0b7cc42f2f58f41278f822e5519356",
+      "archiveSHA256": "65764b96458c7d3a15155a63c4ac826d33558dc9b5fbb08d2c1fcf24ab5ce7db",
+      "files": 10702,
+      "overlaysOrProposedHunks": false,
+      "sourceUnchanged": true
+    },
+    "review": {
+      "inventory": "candidate3.json",
+      "sourceIdentitySHA256": "85019ef2c2e119eb8137731112792c4acc61ddb8fe66e648409c98b9bdafc0a6",
+      "archiveSHA256": "b89a76621c918214ea08208a6c4e1c1aab0c1b88b5945d4970acd19d820887dc",
+      "proposedParentPreservationHunksInArchiveOnly": true,
+      "actualConsolidatedAcceptance": false
+    },
+    "finalParentCommit": null,
+    "finalParentTree": null,
+    "hostSharedWritesStagingOrCommit": false
+  },
+  "discoveryEffortFloor": {
+    "missingOrNull": "unknown for every supported SDK minor",
+    "emptyArray": "known no selectable levels, with no new floor",
+    "newAgentOptionMetadataAndHelper": "requires agent-wiring and negotiated API minor >= 9",
+    "testedJSMinors": [0, 8, 9],
+    "legacyAgentOptions": "API <= 1.8 receives no maxOutput, efforts, defaultEffort or priorModels"
+  },
+  "environment": {
+    "host": "usbox",
+    "go": "go1.27.3 linux/amd64",
+    "node": "v22.23.4",
+    "typescript": "7.0.2",
+    "isolatedHomeAndXDG": true,
+    "initialUserNamespaceForNative": true,
+    "network": "existing trusted-fixture descendant loopback seccomp guard; no live vendor requests",
+    "GOPATH": "/Users/maratkarimov/go",
+    "GOMODCACHE": "/Users/maratkarimov/go/pkg/mod",
+    "GOCACHE": "/Users/maratkarimov/.cache/go-build",
+    "GOPROXY": "off",
+    "GOSUMDB": "off",
+    "GOTOOLCHAIN": "local",
+    "GOWORK": "off",
+    "GOFLAGS": "-mod=readonly -p=4",
+    "GOMAXPROCS": "4"
+  },
+  "actualSharedGo": {
+    "evidence": "proof-shared-api9-1/evidence.json",
+    "sdkHelper": {
+      "command": "go test -race -tags nogui ./pkg/extension -run ^TestAgentModelMetadata -count=1 -json -timeout=300s",
+      "exit": 1,
+      "counts": {"pass": 12, "fail": 1, "skip": 0},
+      "failure": "SDK discovery erased explicit effort knowledge: empty Model.Efforts omitted on JSON wire",
+      "log": "proof-shared-api9-1/sdk.log",
+      "logSHA256": "9552389e1d2f74634c726339ded558307ccb81cad370f77a0bfa224174fcaa25"
+    },
+    "ordinaryAgentRace20": {
+      "command": "go test -race -tags nogui ./internal/agent -run ^Test(ExtensionAgentModelMetadata.*|AgentModelMetadata.*|ExtensionAgentNoopSync.*)$ -count=20 -json -timeout=900s",
+      "exit": 1,
+      "counts": {"pass": 100, "fail": 20, "skip": 0},
+      "failure": "magpie/metadata/empty lost effective efforts: got null, want []",
+      "log": "proof-shared-api9-1/agent.log",
+      "logSHA256": "a3bfa80e007f7f1325d6309b6593df1cd3362da527a56f03060849fccbf1485c"
+    },
+    "format": {"exit": 0, "emptyDiff": true},
+    "scopedLinuxVet": {"exit": 0},
+    "linuxNoguiMainBuild": {"exit": 0},
+    "parentOwnedRequiredHunks": [
+      "pkg/extension/types.go: Model.Efforts JSON tag efforts without omitempty",
+      "internal/provider/models.go: effortsOf tests m.Efforts != nil instead of len(m.Efforts) > 0"
+    ]
+  },
+  "actualSharedJS": {
+    "evidence": "proof-sdk-package-sdk-public2/evidence.json",
+    "sourceIdentitySHA256": "d8d06a36b775230a80dbb519d3603a4c0fba35d889125fad20230bacdfcd657b",
+    "archiveSHA256": "d8185b13d8298b92b668f3aab8af390efa99a729ff0eea6e214c5917fbc8a254",
+    "checks": {
+      "node": {"exit": 0, "pass": 5, "logSHA256": "a322ee6ef1aa4a775cf9f333b6ef95bd9958744db0221dd990acb634c31b2d70"},
+      "bun": {"exit": 0, "pass": 5, "logSHA256": "c31a5fd1425e1f089595d59612d8aaa2833c7caa1277d525bd6e920a3b6dda14"},
+      "strictTypeScript": {"exit": 0},
+      "offlineNPMPack": {"exit": 0},
+      "extractedPackageRuntimeExports": {"exit": 0},
+      "extractedPackageTypes": {"exit": 0}
+    },
+    "sourceUnchanged": true
+  },
+  "actualSharedModule": {
+    "evidence": "module-metadata-shared2/evidence.json",
+    "sourceIdentitySHA256": "970806b130c556dbfaf24d0194b1a1123b9059cf1c66922a3666023345c0b7dd",
+    "hostSourceIdentitySHA256": "0f712e7774eb73c09195e5f9be96c7cc8a0b7cc42f2f58f41278f822e5519356",
+    "race20": {
+      "exit": 0,
+      "counts": {"pass": 1420, "fail": 0, "skip": 0},
+      "logSHA256": "bc4824e2878e3d1f623ac86bacf719a2da4b797ea2df6039c3e8c98392ea8468"
+    },
+    "installedNativeOrdinaryDecisionsRace20": {
+      "exit": 0,
+      "counts": {"pass": 20, "fail": 0, "skip": 0},
+      "logSHA256": "de3971f26e107fe5bf493ecbcf19a34b4062f39ab545244c7f947f61ec4dbd16"
+    },
+    "installedNativeOrdinaryAgentRace20": {
+      "exit": 1,
+      "counts": {"pass": 0, "fail": 20, "skip": 0},
+      "failure": "native metadata invented unknown facts or lost the default/no-level distinction",
+      "logSHA256": "13c48c3c9981ef972ed0ff3c7a2d0b21ccd62dc2d6e87675d64a9436e837fbbe",
+      "parentPreservationHunksPending": true
+    },
+    "nativeOwner": {
+      "exit": 0,
+      "vendorCalls": 0,
+      "logSHA256": "638a06bd83f199b21c425b98f8ab5b8b46e9ca1976949c423af6dec90b2234b1"
+    },
+    "formatVetBuildPythonStrictTSCSharedAndPackage": "all exit 0; format output empty",
+    "pinnedSourceHashes": 56,
+    "unchangedDonorFixtureDispatches": 7,
+    "artifact": {
+      "path": "module-metadata-shared2/dist/protocol-commandcode-0.1.2-linux-amd64.zip",
+      "files": 14,
+      "sha256": "911912fc2335cfce8f6dc0fd639825ec55d5e2ff195ee110688c7297c85f949c",
+      "scope": "actual SDK snapshot checkpoint, blocked for final metadata acceptance; later status docs outside this ZIP"
+    },
+    "sourceUnchanged": true,
+    "wholeGateExit": 1,
+    "wholeGateGreen": false
+  },
+  "checkpointPackage": {
+    "evidence": "module-metadata-checkpoint3/evidence.json",
+    "evidenceSHA256": "a6ff5829d7ca339e6c004893266a3c53f3a35ad3e466d7f4fc92027f3ffa921c",
+    "moduleSourceIdentitySHA256": "99ac3613eba78342eb6870cb8aba33a5460911277dab74965af11f76547b4d25",
+    "sourceLockSHA256": "69060c2e8aaf4e526f11dba2d26d662de31d5f609e60938caa8ff07c93e77cc2",
+    "artifact": "module-metadata-checkpoint3/dist/protocol-commandcode-0.1.2-linux-amd64.zip",
+    "artifactSHA256": "26cc85fc657d8e9af428d1f8cbff168d64e00a8b129d4eca6304617ae063219d",
+    "files": 14,
+    "provenanceTest": {"exit": 0},
+    "sourceProvenance": {"exit": 0},
+    "packageBuild": {"exit": 0},
+    "packageVerify": {"exit": 0},
+    "runtimeInputsUnchangedSinceActualRace20": true,
+    "evidenceLinksVerifiedAgainstActualRecords": true,
+    "scope": "current packaged docs and provenance; SDK agent metadata acceptance remains blocked",
+    "laterRepositoryOnlyEvidence": "this checkpointPackage entry was added after capture; verify/EVIDENCE-SDK19.json is not included in the ZIP"
+  },
+  "reviewProof": {
+    "module": {
+      "evidence": "module-metadata-candidate2/evidence.json",
+      "race20": {
+        "exit": 0,
+        "counts": {"pass": 1420, "fail": 0, "skip": 0},
+        "logSHA256": "1c32b7213af45bcafc4bc4b39faf557f72274fb7ce256193fb5d476f74c3cbbf"
+      },
+      "installedNativeOrdinaryAgentRace20": {
+        "exit": 0,
+        "counts": {"pass": 20, "fail": 0, "skip": 0},
+        "logSHA256": "0e0591cd959fa760208b8416cda423f19961479f2b11ec8dc91d7a49e63b5221"
+      },
+      "installedNativeOrdinaryDecisionsRace20": {
+        "exit": 0,
+        "counts": {"pass": 20, "fail": 0, "skip": 0},
+        "logSHA256": "2fbd6b0fbdd27a148b6b50376090e883f16730eda6ebc93e6f83285ba6ee7669"
+      },
+      "nativeOwner": {
+        "exit": 0,
+        "vendorCalls": 0,
+        "logSHA256": "638a06bd83f199b21c425b98f8ab5b8b46e9ca1976949c423af6dec90b2234b1",
+        "scope": "one native module; Provider API protocols; Go-plan; quota revisions 0/1/2 and dirty/unknown/fresh fences; SystemOne; action refusal; synthetic CLI import; checked config; disable and account deletion"
+      },
+      "formatVetBuildPythonStrictTSCSharedAndPackage": "all exit 0; format output empty",
+      "pinnedSourceHashes": 56,
+      "unchangedDonorFixtureDispatches": 7
+    },
+    "hostMetadata": {
+      "ordinaryAgentRace20": {"evidence": "proof-recovery1/agent.json", "pass": 120, "fail": 0, "skip": 0},
+      "sdkHelperRace20": {"log": "proof-candidate2/sdk.log", "pass": 260, "fail": 0, "skip": 0},
+      "scopedVet": ["linux", "darwin", "windows"],
+      "linuxNoguiMainBuild": "exit 0",
+      "projectionMutant": {
+        "evidence": "proof-candidate3/evidence.json",
+        "exit": 1,
+        "compilingBehavioralFailure": "lost effective maxOutput",
+        "logSHA256": "9ece5fa70531a4a78239c7962a7bbece7571643cccb85864379a01e1a3ee328f",
+        "restoredExit": 0
+      }
+    },
+    "moduleCausalNegatives": {
+      "evidence": "module-metadata-candidate2/negatives/evidence.json",
+      "effectiveOutputMappingRemoved": "compiled behavioral FAIL",
+      "acceptedReceiptRemoved": "compiled behavioral FAIL",
+      "JevGrantedChat": "compiled behavioral FAIL",
+      "defaultDecisionOperationRemovedFromRehashedZIP": "semantic validator FAIL",
+      "restoredExit": 0,
+      "positiveSourceUnchanged": true
+    },
+    "artifact": {
+      "path": "module-metadata-candidate2/dist/protocol-commandcode-0.1.2-linux-amd64.zip",
+      "files": 14,
+      "sha256": "5a607fd2330f1d87b12e1709c0a6deb5bc5254eddb61d3db4c487465f0023a09",
+      "scope": "review artifact; proposed preservation hunks and pending final-parent provenance"
+    }
+  },
+  "committedCommonbaseReplay": {
+    "sourceIdentitySHA256": "817ddef9dda9d45bbec4f409393cb6c303af072a8e6992ed2f2b691840559166",
+    "checkinActivationProviderAndEmptyCore": {
+      "evidence": "proof-replay/evidence.json",
+      "counts": {"pass": 580, "fail": 0, "skip": 0},
+      "sdkCheckinPass": 160,
+      "leasePass": 80,
+      "providerPass": 280,
+      "gatewayPass": 60
+    },
+    "fullExecAndNativeDecisionsRace20": {
+      "evidence": "proof-recovery1/decisions.json",
+      "counts": {"pass": 660, "fail": 0, "skip": 0},
+      "seconds": 538.843,
+      "logSHA256": "207da2f1ed9f929546a8d6a838c162b4b9fdf2d6d9f42ac7c3284d3111afb710"
+    }
+  },
+  "preservedFailures": [
+    {"path": "proof-red/metadata.log", "cause": "old projection; 1 PASS and 2 compiling behavioral FAIL"},
+    {"path": "module-metadata-red/test.log", "cause": "old CommandCode mapping; 66 PASS and 5 compiling behavioral FAIL"},
+    {"path": "proof-candidate2/agent.log", "cause": "filesystem exhaustion; recovery separately recorded"},
+    {"path": "proof-replay/decisions.log", "cause": "filesystem exhaustion; 634 PASS and 4 FAIL; recovery separately recorded"},
+    {"path": "proof-sdk-package-sdk-public1/node.log", "cause": "own minor-0 fixture incorrectly supplied API1.1 compatibility; fixture fixed and actual shared sdk-public2 passed"},
+    {"path": "module-metadata-shared1/race20.log", "cause": "1420 runtime PASS but native entry build failed on missing checksum for existing host x/sys dependency; not a green suite"},
+    {"path": "proof-actual-sdk-floor1/evidence.json", "cause": "actual parent frozen tree 82a2c7e570229b189ca48951d4bcdfa434daf355 loses explicit empty Model.Efforts; 12 PASS and 1 FAIL"}
+  ],
+  "remainingLimits": [
+    "Actual shared Go effort-preservation regressions must pass after the two parent-owned hunks.",
+    "Exact final parent commit/tree provenance, corresponding package rebuild and final replay remain pending.",
+    "No live vendor, real browser approval, real CLI credential import or actual CommandCode continuation is claimed.",
+    "GUI rendering and non-Linux native execution are unverified.",
+    "Native Go-plan accepts Chat only and refuses unsupported controls; native pause_turn is uncertain without automatic replay.",
+    "Google nested-reference schema normalization remains deferred; native history is not recovered or advertised."
+  ]
+}

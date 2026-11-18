@@ -1,0 +1,112 @@
+{
+  "schema": 1,
+  "date": "2026-11-14",
+  "scope": "bounded CommandCode installed-native repin to the supplied physical host tree and binary",
+  "status": "bounded installed native replay and final default package passed; overall release acceptance remains parent-owned",
+  "module": {
+    "id": "protocol-commandcode",
+    "version": "0.1.2",
+    "sdkMinimum": "1.9",
+    "systemOneOperationMinimum": "1.7",
+    "nativeABI": 1,
+    "baseCommit": "adea059ed7af4a21ccbbacd1c2696cda378333bd",
+    "runtimeCodeChanged": false,
+    "nativeSnapshotSourceSHA256": "e2e2ee5156d7b3af44217c0e0ef45c576a8d9303e13151f2de9cd6bb40a48f3f",
+    "nativeSnapshotArchiveSHA256": "96619c179e1c23d45f63e018b08825f026f4dde74782364a36ff0d9ed2f98d6c",
+    "laterStatusDocumentsOutsideNativeSnapshot": [
+      "PLAN.md",
+      "VERIFICATION.md",
+      "OWN-MODEL-METADATA-API9.md",
+      "verify/EVIDENCE-SDK19-FINAL-REPIN.json"
+    ]
+  },
+  "host": {
+    "baseCommit": "c11acbc2bebec1fb213ef562900d35188cdf55fe",
+    "baseCommitTree": "87009a6040909fc43b036d1d775dcaf03a7038a7",
+    "physicalTree": "8fe78ab9df13d733d61462eacce19bff523c1e58",
+    "independentlyRecomputedPhysicalTree": "8fe78ab9df13d733d61462eacce19bff523c1e58",
+    "revisionKind": "frozen-physical-tree",
+    "baseCommitIdentifiesPhysicalBytes": false,
+    "source": "usbox:/tmp/magpie-sdk-final-base-tvn9tc_o/source",
+    "fileCount": 10758,
+    "sourceIdentitySHA256": "c00adb61b92584a246817fe37e37d609d7849b81904f89376388b1f0d0ae2fd2",
+    "archiveSHA256": "01117ce6f6f8842d16fcd81224dad1795020b3b5c4d69b9145d562fd88171e37",
+    "sourceReceiptSHA256": "7ce4753ff79f3493acb4f61c1826d3f52145f8b156537ac61f493b39c9a50cc6",
+    "binary": "usbox:/tmp/magpie-sdk-final-base-tvn9tc_o/magpie",
+    "binarySHA256": "c018c44332ff9238779d1d01340dfd751209c2c694942fd0406e4d6a3c96cc86",
+    "sourceAndBinaryMatchedBeforeAndAfter": true,
+    "pinnedSDKFilesUnchangedFromHistoricalHost": 50,
+    "historicalAcceptedCommit": "46756a48c9c9f204a8369638dc63cbcb83d02031",
+    "historicalAcceptedTree": "db40ddbf8944b54f9f689d444644af4c3bc76881",
+    "historicalEvidence": "verify/EVIDENCE-SDK19-DECISION-OPTIONS.json"
+  },
+  "environment": {
+    "server": "usbox",
+    "isolatedHomeAndXDG": true,
+    "pinnedExistingOfflineCaches": true,
+    "initialUserNamespace": true,
+    "descendantNetworkGuardSHA256": "09f2a8d3311566d21dafc87c118ef8d5e07cfba88f78dba3114e4cf124b2b57e",
+    "externalDeniedAndAssignedLocalAllowedCalibration": true,
+    "onlyDeniedDestinationWasCalibration203_0_113_1": true,
+    "liveVendorCalls": 0,
+    "sharedHostWritesOrStaging": false,
+    "broadHostOrModuleDomainSuite": false,
+    "liveActivation": false
+  },
+  "remoteRoot": "usbox:/tmp/magpie-commandcode-final-repin.YJ06ocvO",
+  "nativeProof": {
+    "receipt": "proof-native/evidence.json",
+    "receiptSHA256": "2f23d441aad72fc7765fb3f386911212b2b95bcaf3a4e224095fe794a4b1bbe2",
+    "runnerSHA256": "382c443c4aa9b4d8cee6ca3b95d00c88a5201e5bbd9c70a97ffae26e82af777c",
+    "completeRunExit": 0,
+    "provenanceRegression": {"exit": 0, "pass": 1, "fail": 0, "skip": 0},
+    "pinnedSourceHashes": 61,
+    "sourceProvenanceExit": 0,
+    "packageBuildAndStrictTypesExit": 0,
+    "packageValidationExit": 0,
+    "suppliedBinaryInstallListInspectExit": 0,
+    "nativeAgentRace20": {
+      "exit": 0, "pass": 20, "fail": 0, "skip": 0,
+      "logSHA256": "d3f4d0da95d83a3cc2560acd7cb1af93ae471026f215f50e919cdc95093b512a"
+    },
+    "nativeSystemOneAccountingRace20": {
+      "exit": 0, "pass": 20, "fail": 0, "skip": 0,
+      "logSHA256": "01c05324d82f2a4732d1dc725e636489a941612a69b59e371bf53e38e4586fc9"
+    },
+    "nativeOwnerAndQuotaExit": 0,
+    "nativeOwnerLogSHA256": "638a06bd83f199b21c425b98f8ab5b8b46e9ca1976949c423af6dec90b2234b1",
+    "hostUsageRevisions": ["0", "1", "2"],
+    "dirtyAndUnknownInferenceFenced": true,
+    "freshOrdinaryQuotaAcknowledged": true,
+    "ledgerObserverRecentAndTraceAgree": true,
+    "defaultZip": "proof-native/dist/protocol-commandcode-0.1.2-linux-amd64.zip",
+    "defaultZipSHA256": "c25eb7bcf101e9676d0685394a3c783c40477734426da3149d94fb88fd54c2e6",
+    "nativeControllerSHA256": "4c272bd60ea9ab134bff6c6a38a9e64306c2a42c9b3272c551ae95f13e65774b"
+  },
+  "finalPackage": {
+    "receipt": "proof-final/evidence.json",
+    "receiptSHA256": "a9114b6108d39da1d27ac8b1a8f8ae9aac6338d98a80d2fcf99dcecdca57cb16",
+    "runnerSHA256": "1996bae039701d414a3c724e4fba0254f07b8e0ad5fbe7a1497911bc2321673c",
+    "sourceSHA256": "06c02c5a14e575e056e3f92510e56468cb2eedf4cc2df43b9e099dfaca88b19a",
+    "archiveSHA256": "9e691746fa064bc519458d1cf2289cbdf6a7fb42e3db6baff0fa6bb83b455dd5",
+    "completeRunExit": 0,
+    "provenanceRegression": {"exit": 0, "pass": 1, "fail": 0, "skip": 0},
+    "sourceProvenanceExit": 0,
+    "packageBuildAndStrictTypesExit": 0,
+    "packageValidationExit": 0,
+    "runtimePackageBytesMatchNativeReplay": true,
+    "changedPackagedFilesSinceNativeReplay": ["OWN-MODEL-METADATA-API9.md"],
+    "defaultZip": "proof-final/dist/protocol-commandcode-0.1.2-linux-amd64.zip",
+    "defaultZipSHA256": "cf25e112850373c8d144b5157ac65074d53b1c60b1e583549c8ba6a140121334",
+    "nativeControllerSHA256": "4c272bd60ea9ab134bff6c6a38a9e64306c2a42c9b3272c551ae95f13e65774b",
+    "completionRecordedAfterFinalSourceCapture": true,
+    "thisReceiptIsNotPartOfTheDefaultPackage": true
+  },
+  "limits": [
+    "The supplied binary executes installation/listing/inspection; native gateway, agent and quota probes compile the exact physical source with test-only overlays.",
+    "Historical full-domain and causal-negative receipts retain their original source identities and were not rerun.",
+    "No recovered CommandCode decision-config schema; discovery does not authorize guessed vendor settings or conversational Jev.",
+    "Google nested-reference tool-schema normalization remains deferred and native history is not advertised.",
+    "No live vendor, installed CommandCode client, browser approval, non-Linux native runtime, broad release acceptance or activation is claimed."
+  ]
+}

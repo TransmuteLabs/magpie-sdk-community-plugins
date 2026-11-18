@@ -1,0 +1,521 @@
+{
+  "schema": 1,
+  "date": "2026-11-14",
+  "kind": "generated after final capture; outside the build inputs and distribution to avoid self-reference",
+  "plugin": {
+    "id": "devin-inbound",
+    "version": "0.8.0",
+    "sdkMinimum": "1.9",
+    "nativeABI": 1,
+    "platform": "linux/amd64",
+    "keepAliveDefault": false
+  },
+  "package": {
+    "path": "/tmp/magpie-devin-final-fixture-20261114.3miL8Zfd/release221/devin-inbound-0.8.0-linux-amd64.tar.gz",
+    "sha256": "f38a8d230ec0ac494c6217470e1d68bff4be4fb23b634e11f0735e6c1053393d",
+    "bytes": 6295227,
+    "localPath": "dist/2026-11-14-final-hot-221/devin-inbound-0.8.0-linux-amd64.tar.gz",
+    "files": {
+      "CACHE-KEEPALIVE-EVIDENCE.md": "0fb88d95c1fa49e4c1fa3d001cd1a98ae4842eca2349ea0008c4e5ca2543af40",
+      "CACHE-KEEPALIVE.md": "a292c6fe6e9b9b9511fd9ad38d0a6e02c16cf9609fd2049b15ac3db64a775c64",
+      "DELIVERY-EVIDENCE.md": "e3a42cbe9323d30ecddcf259d7d49ad54a286aca8eb8503c17ae97b07278ebf2",
+      "DONOR-MATRIX.md": "6632bdc077a83ad0f4a41d42ffcc9996d2d774f6da08cc6a1441f52ee1d30efc",
+      "EXECUTION-FACTS.md": "fc322a8bba68132a0a219aff2bb53b81970e8aa7b8f11bdd61328d5c76886970",
+      "GEMINI-SIGNATURE-EVIDENCE.md": "2e17cec844ee745c29e56a28e9663e86c23b88384362114dffb36bd701e036dd",
+      "LICENSE": "79d2c8444715d4bc453ec4f8a0aaf2051a4c1ee5ac08f5bd2e5848aef87c7572",
+      "SOURCES.md": "12511aeb6e2cac0c1e8ccb8c1e241e69f1be184c2c837c4b66282ce2b0ce956a",
+      "magpie-plugin.json": "b51e3ce2b62734771c5b8268071aecf8824b2e3f6deaa18499637fc3e09a6e94",
+      "plugin.so": "017ebcccec33c936334853b6efbca9991e697d657bef620bbc296991040f3402",
+      "source-lock.json": "85277b745bd3c923bb47015f762648467a1aa908b9721646d7cddcce57504b09"
+    }
+  },
+  "libraryByteIdenticalToInstalled": true,
+  "manifestByteIdenticalToInstalled": true,
+  "finalCapture": {
+    "module": {
+      "baseCommit": "da599905434f95ae725a6468b86efad5dd5bff8d",
+      "sourceCommit": null,
+      "archiveSHA256": "d5d8923f0917e98bc5da3424a7ce7089b8d358ef3fd3cd6407dce93256e16428",
+      "excludedGeneratedInputs": [
+        "FINAL-PACKAGE-RECEIPT.json"
+      ],
+      "sourceSHA256": "05c438a7e3c009cd9018885bb4e5a827d1184786c51916948000f1baf2735a6b"
+    },
+    "magpie": {
+      "baseCommit": "98f47d5f14914d5ab8999bafbf6b47918df85e55",
+      "sourceCommit": null,
+      "archiveSHA256": "b06b8639f21e71c9f5f7d8273aa38cc35b72452b316f1905d0028045dc5e7f63",
+      "excludedGeneratedInputs": [],
+      "sourceSHA256": "36f73768a1335fbf1210fd7033528031f70f2de72b3b182f57af7b0a954969b5"
+    }
+  },
+  "installedImplementationCapture": {
+    "baseCommit": "da599905434f95ae725a6468b86efad5dd5bff8d",
+    "sourceCommit": null,
+    "archiveSHA256": "20e6cbe477e7b54d7a7126cdf96fd4c61cfc1148c91ed668bff8c42890d5d0f9",
+    "sourceSHA256": "925c2d4e053c593a81e6da19be409d591bfec2754470f8919d4114dd794241c9"
+  },
+  "host": {
+    "acceptedCommit": "d5b098d8183e88ab9fee1da0170d1c90b9590822",
+    "acceptedTree": "11c2b9dd3d514bcc76c338f9ae680552319494dc",
+    "acceptedSource": "usbox:/tmp/magpie-sdk-final-base-23ttp2l1/source",
+    "acceptedSourceReceiptSHA256": "450ac8c1fb79389904c782d018e0612cafad9e14409873a3a21254e6e4d30324",
+    "binaryBuildTree": "8fe78ab9df13d733d61462eacce19bff523c1e58",
+    "binary": "usbox:/tmp/magpie-sdk-final-base-tvn9tc_o/magpie",
+    "binarySHA256": "c018c44332ff9238779d1d01340dfd751209c2c694942fd0406e4d6a3c96cc86",
+    "binaryBuildSourceReceiptSHA256": "7ce4753ff79f3493acb4f61c1826d3f52145f8b156537ac61f493b39c9a50cc6",
+    "coreBuildReceiptSHA256": "baf13fcc69133298f1b44a3d60e76744288782658ad43f561ddece1a6e6a9e77",
+    "binaryToAcceptedOnlyTestChanges": [
+      "internal/cli/settings_parity_test.go",
+      "internal/provider/extension_account_tasks_catalog_test.go"
+    ],
+    "productionOverlay": false
+  },
+  "gates": {
+    "red/fixture-unit": {
+      "exit": 1,
+      "seconds": 0.078,
+      "receiptSHA256": "a72699056bb7782eaa3506a6bf7e73fcb07a4df384c3e72df65fc72ab0d0b5e7",
+      "logSHA256": "2a0e21909b74bf23f4696290151fc8bd32f8fd8afde728158d9e00d1827b8e0b",
+      "networkReceiptSHA256": "55ba8c5dbef5d666153ddb768f0615f37ffd73c2c23bd6a4500e370915a80e81",
+      "sourcesUnchanged": true,
+      "homeRemoved": true
+    },
+    "red/legacy-parser": {
+      "exit": 1,
+      "seconds": 0.085,
+      "receiptSHA256": "7a61520d98e149b3f6760003c14b1486c30f92f326a29f119e83f24d9d3c7972",
+      "logSHA256": "01840f15c79abbaa3a2c0b17ad5d334a4d889bba2a5b5ef0f410617cf49dd742",
+      "networkReceiptSHA256": "55ba8c5dbef5d666153ddb768f0615f37ffd73c2c23bd6a4500e370915a80e81",
+      "sourcesUnchanged": true,
+      "homeRemoved": true
+    },
+    "green/build": {
+      "exit": 0,
+      "seconds": 0.702,
+      "receiptSHA256": "fd5e2c747abcdd06151b9a094a7a18f95cca86fd0b1a52289fa2aa754a5b1997",
+      "logSHA256": "97adccb1588a220719b8fb20496d589b963a3063c15fca2dd7f94b15190d330c",
+      "networkReceiptSHA256": "47404cc934d4026f9e9a3577d55aff126d4da335ecbee3353da7ad626226acf2",
+      "sourcesUnchanged": true,
+      "homeRemoved": true
+    },
+    "green/fixture-unit-final": {
+      "exit": 0,
+      "seconds": 0.086,
+      "receiptSHA256": "1e818fa69657c7279edc55b611b43253b389d39047c4620d6145fd1c4f351854",
+      "logSHA256": "1bd6daf5661d17cdde83357e0bfc2e376820baec559a299699c588f36b4267e3",
+      "networkReceiptSHA256": "47404cc934d4026f9e9a3577d55aff126d4da335ecbee3353da7ad626226acf2",
+      "sourcesUnchanged": true,
+      "homeRemoved": true
+    },
+    "green/gemini": {
+      "exit": 0,
+      "seconds": 16.047,
+      "receiptSHA256": "5a7d8e5ef29b108b3fcfea426e771784c3f13ff53b12cb38978ed5d36f416d17",
+      "logSHA256": "c2fad1cedcaff9e8c60e281b33a7df0f3ee25d9d3552d4c665c4bf5ee8ae3b57",
+      "networkReceiptSHA256": "e94ac995f14a97466afd86633794a64838fd533e6b948e8bfcd537d9862b812a",
+      "sourcesUnchanged": true,
+      "homeRemoved": true
+    },
+    "green/hot1": {
+      "exit": 0,
+      "seconds": 44.68,
+      "receiptSHA256": "262aa1d270f2a47f23d87094ab7046880f4877023a45852560bd8d180ad14f2d",
+      "logSHA256": "11ee3a9de14c30ad5bd97de5295060c1dc7a1cbfcb568449cd8fda5180978fcf",
+      "networkReceiptSHA256": "a57be2259dda36e608f7695eb5e4ba30d7cea82733b98ab1eca90135c688a9da",
+      "sourcesUnchanged": true,
+      "homeRemoved": true
+    },
+    "green/hot2": {
+      "exit": 0,
+      "seconds": 46.24,
+      "receiptSHA256": "f50ffc880669a4acd73b7a7e6e8a6edc5c35f7a3e747c9bab5405e2b4d527a2a",
+      "logSHA256": "8f545f17d1e4722e2dbe0d9b91979998fd542c1f337d126e663375d5affbaa8b",
+      "networkReceiptSHA256": "7933cf0cdb8bdf68a0bf0777a535487377225c96a4837f2de25ec4a62da04a5b",
+      "sourcesUnchanged": true,
+      "homeRemoved": true
+    },
+    "green/hot3": {
+      "exit": 0,
+      "seconds": 47.552,
+      "receiptSHA256": "0ea2d06d5adb918dacd25cc6cf48e0c29a089c5c0d79aba4146a331cafad1700",
+      "logSHA256": "161acd9b93ef2aba45225943c780581904f08e64753c62571c8781aa11149aff",
+      "networkReceiptSHA256": "7d3022a1ea41c1d6638b9227cc8cb8bc63d73dc7bbb7083a16df1b4cd23bd755",
+      "sourcesUnchanged": true,
+      "homeRemoved": true
+    },
+    "green/identity": {
+      "exit": 0,
+      "seconds": 11.558,
+      "receiptSHA256": "89ea5e7515ddb4d038437380160e38945df1a3e324a218a3896557c01d7d6d1d",
+      "logSHA256": "71a8085501b7bb91257baebf916c42b0ecfeb6065c4dcfe9359773678a798191",
+      "networkReceiptSHA256": "d830e744a7770901d78a15f21eefbe580a6b96ce9f55435c624750311d5ff658",
+      "sourcesUnchanged": true,
+      "homeRemoved": true
+    },
+    "green/module": {
+      "exit": 0,
+      "seconds": 1.885,
+      "receiptSHA256": "791a241a04160ea1e60aa0fa8e968f7a9682f93e213a1d8a89aecab8da19d4f5",
+      "logSHA256": "d26581bd5d22a480672a77d7a793d8aefcad337519442c490146c327fd981672",
+      "networkReceiptSHA256": "a61b1af3376f6c89fc5a249389902bfc3a977612c31267058f37e23e4d2bf246",
+      "sourcesUnchanged": true,
+      "homeRemoved": true
+    },
+    "green/native-options": {
+      "exit": 0,
+      "seconds": 0.052,
+      "receiptSHA256": "c9d2190dc057b1b32d55c50a11bdca9f4abb3ea78391249f7e39dc3356beafab",
+      "logSHA256": "942b2f37bb0119496c86b3f55d7bf9940eaa0cc05d390a697349262105ee1bf1",
+      "networkReceiptSHA256": "47404cc934d4026f9e9a3577d55aff126d4da335ecbee3353da7ad626226acf2",
+      "sourcesUnchanged": true,
+      "homeRemoved": true
+    },
+    "green/paired": {
+      "exit": 0,
+      "seconds": 29.921,
+      "receiptSHA256": "01934dbd323c9d03bf0a5a81f1b44ff0bb04117a1ac32249d326d9000be84fd6",
+      "logSHA256": "bafcad486f17800cdd6dc87bc79e44a446b67dcabb9d041489e436ae4c511810",
+      "networkReceiptSHA256": "e66f492dba4213cb345cc8acdf7960eaa44c32c9d5bacd5e52a3afa6e7895a78",
+      "sourcesUnchanged": true,
+      "homeRemoved": true
+    },
+    "green/transitions": {
+      "exit": 0,
+      "seconds": 12.864,
+      "receiptSHA256": "409ecbda98f9f9f1bf4bda705d1b95b218b22518b2fe4b57cd26b283db4385af",
+      "logSHA256": "e02a22926f7f386a6c4c91122de626fd4796d10e03d560d955d779b4693f52a0",
+      "networkReceiptSHA256": "c6129728352c07485716a494df0e74ec66bd9b841db53f1055b6b97350e9a234",
+      "sourcesUnchanged": true,
+      "homeRemoved": true
+    },
+    "green/vet": {
+      "exit": 0,
+      "seconds": 0.533,
+      "receiptSHA256": "c5c9e6834545800961fdf25a5bfa910e03e0636b2873067026adf87a845822a9",
+      "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "networkReceiptSHA256": "47404cc934d4026f9e9a3577d55aff126d4da335ecbee3353da7ad626226acf2",
+      "sourcesUnchanged": true,
+      "homeRemoved": true
+    },
+    "final/build": {
+      "exit": 0,
+      "seconds": 0.52,
+      "receiptSHA256": "569b8daa8472110c0b0e2ce6eb339918118ee71f905ace4f842c14d66523a6b9",
+      "logSHA256": "93b50fa4f02239847726fd405e6ccc355984c9b7447a9618d0560c07ca71cf75",
+      "networkReceiptSHA256": "47404cc934d4026f9e9a3577d55aff126d4da335ecbee3353da7ad626226acf2",
+      "sourcesUnchanged": true,
+      "homeRemoved": true
+    },
+    "final/fixture-unit-final": {
+      "exit": 0,
+      "seconds": 0.069,
+      "receiptSHA256": "c05ff4b3f5ed715ee650263f1cb49e993e2db96b61ff1c4aa8c2d50506ea403b",
+      "logSHA256": "1bd6daf5661d17cdde83357e0bfc2e376820baec559a299699c588f36b4267e3",
+      "networkReceiptSHA256": "47404cc934d4026f9e9a3577d55aff126d4da335ecbee3353da7ad626226acf2",
+      "sourcesUnchanged": true,
+      "homeRemoved": true
+    },
+    "final/native-options": {
+      "exit": 0,
+      "seconds": 0.044,
+      "receiptSHA256": "7905ce1b8cf43c1b038a45687d72e0f48bc13a6e21a0126a1eccaed2af1fb8c9",
+      "logSHA256": "942b2f37bb0119496c86b3f55d7bf9940eaa0cc05d390a697349262105ee1bf1",
+      "networkReceiptSHA256": "47404cc934d4026f9e9a3577d55aff126d4da335ecbee3353da7ad626226acf2",
+      "sourcesUnchanged": true,
+      "homeRemoved": true
+    },
+    "final/provenance": {
+      "exit": 0,
+      "seconds": 0.291,
+      "receiptSHA256": "b425a99f8544ab6e0641b9c5b73dc8d6c7c532690c21903b70367be43761d27b",
+      "logSHA256": "9fcf3dca9e69f0ee80f2c0b3d31f7b1d0499cb7c0e5bb456c62fd410e7b1677f",
+      "networkReceiptSHA256": "47404cc934d4026f9e9a3577d55aff126d4da335ecbee3353da7ad626226acf2",
+      "sourcesUnchanged": true,
+      "homeRemoved": true
+    },
+    "release221/build": {
+      "exit": 0,
+      "seconds": 0.546,
+      "receiptSHA256": "f569c3f96125ab789fe2f7a88a8be7e30c05e24e0bab1e594bcbb99f1090db35",
+      "logSHA256": "fd984fa5643cc2b5b28d7ebdd49291e89a25b6741412edeb28d1ba29f8e0c287",
+      "networkReceiptSHA256": "47404cc934d4026f9e9a3577d55aff126d4da335ecbee3353da7ad626226acf2",
+      "sourcesUnchanged": true,
+      "homeRemoved": true
+    },
+    "release221/fixture-unit-final": {
+      "exit": 0,
+      "seconds": 0.073,
+      "receiptSHA256": "7a257ec96ef25e2914c15702e0ef68a524d2dd8bc0f727abfae0de593d5dc30d",
+      "logSHA256": "1bd6daf5661d17cdde83357e0bfc2e376820baec559a299699c588f36b4267e3",
+      "networkReceiptSHA256": "47404cc934d4026f9e9a3577d55aff126d4da335ecbee3353da7ad626226acf2",
+      "sourcesUnchanged": true,
+      "homeRemoved": true
+    },
+    "release221/native-options": {
+      "exit": 0,
+      "seconds": 0.047,
+      "receiptSHA256": "d7a418a5f54c78a8bfad852eec04a648ccd5698437f6ed0bb5eb7a836a273944",
+      "logSHA256": "942b2f37bb0119496c86b3f55d7bf9940eaa0cc05d390a697349262105ee1bf1",
+      "networkReceiptSHA256": "47404cc934d4026f9e9a3577d55aff126d4da335ecbee3353da7ad626226acf2",
+      "sourcesUnchanged": true,
+      "homeRemoved": true
+    },
+    "release221/provenance": {
+      "exit": 0,
+      "seconds": 0.526,
+      "receiptSHA256": "86d3f252de536e4759bf0ffb6cdce2e7d8bab5a6e82fd6c8a8e6379655534b76",
+      "logSHA256": "0bbf0a87dc79d7e5772605f99fa45bd669f373337afcd3baed224803bc7643fd",
+      "networkReceiptSHA256": "47404cc934d4026f9e9a3577d55aff126d4da335ecbee3353da7ad626226acf2",
+      "sourcesUnchanged": true,
+      "homeRemoved": true
+    }
+  },
+  "installed": {
+    "hot1": {
+      "resultSHA256": "11ee3a9de14c30ad5bd97de5295060c1dc7a1cbfcb568449cd8fda5180978fcf",
+      "externalRequests": 0,
+      "processStopped": true,
+      "activation": "hot-config-cas",
+      "terminalStates": [
+        "completed",
+        "not-started",
+        "not-started",
+        "uncertain"
+      ],
+      "measuredRows": 2,
+      "countsPerRow": [
+        7,
+        0,
+        17,
+        5
+      ],
+      "reportedCostPerRow": {
+        "amount": 2.5,
+        "currency": "ACU"
+      },
+      "paidArrivals": [
+        "completed-prefix",
+        "held-prefix"
+      ],
+      "vendorArrivals": 8,
+      "checks": [
+        "ordinary default-off completion creates no task intent",
+        "paid policy changes through hot external config CAS without restart or catalog warmup",
+        "one installed full module schedules independent conversation tasks at the real 30s cadence",
+        "fresh spent-budget and revoked-model controls refuse paid dispatch with not-started receipts",
+        "one completed ping and one held canceled ping each preserve exactly one measured ACU usage row",
+        "new foreground cancels and joins held paid HTTP before completing",
+        "paid native bytes preserve original prompts/tools/cache/sampling with one new continue and max_tokens1",
+        "ordinary module.call cannot replay a completed paid task"
+      ]
+    },
+    "hot2": {
+      "resultSHA256": "8f545f17d1e4722e2dbe0d9b91979998fd542c1f337d126e663375d5affbaa8b",
+      "externalRequests": 0,
+      "processStopped": true,
+      "activation": "hot-config-cas",
+      "terminalStates": [
+        "completed",
+        "not-started",
+        "not-started",
+        "uncertain"
+      ],
+      "measuredRows": 2,
+      "countsPerRow": [
+        7,
+        0,
+        17,
+        5
+      ],
+      "reportedCostPerRow": {
+        "amount": 2.5,
+        "currency": "ACU"
+      },
+      "paidArrivals": [
+        "completed-prefix",
+        "held-prefix"
+      ],
+      "vendorArrivals": 8,
+      "checks": [
+        "ordinary default-off completion creates no task intent",
+        "paid policy changes through hot external config CAS without restart or catalog warmup",
+        "one installed full module schedules independent conversation tasks at the real 30s cadence",
+        "fresh spent-budget and revoked-model controls refuse paid dispatch with not-started receipts",
+        "one completed ping and one held canceled ping each preserve exactly one measured ACU usage row",
+        "new foreground cancels and joins held paid HTTP before completing",
+        "paid native bytes preserve original prompts/tools/cache/sampling with one new continue and max_tokens1",
+        "ordinary module.call cannot replay a completed paid task"
+      ]
+    },
+    "hot3": {
+      "resultSHA256": "161acd9b93ef2aba45225943c780581904f08e64753c62571c8781aa11149aff",
+      "externalRequests": 0,
+      "processStopped": true,
+      "activation": "hot-config-cas",
+      "terminalStates": [
+        "completed",
+        "not-started",
+        "not-started",
+        "uncertain"
+      ],
+      "measuredRows": 2,
+      "countsPerRow": [
+        7,
+        0,
+        17,
+        5
+      ],
+      "reportedCostPerRow": {
+        "amount": 2.5,
+        "currency": "ACU"
+      },
+      "paidArrivals": [
+        "completed-prefix",
+        "held-prefix"
+      ],
+      "vendorArrivals": 8,
+      "checks": [
+        "ordinary default-off completion creates no task intent",
+        "paid policy changes through hot external config CAS without restart or catalog warmup",
+        "one installed full module schedules independent conversation tasks at the real 30s cadence",
+        "fresh spent-budget and revoked-model controls refuse paid dispatch with not-started receipts",
+        "one completed ping and one held canceled ping each preserve exactly one measured ACU usage row",
+        "new foreground cancels and joins held paid HTTP before completing",
+        "paid native bytes preserve original prompts/tools/cache/sampling with one new continue and max_tokens1",
+        "ordinary module.call cannot replay a completed paid task"
+      ]
+    },
+    "identity": {
+      "resultSHA256": "6bf0a4ed115161fee146af838e1343f43b22e846d366a7f0f1b6ca3ee98665dd",
+      "externalRequests": 0,
+      "processStopped": true,
+      "acceptanceStatus": "no-op-regression-passed"
+    },
+    "transitions": {
+      "resultSHA256": "6cb4cbefa9797fc5b26d73f3baf3884bcbc1fa454d3aa93cb98c9573f451bd4f",
+      "externalRequests": 0,
+      "processStopped": true,
+      "status": "real-transitions-fenced",
+      "automaticRetries": 0,
+      "historicalBootstrapMarker": "red"
+    },
+    "gemini": {
+      "resultSHA256": "8715fdbd89224d0f6576c1faa0f512118598fe391616d0bfe4bc15af2cc2431c",
+      "externalRequests": 0,
+      "processStopped": true,
+      "cases": [
+        {
+          "protocol": "chat",
+          "stream": false,
+          "signatureBytes": 368,
+          "toolRoundtrip": true
+        },
+        {
+          "protocol": "chat",
+          "stream": true,
+          "signatureBytes": 368,
+          "toolRoundtrip": true
+        },
+        {
+          "protocol": "anthropic",
+          "stream": false,
+          "signatureBytes": 368,
+          "toolRoundtrip": true
+        },
+        {
+          "protocol": "anthropic",
+          "stream": true,
+          "signatureBytes": 368,
+          "toolRoundtrip": true
+        }
+      ]
+    },
+    "paired": {
+      "resultSHA256": "bafcad486f17800cdd6dc87bc79e44a446b67dcabb9d041489e436ae4c511810",
+      "externalRequests": 0,
+      "processStopped": true,
+      "checks": 24
+    }
+  },
+  "freshHostCompatibility": {
+    "receipt": {
+      "kind": "single bounded compatibility replay on frozen candidate tree, not a future commit",
+      "hostSourceCommit": null,
+      "hostTree": "f7f26b2d5ee5388a089ab07a72f7372ed0068971",
+      "hostSourceReceiptSHA256": "1c5ad12c8bf6774a73e8b89497250aae7e905fe790891384639113a58bc35009",
+      "hostCoreBuildReceiptSHA256": "9ae108a4016c42c7cc693d1fa5d1817c2580a8fed383b56e548fc1f4f97b3234",
+      "hostBinary": "/tmp/magpie-sdk-final-base-p2tiu0uf/magpie",
+      "hostBinarySHA256": "9ddc4e4a076dbcc119e71b5c3b140253e8c419f3278dfadc5d8cdadd59c20adb",
+      "hostSourcePaths": 10773,
+      "productionOverlay": false,
+      "moduleSourceSHA256": "1ad5c8654766b8a323bcceed6497928680f0ebe752e1d33c05d1e4cd7a0b5ed1",
+      "publicSDKSourceSHA256": "36f73768a1335fbf1210fd7033528031f70f2de72b3b182f57af7b0a954969b5",
+      "publicSDKMatchesAccepted11c2": true,
+      "paidAdmissionSHA256": "9b04f613b6b0316fc5366a723b4be76777d576af072cb00ede259f0b8c2107ad",
+      "fixtureSHA256": "c2c58b5a3d1e2dc2b87a66c83c85990776bb11ffe8655b60d33439aa7c2408c3",
+      "librarySHA256": "017ebcccec33c936334853b6efbca9991e697d657bef620bbc296991040f3402",
+      "manifestSHA256": "b51e3ce2b62734771c5b8268071aecf8824b2e3f6deaa18499637fc3e09a6e94",
+      "runnerSHA256": "9b883aff4d835622b74eb627d9c695b0b448cd817dd71583eda9eaf49f072cfb",
+      "guardSHA256": "09f2a8d3311566d21dafc87c118ef8d5e07cfba88f78dba3114e4cf124b2b57e",
+      "command": [
+        "/Users/maratkarimov/.local/bin/python3",
+        "-B",
+        "/tmp/magpie-devin-final-fixture-20261114.3miL8Zfd/final/module/cache_keepalive_host_e2e.py",
+        "/tmp/magpie-sdk-final-base-p2tiu0uf/magpie",
+        "/tmp/magpie-devin-final-fixture-20261114.3miL8Zfd/final/distribution",
+        "/tmp/magpie-devin-final-fixture-20261114.3miL8Zfd/fresh-host/installed"
+      ],
+      "timeoutSeconds": 120,
+      "pid": 1104469,
+      "exit": 0,
+      "seconds": 43.414,
+      "logSHA256": "dd4fdf4a5e4f42509192447233c1d520c965b76117aace1a776f22ab55ca8b8e",
+      "sourcesUnchanged": true,
+      "homeRemoved": true
+    },
+    "receiptSHA256": "8701d0fa5b67b24bf654276eb445a37ae9f2ac63d6aa1308630a580d4edcce9a",
+    "networkReceiptSHA256": "1515f2bc66724aad5cfd4dbdffc70a369fcb5ef983a0283fb4dcc820bedc2ef9",
+    "fixtureResultSHA256": "dd4fdf4a5e4f42509192447233c1d520c965b76117aace1a776f22ab55ca8b8e",
+    "checks": [
+      "ordinary default-off completion creates no task intent",
+      "paid policy changes through hot external config CAS without restart or catalog warmup",
+      "one installed full module schedules independent conversation tasks at the real 30s cadence",
+      "fresh spent-budget and revoked-model controls refuse paid dispatch with not-started receipts",
+      "one completed ping and one held canceled ping each preserve exactly one measured ACU usage row",
+      "new foreground cancels and joins held paid HTTP before completing",
+      "paid native bytes preserve original prompts/tools/cache/sampling with one new continue and max_tokens1",
+      "ordinary module.call cannot replay a completed paid task"
+    ],
+    "measuredRows": 2,
+    "externalRequests": 0,
+    "processStopped": true,
+    "futureCommitAttributed": false
+  },
+  "rawReceipts": {
+    "path": "/tmp/magpie-devin-final-fixture-20261114.3miL8Zfd/release221/receipts.tar.gz",
+    "sha256": "f428336666c86ca97c76dee38119ad44c9044fd024796daf84c586c9dfd10093",
+    "bytes": 96135,
+    "entries": 92,
+    "localPath": "dist/2026-11-14-final-hot-221/receipts.tar.gz"
+  },
+  "preservedReds": {
+    "originalHotFixtureSHA256": "75cb45a51970477dc4e89d02ccad0a1480710dc25e71d13883cacbeb518bfac7",
+    "oldColdFixtureSHA256": "511cc360c7603026bb0226e0fff43d89fd25ec4256d8c0571136f330c1762d50",
+    "legacyParserCausalRed": "red/legacy-parser",
+    "oldAssertionsTwoFailures": "red/fixture-unit",
+    "historical467": "usbox:/tmp/magpie-devin-combined-accept-r3.46756a48",
+    "originalC018Held38": "usbox:/tmp/magpie-devin-hot-cas-fix-20261114.kjo_hnjn/installed-original-hot-tvn*",
+    "originalHeld38Cause": "unknown/unreproduced; not proven fixed by new passes",
+    "independentDiagnostics": "usbox:/tmp/magpie-hot-cas-closure-20261114.sQVusLEq/EVIDENCE.json",
+    "independentDiagnosticsSHA256": "44935bfcae6dc0e2cf69939e3b1b87540807c625c31c965e35ce3c727d1f0e63",
+    "initialGreenUnitReceipt": "green/fixture-unit-harness-error.json; tests9/9, concurrent library hash failed"
+  },
+  "limitations": [
+    "Synthetic local peers, not the original Cognition client or live vendor/cache/charge evidence",
+    "Native temperature/top_p fixed64 oracle; fixed32 negative is structurally valid protobuf, not a captured native field",
+    "Original held38 timing symptom remains unknown",
+    "Complete native/cloud resume, remote account delegation and other native platforms unverified",
+    "Whole-host broad acceptance belongs to the parent"
+  ]
+}

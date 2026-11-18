@@ -1,0 +1,652 @@
+{
+  "schema": 1,
+  "date": "2026-11-14",
+  "status": "scoped module candidate green; exact post-merge parent acceptance pending",
+  "scope": "default single native CommandCode package against immutable dirty shared SDK source; no host edits",
+  "module": {
+    "baseCommit": "ff8a49b3664fc80cc8abea82c8c6028ae9551311",
+    "version": "0.1.1",
+    "minimumSDK": "1.7",
+    "nativeABI": 1,
+    "sourceIdentitySHA256": "97d19d1b28783a5cb0caadc61d5f62afe97edbbe49bf84631a730584927669f2",
+    "archiveSHA256": "f1aa4071cb8b91ebbcd3c5eca5ac9669e27f1a98a25d2c0622dbf0db5a2df046",
+    "filesMatched": 47,
+    "inputInventory": "/tmp/magpie-checkin-activation.1roJJ6i5/magpie-commandcode-sdk17-candidate4.json",
+    "filesSHA256": {
+      ".gitignore": "fe56da5f27d174b011ca65d2c1c9be83ca19ce1428e1594f8ed3ca037e8814ed",
+      "AGENTS.md": "d4ebe9b191c1266fd575620deccd0be447abcb0595e76d699ce9dc3453374837",
+      "CONTRACT-PLAN.md": "b3020fb07d953ec6219ce91c5838698750dae92efea7e2f85c8b76ac2f151fcc",
+      "PLAN.md": "d30f4edddcacabe849dcef1b0161fe9ddcd35c5b9233f10dccb64747f931200c",
+      "README.md": "9e96ad2ee921b551776cb4aac5b65083226cd5a1bad0c0d45ac43d188123b67b",
+      "SOURCES.md": "76f03e5dc458e0f3c70cd14847af3ef90934348bbdaf45065d489633a13bf1e5",
+      "SYSTEMONE-SDK-CONTRACT.md": "d1c5d94263807065990c5c9a2d10f931933d6c4b354b43cc5852c008e29866c8",
+      "SYSTEMONE-SDK-FIXTURES.json": "94b35faba3bf107060c78c8abb147ca8817ef1d477d3100f36458daf9e09ed4c",
+      "THIRD_PARTY_NOTICES": "1b8cc0010df42ec241286a3614b519d93e15c4e805818f0b67d7f12cb2f120a3",
+      "VERIFICATION.md": "bda695b047914fa3a64d546f9701e2298b7e8b591ea5ce7bcd771644988967a0",
+      "agent.go": "0def42ca547136de6f898ea8ad6c545eb43a03558febb2daab7bfa1ede1cb853",
+      "agent_test.go": "37cb6ff3a0b58d2f4d6cefca43dbaefe9b5fa0b11c921a99ed36ce8afe1f3afd",
+      "auth.go": "cafb1f840e7f20216da2ae878085de7ea51d7c9c20dd23e05e83ad0bd9207787",
+      "billing.go": "ead83e9a3e29d79a7d8e05a2f88f45e65516a428038e1e7e1edc30fe87582921",
+      "billing_test.go": "4bfef5ebcd089e4720a7dcf0a0a654526adca1c172dcd70825169a6ac972374a",
+      "build.py": "183b694fc573255514ae9a8e7d81f2a5b2b7ad685b3258ddd102abf8dd7eba0e",
+      "cmd/manifest/main.go": "265c1a81c25d93372a7717223c8299be623060bbe6d38ab2fc4dd611d29f070e",
+      "cmd/native/main.go": "6a2dea7c8d08c89f4de25c18bb67a52dea65cc6cb42db78f83c9fb252757e604",
+      "generate.go": "06470f8c2d40d8390c8a45def02bf335aa1635a2a823de9f474c1fedc271a117",
+      "generate_stream.go": "efa3472eed6f6f16f48beed95b74d418a685a65c73ebafdf960f20a1b68136a4",
+      "generate_test.go": "b435a25bb57f53226c0fc4cf75b6d82c736f98fbebaca5e2716269b6cf6dce8c",
+      "go.mod": "ffc765e8955f2ff3b36fe184ecaac6266c5241c3d57d0600627a5815027257c7",
+      "models.go": "4143b42bc3a86ac1e59099bbd0de7ff7f5bedc4aa9cde30b8d0dc3afb5f00a2c",
+      "models_test.go": "bca6a27e7107113153f7ca25e4d665a6f149ad903e2c44429f875ba31df01f48",
+      "module.go": "0e52eb98b819b5fa06b086dfd2b95b8ba4844afae2a3e7a5bc41f4ab0a1e3ac0",
+      "module_test.go": "58a18adf13387cbbd7604d6760aef66fa24fe3a5d21bdc961c30035dad5e5295",
+      "package.json": "394974b5997cad51d66cdf52bb82030d24ad2178375b22c4ee9f1b3678a249dd",
+      "provenance_test.go": "352accb338b258a496d6c48f1efac344a1de02e55c575a03782444bad9e7b3c6",
+      "source-lock.json": "d1492b978954c7e7c132adeb6e22521936a4f2b9b82651cba6c41492fcd044a5",
+      "systemone.go": "ae0337d1c312ad9e8f925942c45387c5d626760ce399d0c18adc58aaf2eb0301",
+      "systemone_contract_test.go": "4b2719a95e57361b06072d809e9f7dbfc8aedf658d5e608d5255deefed1266c1",
+      "systemone_test.go": "b4c91c242d97e80c9d0b955bf9fbc8632fe7b4ecb9e38fd776b0938c011b4931",
+      "testdata/credits-goat.json": "6438361859b848a4cc0b299518f4c0522062bb01a6f5384a8b94b2703c28fdd7",
+      "testdata/go-models.json": "f8c476bc42c1db5eca35f4f6c905dbbb5e2a547b78a4d8af7af6b0a05ac8d0a3",
+      "testdata/models-2026-10-13.json": "51445d1c33222bf92a137c8070dbab532abd7afde4415cbdee3d53600143980d",
+      "testdata/subscriptions-goat.json": "1cd866e6b36034a87c43dcda226b5b15e8e304e5574cbb3994c35a18aa8d795c",
+      "transport.go": "3c81046fd31c0b08ca18a9f52744891e5bfb01b7dfba5c28cad34be6912be3ca",
+      "verify/EVIDENCE-SDK16.json": "0ced590268b90313e8341be67a96af8d9606e316e82bc5263aeab9847dbf6575",
+      "verify/EVIDENCE-SYSTEMONE-REVIEW.json": "4261cddd597c3f30c61c13daca80aa39de17aecf3daca46362304ec0bf8e21d8",
+      "verify/EVIDENCE.json": "752af570c717dec5ec804484cd3f32145e827421049ac6ac8504196bcbd1f8cd",
+      "verify/check_package.py": "60a139f750e217fbe05bfb515c28fbdc2b35fa718f2243c95b3ab1b789724f14",
+      "verify/check_sources.py": "12711a9baf9894c360b8005dac1ea9d5f851b01a0cdc8adc0991cbeee69ce074",
+      "verify/native_gateway_test.go.txt": "c74e9717a7989d264fb243477047d1e063b776aacfcd51424a2b80130a38fc9b",
+      "verify/native_owner.go.txt": "968d45673abba25b4da63bd206dd54ef22094f82cf6a431b3e08d47f3f3f9e9a",
+      "verify/systemone_donor.mjs": "612d118a744988fcce9246a92f79df20bf57c9bfcc5dce9f0e0fb76d42d2348e",
+      "web/app.ts": "97ec1faf81ee5ffc0b68989856095aaded6c04ce5031a6b3c448a7b33439646d",
+      "web/index.html": "4594ca3b3ef30cc1367326c389cfd91d0932b98cc9b4db73a8e66dc03b359fc4"
+    },
+    "laterDocumentationOutsideTestedSource": [
+      "PLAN.md",
+      "VERIFICATION.md",
+      "verify/EVIDENCE-SDK17.json"
+    ]
+  },
+  "host": {
+    "source": "/tmp/magpie-checkin-activation.1roJJ6i5/source-final1",
+    "baseCommitOnly": "9e88f10982a1d66c1b402fba27caddda8ac4ac4e",
+    "sourceIdentitySHA256": "88f103b2355e90e6cbae2cf2289dad0cab0d4ffeb79e329da93092f4653ae88f",
+    "archiveSHA256": "e5c6949efb07019b818417f88d69362c952d116e27c450929d90aa11b6bde1d0",
+    "filesMatched": 10589,
+    "api": "unreleased 1.8",
+    "finalParentCommit": null,
+    "finalParentTree": null,
+    "sharedHostEditsOrStaging": false
+  },
+  "toolchain": {
+    "go": "go version go1.27.3 linux/amd64",
+    "node": "v22.23.4",
+    "typescript": "Version 7.0.2"
+  },
+  "count1": {
+    "moduleSourceSHA256": "97d19d1b28783a5cb0caadc61d5f62afe97edbbe49bf84631a730584927669f2",
+    "hostSource": "/tmp/magpie-checkin-activation.1roJJ6i5/source-final1",
+    "command": [
+      "go",
+      "test",
+      "-count=1",
+      "-json",
+      "-timeout=180s",
+      "./..."
+    ],
+    "exit": 0,
+    "counts": {
+      "pass": 66,
+      "fail": 0,
+      "skip": 0
+    },
+    "seconds": 0.881,
+    "log": "/tmp/magpie-checkin-activation.1roJJ6i5/module-candidate4/test.log",
+    "logSHA256": "cd9a085368f9326c9e7465df60718389153bed5241f3e3eee9869d52c3912828",
+    "scope": "intermediate module candidate; final merged host provenance and packaged acceptance pending"
+  },
+  "checks": {
+    "race20": {
+      "name": "race20",
+      "command": [
+        "python3",
+        "/tmp/magpie-checkin-activation.1roJJ6i5/magpie-native-seccomp.py",
+        "/tmp/magpie-checkin-activation.1roJJ6i5/module-candidate4/race20-network-guard.json",
+        "go",
+        "test",
+        "-race",
+        "-count=20",
+        "-json",
+        "-timeout=240s",
+        "./..."
+      ],
+      "cwd": "/tmp/magpie-checkin-activation.1roJJ6i5/module-candidate4/module",
+      "exit": 0,
+      "counts": {
+        "pass": 1320,
+        "fail": 0,
+        "skip": 0
+      },
+      "seconds": 3.879,
+      "log": "/tmp/magpie-checkin-activation.1roJJ6i5/module-candidate4/race20.log",
+      "logSHA256": "51f489d3b73083165c0c421cb95f522f2e99b1945a3bb8684aeb22f1a7f65acb",
+      "validTestProof": true
+    },
+    "format": {
+      "name": "format",
+      "command": [
+        "gofmt",
+        "-d",
+        "agent.go",
+        "agent_test.go",
+        "auth.go",
+        "billing.go",
+        "billing_test.go",
+        "cmd/manifest/main.go",
+        "cmd/native/main.go",
+        "generate.go",
+        "generate_stream.go",
+        "generate_test.go",
+        "models.go",
+        "models_test.go",
+        "module.go",
+        "module_test.go",
+        "provenance_test.go",
+        "systemone.go",
+        "systemone_contract_test.go",
+        "systemone_test.go",
+        "transport.go",
+        "verify/native_gateway_test.go.txt",
+        "verify/native_owner.go.txt"
+      ],
+      "cwd": "/tmp/magpie-checkin-activation.1roJJ6i5/module-candidate4/module",
+      "exit": 0,
+      "counts": {
+        "pass": 0,
+        "fail": 0,
+        "skip": 0
+      },
+      "seconds": 0.005,
+      "log": "/tmp/magpie-checkin-activation.1roJJ6i5/module-candidate4/format.log",
+      "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "formatted": true
+    },
+    "vet": {
+      "name": "vet",
+      "command": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "cwd": "/tmp/magpie-checkin-activation.1roJJ6i5/module-candidate4/module",
+      "exit": 0,
+      "counts": {
+        "pass": 0,
+        "fail": 0,
+        "skip": 0
+      },
+      "seconds": 0.133,
+      "log": "/tmp/magpie-checkin-activation.1roJJ6i5/module-candidate4/vet.log",
+      "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "build": {
+      "name": "build",
+      "command": [
+        "go",
+        "build",
+        "./..."
+      ],
+      "cwd": "/tmp/magpie-checkin-activation.1roJJ6i5/module-candidate4/module",
+      "exit": 0,
+      "counts": {
+        "pass": 0,
+        "fail": 0,
+        "skip": 0
+      },
+      "seconds": 0.463,
+      "log": "/tmp/magpie-checkin-activation.1roJJ6i5/module-candidate4/build.log",
+      "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "python-syntax": {
+      "name": "python-syntax",
+      "command": [
+        "python3",
+        "-c",
+        "import ast; from pathlib import Path; [ast.parse(Path(name).read_text(), filename=name) for name in ['build.py','verify/check_package.py','verify/check_sources.py']]"
+      ],
+      "cwd": "/tmp/magpie-checkin-activation.1roJJ6i5/module-candidate4/module",
+      "exit": 0,
+      "counts": {
+        "pass": 0,
+        "fail": 0,
+        "skip": 0
+      },
+      "seconds": 0.016,
+      "log": "/tmp/magpie-checkin-activation.1roJJ6i5/module-candidate4/python-syntax.log",
+      "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "donor-systemone": {
+      "name": "donor-systemone",
+      "command": [
+        "python3",
+        "/tmp/magpie-checkin-activation.1roJJ6i5/magpie-native-seccomp.py",
+        "/tmp/magpie-checkin-activation.1roJJ6i5/module-candidate4/donor-systemone-network-guard.json",
+        "node",
+        "verify/systemone_donor.mjs",
+        "/tmp/magpie-commandcode.ogjQFhdz/v4-sdk16/sources/community"
+      ],
+      "cwd": "/tmp/magpie-checkin-activation.1roJJ6i5/module-candidate4/module",
+      "exit": 0,
+      "counts": {
+        "pass": 0,
+        "fail": 0,
+        "skip": 0
+      },
+      "seconds": 0.136,
+      "log": "/tmp/magpie-checkin-activation.1roJJ6i5/module-candidate4/donor-systemone.log",
+      "logSHA256": "be819da700dda03857936e866e482ff4a7b28caa0a56153c3013f2584c7e66cd"
+    },
+    "source-provenance": {
+      "name": "source-provenance",
+      "command": [
+        "python3",
+        "verify/check_sources.py",
+        "--source",
+        "community-commandcode=/tmp/magpie-commandcode.ogjQFhdz/v4-sdk16/sources/community",
+        "--source",
+        "cliproxyapi-maintained=/tmp/magpie-commandcode-systemone.8S8u2P1e/cliproxy",
+        "--source",
+        "sdk-tested-host=/tmp/magpie-checkin-activation.1roJJ6i5/source-final1"
+      ],
+      "cwd": "/tmp/magpie-checkin-activation.1roJJ6i5/module-candidate4/module",
+      "exit": 0,
+      "counts": {
+        "pass": 0,
+        "fail": 0,
+        "skip": 0
+      },
+      "seconds": 0.019,
+      "log": "/tmp/magpie-checkin-activation.1roJJ6i5/module-candidate4/source-provenance.log",
+      "logSHA256": "3a7e0fe34c899f047321f8e5965cebb985e522ca35f4af81d2df617767c69aa6"
+    },
+    "package-build": {
+      "name": "package-build",
+      "command": [
+        "python3",
+        "build.py",
+        "--output",
+        "/tmp/magpie-checkin-activation.1roJJ6i5/module-candidate4/dist/package"
+      ],
+      "cwd": "/tmp/magpie-checkin-activation.1roJJ6i5/module-candidate4/module",
+      "exit": 0,
+      "counts": {
+        "pass": 0,
+        "fail": 0,
+        "skip": 0
+      },
+      "seconds": 0.887,
+      "log": "/tmp/magpie-checkin-activation.1roJJ6i5/module-candidate4/package-build.log",
+      "logSHA256": "14c9e14dd6677340da4c3c23db0fbd369115ae99fa8d787db6ae5e7b33552dbb"
+    },
+    "package-verify": {
+      "name": "package-verify",
+      "command": [
+        "python3",
+        "verify/check_package.py",
+        "/tmp/magpie-checkin-activation.1roJJ6i5/module-candidate4/dist/protocol-commandcode-0.1.1-linux-amd64.zip"
+      ],
+      "cwd": "/tmp/magpie-checkin-activation.1roJJ6i5/module-candidate4/module",
+      "exit": 0,
+      "counts": {
+        "pass": 0,
+        "fail": 0,
+        "skip": 0
+      },
+      "seconds": 0.065,
+      "log": "/tmp/magpie-checkin-activation.1roJJ6i5/module-candidate4/package-verify.log",
+      "logSHA256": "6d78f74f70a161b6d6bc98e518a1c7b8a6b93ed8fc812b48212856ced8e4b023"
+    },
+    "native-owner": {
+      "name": "native-owner",
+      "command": [
+        "python3",
+        "/tmp/magpie-checkin-activation.1roJJ6i5/magpie-native-seccomp.py",
+        "/tmp/magpie-checkin-activation.1roJJ6i5/module-candidate4/native-owner-network-guard.json",
+        "go",
+        "run",
+        "-overlay",
+        "/tmp/magpie-checkin-activation.1roJJ6i5/module-candidate4/owner-overlay.json",
+        "/tmp/magpie-checkin-activation.1roJJ6i5/source-final1/internal/commandcodeowner/main.go",
+        "/tmp/magpie-checkin-activation.1roJJ6i5/module-candidate4/dist/package"
+      ],
+      "cwd": "/tmp/magpie-checkin-activation.1roJJ6i5/source-final1",
+      "exit": 0,
+      "counts": {
+        "pass": 0,
+        "fail": 0,
+        "skip": 0
+      },
+      "seconds": 1.238,
+      "log": "/tmp/magpie-checkin-activation.1roJJ6i5/module-candidate4/native-owner.log",
+      "logSHA256": "638a06bd83f199b21c425b98f8ab5b8b46e9ca1976949c423af6dec90b2234b1"
+    },
+    "native-gateway": {
+      "name": "native-gateway",
+      "command": [
+        "python3",
+        "/tmp/magpie-checkin-activation.1roJJ6i5/magpie-native-seccomp.py",
+        "/tmp/magpie-checkin-activation.1roJJ6i5/module-candidate4/native-gateway-network-guard.json",
+        "go",
+        "test",
+        "-race",
+        "-tags",
+        "nogui",
+        "-overlay",
+        "/tmp/magpie-checkin-activation.1roJJ6i5/module-candidate4/gateway-overlay.json",
+        "./internal/gateway",
+        "-run",
+        "^TestCommandCodeNativeSystemOneSDK17$",
+        "-count=20",
+        "-json",
+        "-timeout=900s",
+        "-args",
+        "-commandcode-sdk17-distribution",
+        "/tmp/magpie-checkin-activation.1roJJ6i5/module-candidate4/dist/package"
+      ],
+      "cwd": "/tmp/magpie-checkin-activation.1roJJ6i5/source-final1",
+      "exit": 0,
+      "counts": {
+        "pass": 20,
+        "fail": 0,
+        "skip": 0
+      },
+      "seconds": 57.018,
+      "log": "/tmp/magpie-checkin-activation.1roJJ6i5/module-candidate4/native-gateway.log",
+      "logSHA256": "2a42dddfdd074d3287119c5a555432afd0a3a95734a2f9dfbbba399c76bacc1c",
+      "validTestProof": true
+    }
+  },
+  "causalNegatives": [
+    {
+      "name": "accepted-receipt",
+      "command": [
+        "python3",
+        "/tmp/magpie-checkin-activation.1roJJ6i5/magpie-native-seccomp.py",
+        "/tmp/magpie-checkin-activation.1roJJ6i5/module-candidate4/negatives/accepted-receipt-network-guard.json",
+        "go",
+        "test",
+        "-race",
+        "-overlay",
+        "/tmp/magpie-checkin-activation.1roJJ6i5/module-candidate4/negatives/accepted-receipt-overlay.json",
+        "-run",
+        "^TestSystemOneInterruptedAnswerIsUncertainWithoutReplay$",
+        "-count=1",
+        "-json",
+        "-timeout=180s",
+        "."
+      ],
+      "exit": 1,
+      "seconds": 0.742,
+      "log": "/tmp/magpie-checkin-activation.1roJJ6i5/module-candidate4/negatives/accepted-receipt.log",
+      "logSHA256": "3d21bf46194bd763e22db11d611e8178e9b69910eb5da93d1373d9b7559d11eb",
+      "failures": [
+        "TestSystemOneInterruptedAnswerIsUncertainWithoutReplay",
+        "github.com/TransmuteLabs/magpie-sdk-plugin-protocol-commandcode"
+      ],
+      "compiledBehavioralFailure": true,
+      "expectedAssertionPresent": true
+    },
+    {
+      "name": "decision-chat-authority",
+      "command": [
+        "python3",
+        "/tmp/magpie-checkin-activation.1roJJ6i5/magpie-native-seccomp.py",
+        "/tmp/magpie-checkin-activation.1roJJ6i5/module-candidate4/negatives/decision-chat-authority-network-guard.json",
+        "go",
+        "test",
+        "-race",
+        "-overlay",
+        "/tmp/magpie-checkin-activation.1roJJ6i5/module-candidate4/negatives/decision-chat-authority-overlay.json",
+        "-run",
+        "^TestSystemOneNegotiatesDeclarationAndCanonicalDiscovery$",
+        "-count=1",
+        "-json",
+        "-timeout=180s",
+        "."
+      ],
+      "exit": 1,
+      "seconds": 0.749,
+      "log": "/tmp/magpie-checkin-activation.1roJJ6i5/module-candidate4/negatives/decision-chat-authority.log",
+      "logSHA256": "3a99f4db71e73b48bdc9391dbb40682b180bd23b37622df2707d8eabd1649d9a",
+      "failures": [
+        "TestSystemOneNegotiatesDeclarationAndCanonicalDiscovery",
+        "github.com/TransmuteLabs/magpie-sdk-plugin-protocol-commandcode"
+      ],
+      "compiledBehavioralFailure": true,
+      "expectedAssertionPresent": true
+    },
+    {
+      "name": "default-package-decision",
+      "command": [
+        "python3",
+        "/tmp/magpie-checkin-activation.1roJJ6i5/magpie-native-seccomp.py",
+        "/tmp/magpie-checkin-activation.1roJJ6i5/module-candidate4/negatives/default-package-decision-network-guard.json",
+        "python3",
+        "verify/check_package.py",
+        "/tmp/magpie-checkin-activation.1roJJ6i5/module-candidate4/negatives/without-default-decision.zip"
+      ],
+      "exit": 1,
+      "seconds": 0.095,
+      "log": "/tmp/magpie-checkin-activation.1roJJ6i5/module-candidate4/negatives/default-package-decision.log",
+      "logSHA256": "822ecc3c11c3cedf57ffe023b424be9662567cdbcdae3459d15512a217438fa9",
+      "failures": [],
+      "compiledBehavioralFailure": false,
+      "expectedAssertionPresent": true
+    },
+    {
+      "name": "restored",
+      "command": [
+        "python3",
+        "/tmp/magpie-checkin-activation.1roJJ6i5/magpie-native-seccomp.py",
+        "/tmp/magpie-checkin-activation.1roJJ6i5/module-candidate4/negatives/restored-network-guard.json",
+        "go",
+        "test",
+        "-race",
+        "-run",
+        "^TestSystemOne(InterruptedAnswerIsUncertainWithoutReplay|NegotiatesDeclarationAndCanonicalDiscovery)$",
+        "-count=1",
+        "-json",
+        "-timeout=180s",
+        "."
+      ],
+      "exit": 0,
+      "seconds": 1.3,
+      "log": "/tmp/magpie-checkin-activation.1roJJ6i5/module-candidate4/negatives/restored.log",
+      "logSHA256": "8f8d8947acfdcc82bf6abb75989c3fb85fd6d640ebf2184662f0ee2ec61cf317",
+      "failures": [],
+      "compiledBehavioralFailure": false,
+      "expectedAssertionPresent": true
+    }
+  ],
+  "networkGuards": [
+    {
+      "path": "/tmp/magpie-checkin-activation.1roJJ6i5/module-candidate4/race20-network-guard.json",
+      "sha256": "6e7f159a6f2c43d4208515691b920c381ba549f0f78d722437c1b733333e27f3",
+      "exit": 0,
+      "uid": 1000,
+      "userNamespace": false,
+      "probe": "non-loopback denied",
+      "events": 622,
+      "denied": 1,
+      "limits": "Not a sandbox against adversarial sockaddr mutation"
+    },
+    {
+      "path": "/tmp/magpie-checkin-activation.1roJJ6i5/module-candidate4/donor-systemone-network-guard.json",
+      "sha256": "2590ec12bffa24ef8f9400ba9855e4c946d2c21da9d96718fcf42c31f6e1645a",
+      "exit": 0,
+      "uid": 1000,
+      "userNamespace": false,
+      "probe": "non-loopback denied",
+      "events": 1,
+      "denied": 1,
+      "limits": "Not a sandbox against adversarial sockaddr mutation"
+    },
+    {
+      "path": "/tmp/magpie-checkin-activation.1roJJ6i5/module-candidate4/native-owner-network-guard.json",
+      "sha256": "6c3e9eec7b410b97637dfee6d17c2d96db6c6fbe21819eb7623e61707f18dbec",
+      "exit": 0,
+      "uid": 1000,
+      "userNamespace": false,
+      "probe": "non-loopback denied",
+      "events": 25,
+      "denied": 1,
+      "limits": "Not a sandbox against adversarial sockaddr mutation"
+    },
+    {
+      "path": "/tmp/magpie-checkin-activation.1roJJ6i5/module-candidate4/native-gateway-network-guard.json",
+      "sha256": "b27970464830f782529a8036ccfad9665eb86c2fd9c959ca72a3645b858bbd58",
+      "exit": 0,
+      "uid": 1000,
+      "userNamespace": false,
+      "probe": "non-loopback denied",
+      "events": 161,
+      "denied": 1,
+      "limits": "Not a sandbox against adversarial sockaddr mutation"
+    }
+  ],
+  "nativeOwner": {
+    "native": true,
+    "singleInstalledModule": true,
+    "ordinaryProtocols": 3,
+    "goPlan": true,
+    "quota": true,
+    "hostUsageRevisions": [
+      "0",
+      "1",
+      "2"
+    ],
+    "dirtyInferenceDenied": true,
+    "unknownUsageStillDenied": true,
+    "freshUsageAcknowledged": true,
+    "ordinaryQuotaAcknowledged": true,
+    "systemOneOrdinaryNative": true,
+    "moduleActionCannotBypassOperation": true,
+    "hostDecisionContractAvailable": true,
+    "syntheticCLIImport": true,
+    "checkedAgentApplyDisconnect": true,
+    "offDenied": true,
+    "deletedAccountDenied": true,
+    "vendorCalls": 0
+  },
+  "donor": {
+    "donorCommit": "26ea8faf7793ca66dd8e7a8b90128a5235552a1f",
+    "donorVersion": "0.1.24",
+    "wireSourceSHA256": "ef6f9e6f9241dfa5deddde5326408e1560cfd653b41b2eead3a0f85f11af9631",
+    "fixtureSourceSHA256": "67d94f5369c7cda8f5a52f95d1224063db8b3914a61e395487a6268a0d0c6b78",
+    "route": "POST /provider/v1/systemone",
+    "cliHeader": "1.88.2",
+    "aliases": [
+      "jev",
+      "jev-latest",
+      "typesafe-ai/jev",
+      "typesafe/jev"
+    ],
+    "canonicalRequest": {
+      "model": "typesafe/jev",
+      "state": {
+        "text": "ping"
+      },
+      "questions": {
+        "ok": {
+          "type": "noul",
+          "instructions": "Is this a test?"
+        }
+      }
+    },
+    "preservedAnswer": {
+      "model": "typesafe/jev",
+      "answers": {
+        "ok": {
+          "type": "noul",
+          "noul": 0.93
+        }
+      },
+      "usage": {
+        "input_tokens": 41,
+        "output_tokens": 3
+      }
+    },
+    "exactCLIHeaders": true,
+    "syntheticResponseHeadersPreserved": true,
+    "zdr": true,
+    "invalidJSONBeforeDispatch": true,
+    "planRefusal400To403": true,
+    "goRefusalKeepsAccount": true,
+    "fixtureDispatches": 7,
+    "pendingHostCases": 10,
+    "pendingUsageCases": 5,
+    "pendingAgentCases": 6,
+    "proposedHostCasesExecuted": 0,
+    "vendorCalls": 0
+  },
+  "package": {
+    "standalonePackage": true,
+    "files": 13,
+    "sources": 3,
+    "sourceLockSHA256": "d1492b978954c7e7c132adeb6e22521936a4f2b9b82651cba6c41492fcd044a5",
+    "packageSHA256": "6f65b64a38580a6ec1b51cbba621f6e1c3045bf1d27d8ba5c3375717afeb66f2",
+    "remotePath": "/tmp/magpie-checkin-activation.1roJJ6i5/module-candidate4/dist/protocol-commandcode-0.1.1-linux-amd64.zip",
+    "defaultAdapters": [
+      "provider-api",
+      "go-plan",
+      "systemone",
+      "account-auth-models-usage",
+      "agent",
+      "ui"
+    ],
+    "capabilities": [
+      "outbound-executor",
+      "model-discovery",
+      "usage-reporter",
+      "account-auth",
+      "module-rpc",
+      "agent-wiring"
+    ],
+    "additionalRuntimePlugin": false
+  },
+  "sourcePins": [
+    {
+      "id": "community-commandcode",
+      "commit": "26ea8faf7793ca66dd8e7a8b90128a5235552a1f",
+      "version": "0.1.24",
+      "files": 7,
+      "revisionKind": "commit"
+    },
+    {
+      "id": "cliproxyapi-maintained",
+      "commit": "7638884b40a60c3fb534126b334b178f3b3bbcbb",
+      "version": "go.mod v8; captured CLI transport 1.74.1",
+      "files": 4,
+      "revisionKind": "commit"
+    },
+    {
+      "id": "sdk-tested-host",
+      "commit": "9e88f10982a1d66c1b402fba27caddda8ac4ac4e",
+      "version": "unreleased SDK API 1.8 snapshot / native ABI 1; module minimum API 1.7",
+      "files": 26,
+      "revisionKind": "dirty-snapshot"
+    }
+  ],
+  "preservedFailedEvidence": {
+    "candidate2": "/tmp/magpie-checkin-activation.1roJJ6i5/module-candidate2",
+    "candidate3": "/tmp/magpie-checkin-activation.1roJJ6i5/module-candidate3",
+    "anonymousRootDiagnostic": "/tmp/magpie-checkin-activation.1roJJ6i5/module-candidate3/gateway-diagnostic1",
+    "diagnosis": "two anonymous GET / requests with Go-http-client/1.1 and no Authorization; initiating process unknown; exact anonymous shape now gets 401 while other wrong routes still fail"
+  },
+  "remaining": [
+    "Pin the exact parent commit/tree after consolidation and upstream merge; repeat final module/native/package gates there.",
+    "Own-model effective output/effort metadata remains an excluded SDK boundary; no host patch supplied.",
+    "Google nested-reference normalization remains deferred module work.",
+    "Live vendor/account/browser/CLI continuation, GUI rendering and non-Linux runtime acceptance were not performed."
+  ]
+}

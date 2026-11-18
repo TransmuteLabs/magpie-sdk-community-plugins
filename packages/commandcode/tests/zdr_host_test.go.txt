@@ -1,0 +1,173 @@
+package gui
+
+import (
+	"bytes"
+	"context"
+	"encoding/json"
+	"flag"
+	"io"
+	"net/http"
+	"net/http/httptest"
+	"os"
+	"os/exec"
+	"strings"
+	"sync"
+	"testing"
+	"time"
+
+	"github.com/yetone/magpie/internal/extension"
+	"github.com/yetone/magpie/internal/gateway"
+	"github.com/yetone/magpie/internal/provider"
+	"github.com/yetone/magpie/internal/usage"
+)
+
+var solZDRDistribution = flag.String("sol-zdr-distribution", "", "")
+
+func TestInstalledCommandCodeConfirmedZDR(test *testing.T) {
+	test.Setenv("MAGPIE_NO_ACCOUNTS", "")
+	test.Setenv("MAGPIE_ADDR", "")
+	var mutex sync.Mutex
+	var sent []string
+	upstream := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		writer.Header().Set("Content-Type", "application/json")
+		switch request.URL.Path {
+		case "/provider/v1/models":
+			io.WriteString(writer, `{"data":[{"id":"fixture","supported_endpoints":["/chat/completions"]}]}`)
+		case "/alpha/billing/subscriptions":
+			io.WriteString(writer, `{"data":{"planId":"individual-pro","status":"active"}}`)
+		case "/alpha/billing/credits":
+			io.WriteString(writer, `{"credits":{"monthlyCredits":100}}`)
+		case "/provider/v1/chat/completions", "/provider/v1/systemone":
+			if request.Header.Get("Authorization") != "Bearer fixture-key" || request.Header.Get("x-cmd-zdr") != "1" {
+				test.Error("saved confirmed ZDR or selected credential did not reach ordinary execution", request.Header)
+			}
+			mutex.Lock()
+			sent = append(sent, request.URL.Path)
+			mutex.Unlock()
+			if strings.HasSuffix(request.URL.Path, "systemone") {
+				io.WriteString(writer, `{"model":"typesafe/jev","answers":{"ok":{"type":"noul","noul":0.93}},"usage":{"input_tokens":41,"output_tokens":3}}`)
+			} else {
+				io.WriteString(writer, `{"id":"fixture","choices":[{"index":0,"message":{"role":"assistant","content":"ok"},"finish_reason":"stop"}],"usage":{"prompt_tokens":3,"completion_tokens":2}}`)
+			}
+		default:
+			test.Error("unexpected synthetic route", request.URL.Path)
+			writer.WriteHeader(500)
+		}
+	}))
+	defer upstream.Close()
+	manager := extension.Default()
+	test.Cleanup(func() { _ = manager.Close(context.Background()) })
+	entry, err := manager.Install(test.Context(), *solZDRDistribution)
+	if err != nil {
+		test.Fatal(err)
+	}
+	const selectedProvider = "commandcode-native"
+	initial, _ := json.Marshal(map[string]any{
+		"apiURL": upstream.URL, "studioURL": upstream.URL, "workingDirectory": "/synthetic",
+		"unrelated": map[string]string{"keep": "value"},
+	})
+	config, err := manager.CompareAndSwapModuleConfig(test.Context(), entry.Manifest.ID, "0", initial)
+	if err != nil {
+		test.Fatal(err)
+	}
+	if _, err := manager.Store().SaveAccount(extension.Account{Plugin: entry.Manifest.ID, Provider: selectedProvider,
+		ID: "synthetic", Auth: json.RawMessage(`{"apiKey":"fixture-key"}`)}, 0); err != nil {
+		test.Fatal(err)
+	}
+	provider.Changed()
+	accounts, err := provider.ExtensionProviders()
+	if err != nil {
+		test.Fatal(err)
+	}
+	for _, account := range accounts {
+		if _, err := account.Fetch(test.Context()); err != nil {
+			test.Fatal(err)
+		}
+	}
+	provider.Changed()
+	previous := extensionProviderOptions
+	extensionProviderOptions = func() extensionOptionHost { return manager }
+	test.Cleanup(func() { extensionProviderOptions = previous })
+	projected := providerInfoWith(accounts[0], accounts[0].Listing(), nil, nil)
+	if projected.ExtensionOptions == nil || len(projected.ExtensionOptions.Options) != 1 ||
+		projected.ExtensionOptions.Options[0].Key != "zdr" || projected.ExtensionOptions.Options[0].Confirm == "" {
+		test.Fatalf("ordinary provider editor lacks confirmed ZDR projection: %+v", projected.ExtensionOptions)
+	}
+	mux := http.NewServeMux()
+	extensionProviderOptionRoutes(mux)
+	mux.HandleFunc("GET /fixture", func(writer http.ResponseWriter, request *http.Request) {
+		snapshot, err := manager.ProviderOptions(request.Context(), entry.Manifest.ID, selectedProvider)
+		if err != nil {
+			test.Error(err)
+			writer.WriteHeader(500)
+			return
+		}
+		json.NewEncoder(writer).Encode(map[string]any{"id": projected.ID, "extensionOptions": snapshot})
+	})
+	mux.HandleFunc("GET /config", func(writer http.ResponseWriter, request *http.Request) {
+		snapshot, err := manager.ModuleConfig(request.Context(), entry.Manifest.ID)
+		if err != nil {
+			test.Error(err)
+		}
+		json.NewEncoder(writer).Encode(snapshot)
+	})
+	server := httptest.NewServer(mux)
+	defer server.Close()
+	if script := os.Getenv("SOL_ZDR_BROWSER_SCRIPT"); script != "" {
+		command := exec.CommandContext(test.Context(), "node", script, server.URL)
+		if output, err := command.CombinedOutput(); err != nil {
+			test.Fatalf("ordinary provider renderer/browser: %v\n%s", err, output)
+		} else {
+			test.Log(string(output))
+		}
+	} else {
+		test.Fatal("supply the bounded ordinary-provider browser harness")
+	}
+	config, err = manager.ModuleConfig(test.Context(), entry.Manifest.ID)
+	if err != nil || config.Version != "2" || !bytes.Contains(config.Values, []byte(`"zdr":true`)) ||
+		!bytes.Contains(config.Values, []byte(`"unrelated":{"keep":"value"}`)) {
+		test.Fatalf("confirmed UI must CAS exactly once and preserve unrelated values: %+v %v", config, err)
+	}
+	for _, invalid := range []struct{ revision, version string }{{"stale", "2"}, {entry.Revision, "1"}} {
+		if _, err := manager.CompareAndSwapProviderOptions(test.Context(), entry.Manifest.ID, selectedProvider,
+			invalid.revision, invalid.version, map[string]bool{"zdr": false}, nil); err == nil {
+			test.Fatal("stale option owner overwrote the confirmed setting")
+		}
+	}
+	unchanged, err := manager.ModuleConfig(test.Context(), entry.Manifest.ID)
+	if err != nil || unchanged.Version != config.Version || !bytes.Equal(unchanged.Values, config.Values) {
+		test.Fatalf("stale option edits changed configuration: %+v %v", unchanged, err)
+	}
+	accounts, err = provider.ExtensionProviders()
+	if err != nil {
+		test.Fatal(err)
+	}
+	for _, account := range accounts {
+		if _, err := account.Fetch(test.Context()); err != nil {
+			test.Fatal(err)
+		}
+	}
+	provider.Changed()
+	front := gateway.New().Front()
+	for _, decision := range []bool{false, true} {
+		path, body := "/v1/chat/completions", `{"model":"`+projected.ID+`/fixture","messages":[{"role":"user","content":"test"}]}`
+		if decision {
+			path, body = "/v1/systemone", `{"model":"`+projected.ID+`/typesafe/jev","state":"test","questions":{"ok":{"type":"noul"}}}`
+		}
+		request := httptest.NewRequest(http.MethodPost, path, strings.NewReader(body))
+		request.RemoteAddr = "127.0.0.1:23456"
+		reply := httptest.NewRecorder()
+		front.ServeHTTP(reply, request)
+		if reply.Code != 200 {
+			test.Fatalf("saved ZDR ordinary execution failed: %s %d %s", path, reply.Code, reply.Body)
+		}
+	}
+	mutex.Lock()
+	actual := append([]string(nil), sent...)
+	mutex.Unlock()
+	rows := usage.Load(time.Time{})
+	if len(actual) != 2 || len(rows) != 2 || rows[1].Input != 41 || rows[1].Output != 3 {
+		test.Fatalf("ZDR changed dispatch/accounting: sends=%v rows=%+v", actual, rows)
+	}
+	test.Logf("confirmed option browser+API+execute+decision: version=%s sends=%v rows=%d", config.Version, actual, len(rows))
+}

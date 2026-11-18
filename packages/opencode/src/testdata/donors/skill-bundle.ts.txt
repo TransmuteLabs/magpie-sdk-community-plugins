@@ -1,0 +1,4 @@
+const skillBundle = {
+  slug: "deploy",
+  files: [{ path: "SKILL.md", content: "---\nname: Deploy\ndescription: Deploys the service.\n---\n\n# Deploy\n" }],
+}

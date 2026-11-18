@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OpenCode</title>
+</head>
+<body>
+  <main>
+    <h1>OpenCode</h1>
+    <p>Личные и публичные счета выбираются отдельно. Секреты сохраняет Magpie.</p>
+    <label for="provider">Доступ</label>
+    <select id="provider">
+      <option value="go">OpenCode Go</option>
+      <option value="zen">Zen — личный счёт</option>
+      <option value="public">Zen — публичные модели</option>
+    </select>
+    <label for="method">Способ входа</label>
+    <select id="method"><option value="device">Код устройства</option></select>
+    <label id="key-label" for="key" hidden>Сервисный ключ Zen</label>
+    <input id="key" type="password" autocomplete="off" spellcheck="false" hidden>
+    <label for="account">Сохранённый счёт</label>
+    <select id="account"><option value="">Выберите счёт</option></select>
+    <button id="reload" type="button">Обновить список</button>
+    <button id="inspect" type="button" disabled>Проверить выбранный счёт</button>
+    <hr>
+    <button id="signin" type="button">Войти</button>
+    <button id="reauthorize" type="button" disabled>Повторить вход для выбранного счёта</button>
+    <p id="code"></p>
+    <div id="auth-address" hidden>
+      <label for="auth-url">Адрес подтверждения входа</label>
+      <input id="auth-url" type="text" readonly spellcheck="false" style="box-sizing:border-box;width:100%;max-width:42em">
+      <button id="auth-select" type="button">Выделить адрес</button>
+      <p>Выделите и скопируйте адрес, затем откройте его в новой вкладке браузера и подтвердите код.</p>
+    </div>
+    <button id="poll" type="button" disabled>Проверить подтверждение</button>
+    <button id="cancel" type="button" disabled>Отменить вход</button>
+    <p id="status" role="status" aria-live="polite"></p>
+    <hr>
+    <section id="history-panel" aria-labelledby="history-title">
+      <h2 id="history-title">История OpenCode</h2>
+      <p>Доступ к локальной истории не зависит от входа в счёт. Magpie отдельно подтверждает чтение и выбранное хранилище.</p>
+      <button id="history-refresh" type="button">Проверить доступ</button>
+      <div id="history-roots" aria-label="Хранилища истории"></div>
+      <button id="history-access" type="button" disabled>Запросить доступ</button>
+      <button id="history-release" type="button" disabled>Отозвать делегирование</button>
+      <button id="history-list" type="button" disabled>Загрузить сессии</button>
+      <p id="history-status" role="status" aria-live="polite"></p>
+      <div id="history-sessions" aria-label="Сессии"></div>
+      <button id="history-more" type="button" hidden>Следующая страница</button>
+      <article id="history-transcript" aria-label="Разговор"></article>
+      <div id="history-media" aria-label="Вложения"></div>
+    </section>
+  </main>
+  <script src="_magpie/bridge.js"></script>
+  <script src="./app.browser.js"></script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+{
+  "AUTOMATIC-HISTORY-REVIEW-PACKET.md": {
+    "from": "docs/AUTOMATIC-HISTORY-REVIEW-PACKET.md",
+    "to": "docs/history/AUTOMATIC-HISTORY-REVIEW-PACKET.md",
+    "sha256": "2c7d5c017e7454230d4a7018e13be61b0943013c2b26e0e54ce32a1c28222d2c"
+  },
+  "PARENT-CATALOG-REVIEW.md": {
+    "from": "docs/PARENT-CATALOG-REVIEW.md",
+    "to": "docs/history/PARENT-CATALOG-REVIEW.md",
+    "sha256": "eb95f4f005c62841a3613ace7cba2f93fa44ea6202521366959473e772213b81"
+  },
+  "F2-HISTORY-CLOSURE.md": {
+    "from": "docs/F2-HISTORY-CLOSURE.md",
+    "to": "docs/history/F2-HISTORY-CLOSURE.md",
+    "sha256": "d4c7d9cf1d34a1fe3e16a5e130b37fed017afdf65a6ca289514c6cc025c7b3c0"
+  },
+  "SDK14-ADOPTION.md": {
+    "from": "docs/SDK14-ADOPTION.md",
+    "to": "docs/history/SDK14-ADOPTION.md",
+    "sha256": "97f2f1eabdad83e8955115e8f567410936f930d4a3cb5394aafbae9162871289"
+  }
+}

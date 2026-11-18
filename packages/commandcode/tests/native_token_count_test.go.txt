@@ -1,0 +1,79 @@
+package gateway
+
+import (
+	"context"
+	"encoding/json"
+	extensionhost "github.com/yetone/magpie/internal/extension"
+	"github.com/yetone/magpie/internal/provider"
+	"io"
+	"net/http"
+	"net/http/httptest"
+	"strings"
+	"sync/atomic"
+	"testing"
+	"time"
+)
+
+func TestAstraCommandCodeNativeTokenCounting(t *testing.T) {
+	fresh(t)
+	var generated, counted atomic.Int64
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		switch r.URL.Path {
+		case "/alpha/billing/subscriptions":
+			io.WriteString(w, `{"data":{"planId":"individual-pro","status":"active"}}`)
+		case "/alpha/billing/credits":
+			io.WriteString(w, `{"credits":{"monthlyCredits":9},"windowLimits":{"fiveHour":{"used":1,"cap":10}}}`)
+		case "/provider/v1/models":
+			io.WriteString(w, `{"data":[{"id":"claude-fixture","supported_endpoints":["/messages"]}]}`)
+		case "/provider/v1/messages/count_tokens":
+			counted.Add(1)
+			io.WriteString(w, `{"input_tokens":7}`)
+		case "/provider/v1/messages":
+			generated.Add(1)
+			io.WriteString(w, `{"id":"unexpected-generation","type":"message","content":[],"stop_reason":"end_turn"}`)
+		default:
+			w.WriteHeader(404)
+		}
+	}))
+	defer upstream.Close()
+	manager := extensionhost.Default()
+	t.Cleanup(func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		if err := manager.Close(ctx); err != nil {
+			t.Error(err)
+		}
+	})
+	entry, err := manager.Install(t.Context(), *commandcodeDistribution)
+	if err != nil {
+		t.Fatal(err)
+	}
+	config, _ := json.Marshal(map[string]any{"apiURL": upstream.URL, "workingDirectory": "/synthetic/project"})
+	if _, err = manager.CompareAndSwapModuleConfig(t.Context(), entry.Manifest.ID, "0", config); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = manager.Store().SaveAccount(extensionhost.Account{Plugin: entry.Manifest.ID, Provider: "commandcode-native", ID: "fixture-account", Auth: json.RawMessage(`{"apiKey":"synthetic-key"}`)}, 0); err != nil {
+		t.Fatal(err)
+	}
+	provider.Changed()
+	accounts, err := provider.ExtensionProviders()
+	if err != nil || len(accounts) != 1 {
+		t.Fatalf("provider admission: %d %v", len(accounts), err)
+	}
+	if _, err = accounts[0].Fetch(t.Context()); err != nil {
+		t.Fatal(err)
+	}
+	provider.Changed()
+	server := New()
+	t.Cleanup(server.idle.stop)
+	id := provider.ExtensionProviderID(entry.Manifest.ID, "commandcode-native")
+	request := httptest.NewRequest("POST", "/v1/messages/count_tokens", strings.NewReader(`{"model":"`+id+`/claude-fixture","messages":[{"role":"user","content":"count me"}]}`))
+	request.RemoteAddr = "127.0.0.1:23456"
+	request.Header.Set("Content-Type", "application/json")
+	reply := httptest.NewRecorder()
+	server.Front().ServeHTTP(reply, request)
+	if generated.Load() != 0 || counted.Load() != 1 || !strings.Contains(reply.Body.String(), `"input_tokens":7`) {
+		t.Fatalf("token-count request invoked generation: generated=%d counted=%d HTTP=%d body=%s", generated.Load(), counted.Load(), reply.Code, reply.Body)
+	}
+}

@@ -1,0 +1,8 @@
+{
+  "config": {"providers": {}, "policies": [{"action": "tool.use", "resource": "shell:sudo *", "effect": "deny"}]},
+  "instructions": {"instructions": [{"id": "style", "content": "Use tabs."}]},
+  "skills": {"skills": [{"slug": "deploy", "version": "1"}]},
+  "bundle": {"slug": "deploy", "files": [{"path": "SKILL.md", "content": "---\nname: Deploy\ndescription: Deploys the service.\n---\n\n# Deploy\n"}]},
+  "headers": {"x-opencode-instructions-skills": "1", "x-opencode-event-watches": "1"},
+  "poll": {"cursor": "1.1", "events": [{"id": "ev_1", "watchID": "ew_1", "sessionID": "ses_fixture", "source": "github", "routingKey": "github:acme/app#1", "kind": "review", "actor": {"id": "1", "login": "octocat", "bot": false}, "title": "acme/app#1", "body": "Looks good, ship it", "url": "https://github.com/acme/app/pull/1", "status": "approved", "terminal": false, "occurredAt": "1970-01-01T00:00:00.000Z"}]}
+}

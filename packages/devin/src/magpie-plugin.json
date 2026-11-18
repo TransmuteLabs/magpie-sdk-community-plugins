@@ -1,0 +1,36 @@
+{
+  "schema": 1,
+  "id": "devin-inbound",
+  "version": "0.5.0",
+  "runtime": "native",
+  "entry": "plugin.so",
+  "contract": {
+    "version": {"major": 1, "minor": 12},
+    "capabilities": ["inbound-codec", "outbound-executor", "account-auth", "model-discovery", "usage-reporter", "request-policy"]
+  },
+  "compatibility": {
+    "hostAPI": "^1.12",
+    "nativeABI": 1,
+    "platforms": [
+      "darwin/amd64", "darwin/arm64",
+      "linux/amd64", "linux/arm64",
+      "windows/amd64", "windows/arm64"
+    ]
+  },
+  "window": {"metadata":"package.json"},
+  "authBindings": [{
+    "id":"page.auth.devin","from":"window:page","provider":"devin","reauthorize":true,
+    "methods":[{"id":"browser","mode":"poll"}]
+  }],
+  "providers": [{"id":"devin","name":"Devin","protocols":["chat","anthropic"]}],
+  "inbounds": [
+    {"id": "devin", "path": "/exa.api_server_pb.ApiServerService/GetChatMessage"},
+    {"id": "devin.cli-models", "path": "/exa.api_server_pb.ApiServerService/GetCliModelConfigs"},
+    {"id": "devin.command-models", "path": "/exa.api_server_pb.ApiServerService/GetCommandModelConfigs"},
+    {"id": "devin.cascade-models", "path": "/exa.api_server_pb.ApiServerService/GetCascadeModelConfigs"},
+    {"id": "devin.cli-models-site", "path": "/exa.api_server_pb.ApiServerService/GetCliModelConfigsForSite"},
+    {"id": "devin.command-models-site", "path": "/exa.api_server_pb.ApiServerService/GetCommandModelConfigsForSite"},
+    {"id": "devin.cascade-models-site", "path": "/exa.api_server_pb.ApiServerService/GetCascadeModelConfigsForSite"},
+    {"id": "devin.model-statuses", "path": "/exa.api_server_pb.ApiServerService/GetModelStatuses"}
+  ]
+}

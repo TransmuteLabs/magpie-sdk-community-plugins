@@ -1,0 +1,45 @@
+{
+  "verdict": "ACCEPT — bounded relocation/preservation only",
+  "at_utc": "2026-11-15T10:45:38.724428+00:00",
+  "source_content_sha256": "33414d905947f6de486bd07abc002e85f10bdae0689c2243e9e18dd9d7c893ee",
+  "source_file_count": 684,
+  "base_content_sha256": "be05a2f6ae4b1f12d3b93f66c94482869d414d75fac2484e0763a53eb3c92b58",
+  "reviewed_delta": {
+    ".gitattributes": "fd1df8efca6a8f843fc232195a856f3e92a082623bd51aaa1329ca171391639a",
+    "tests/test_workspace.py": "d0a148897b067b37a5f02ae77bff28d71ef29b38aa8c8bca171754c03f9b6665",
+    "README.md": "02bb7338ccbb6fad00435101ba2172052320717a69fc8928903493ba400a6fa6"
+  },
+  "local_and_remote_manifest_mismatches": [],
+  "attributes": "exact original three rules with packages/opencode/src/ prefix",
+  "regression": {
+    "red_exit": 1,
+    "red_tests": 5,
+    "red_failures": 4,
+    "green_exit": 0,
+    "green_tests": 5,
+    "green_failures": 0,
+    "host": "usbox",
+    "real_temporary_git_index_and_checkout": true,
+    "actual_donor_files": 3
+  },
+  "earlier_zcode_output_p2": "closed by independent actual compiled root facade replay",
+  "remaining_blocking_relocation_findings": [],
+  "limits": [
+    "ZCode unchanged repeated retry test remains unresolved; no domain-wide approval",
+    "Ignored original contents retain path/size attestation only",
+    "No new live or cross-platform runtime acceptance",
+    "Prior negative report and red/control evidence remain unchanged"
+  ],
+  "evidence_hashes": {
+    "attributes-red-network.json": "55ba8c5dbef5d666153ddb768f0615f37ffd73c2c23bd6a4500e370915a80e81",
+    "attributes-green.py": "2c8984e225b08d0c0562056068012d475d9b467237a6811d0bb81a625ff17fd3",
+    "attributes-green-network.json": "47404cc934d4026f9e9a3577d55aff126d4da335ecbee3353da7ad626226acf2",
+    "attributes-green-result.json": "3335aac76c8ea48ac9bc4aee5bfca8733a1f2807ecf80e30e96ec8bc688a4478",
+    "attributes-red.log": "d920cebea942626960f2c519a91c4dbf6c9fb4ccd9dca6c1c29368d5f6dd10fe",
+    "attributes-red.py": "c65a027ad9519973d22ae9ca5b587a661f62d844f8ea66237585e939708fd59c",
+    "attributes-green.log": "989ccd071845225911441005f397efe8955c6b0fc1bc459ca655531ed1112690",
+    "attributes-red-result.json": "280c9815144140fb0565a75e8171035f1ba75170ebf0d3eb69f0acf55c2ae0e8",
+    "source-final.json": "2b435e3e6ad6752c45fabe0ea9322e0c86a391aebed58c2079df5a7f8c285807"
+  },
+  "reviewer_changed_target_source_or_git": false
+}

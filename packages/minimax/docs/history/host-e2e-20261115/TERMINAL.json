@@ -1,0 +1,58 @@
+{
+  "schema": 1,
+  "status": "ACCEPT within stated MiniMax production coverage",
+  "module": "minimax",
+  "sourceDigest": "18362762aa982cf1e0a186e03b9338d5bd9ce7f91275cfb40d8ba8615860b5fd",
+  "librarySHA256": "4ae1687285445c4570e1c08db7c6be229ad775969e57e3344f66cf0e2aedcc38",
+  "hostSHA256": "dfc5c0ddcaae39339ef5d2008056d0b63ad1b7821c6f87bf6af472913e2f1e79",
+  "runs": [
+    {
+      "name": "production-v4-final",
+      "exit": 0,
+      "scenarioRecords": 20
+    },
+    {
+      "name": "classification-v4-final",
+      "exit": 0,
+      "authSetupRecords": 2,
+      "malformedAssertions": 4
+    }
+  ],
+  "closedFindings": [
+    "MM-E2E-1"
+  ],
+  "separateOpenFindings": [
+    "MM-HOST-OBS-1: generic host observability, parent-owned"
+  ],
+  "coverage": {
+    "productionBuildMetadataFullyRead": 21,
+    "documentationFullyRead": 6,
+    "testInventoryOnly": 8,
+    "authorFreezeMismatches": 0
+  },
+  "remotePrefix": "usbox:/tmp/magpie-minimax-host-e2e.fhLVWFGt",
+  "report": "docs/history/host-e2e-20261115/INDEPENDENT-REVIEW.md",
+  "files": {
+    "tests/host_e2e.py": "06df453e19e7b3b66c0a48973e281106837b9b6d934bda73a8ab28c3d8ee33a7",
+    "docs/history/host-e2e-20261115/HOST-OBSERVABILITY.md": "8308292c21dbc0dd606d6d2e5ac57411816903471a77a01a15ce24572316e869",
+    "docs/history/host-e2e-20261115/INDEPENDENT-REVIEW.md": "c115aaeffff0638defc61ca6daed2f8e3e40a86a8909d3f921dd8e847605059b",
+    "docs/history/host-e2e-20261115/MALFORMED-REFUSAL.md": "f0744d8462bbb8740625eda1e7d5c177b01096af09573796c34186641c2bbb23",
+    "docs/history/host-e2e-20261115/PLAN.md": "0234cd581c179a33a0a0e7c4c5bcff3c4018dadced83704e4528482e71e8f5e6",
+    "docs/history/host-e2e-20261115/READINESS.md": "3b7194a1e2a2f1a1d2ef3e9bcf9adeb9d610e148b2eabc8db3c775838362d261",
+    "docs/history/host-e2e-20261115/REVIEW-COVERAGE.json": "e541cb36449e437dcf53f709cafb21f931f5d8fcce1487125f9fd853f6bf5bff",
+    "docs/history/host-e2e-20261115/fixture-v1-network.json": "0dc2a76d0609d5cd74379241599cbbcb3623c59dc56f578ba9e38183f67685ff",
+    "docs/history/host-e2e-20261115/fixture-v1-receipt.json": "2d930dd6a16dd6cd20aae60b9b116389233a624e6641540ec7511c664ce700cf",
+    "docs/history/host-e2e-20261115/fixture-v2-network.json": "0dc2a76d0609d5cd74379241599cbbcb3623c59dc56f578ba9e38183f67685ff",
+    "docs/history/host-e2e-20261115/fixture-v2-receipt.json": "6ab075ea0cacb77121e4e8eed290b413c86d3ccbc882456a21e35fc34dd3383a",
+    "docs/history/host-e2e-20261115/host-e2e-evidence-v4.sha256": "71fedb2d417552ef9ad967971bd8ce186c479a111246e5de454e91373ff05531",
+    "docs/history/host-e2e-20261115/host-e2e-evidence-v4.tar.gz": "9ddc59bb7b85f3f7cba3d3b1f1cddb7dcff3e8b59dfd5d574fc9cb4a0f60fec5",
+    "docs/history/host-e2e-20261115/syntax-v2-receipt.json": "f8549e754423cf0eb875a41ec28d0ebdc6943d2051f66772f142e50c319d4a4d"
+  },
+  "limits": [
+    "synthetic protocol semantics, not vendor captures",
+    "Linux ordinary host only; no browser/non-Linux/live vendor readiness",
+    "no reactive401 recovery integration approval",
+    "no broad independent Go rerun; author gates separate",
+    "no source/index/refs commits or runtime changes by reviewer"
+  ]
+}

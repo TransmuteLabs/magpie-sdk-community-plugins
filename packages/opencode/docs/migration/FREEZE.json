@@ -1,0 +1,27 @@
+{
+  "status": "FROZEN",
+  "scope": "packages/opencode only; relocation, no runtime behavior edits",
+  "sourceFiles": 142,
+  "sourceContentSHA256": "999118bae0efaa8f50a1a3a507bce830cc25f84dcb475c66f1cebd8196b0b646",
+  "algorithm": "SHA256 compact sort_keys JSON of sorted path/sha256/size entries; docs/migration excluded as relocation records",
+  "sourceManifest": "usbox:/tmp/magpie-opencode-relocation.AaLNo9c6/source-freeze.json",
+  "sharedHelperSHA256": "1f386b59297faeddfa9b1c1f0b8d0dd25954dbe7322de161b62f32c99060442e",
+  "finalGreenGates": [
+    "go",
+    "vet",
+    "format",
+    "build",
+    "package",
+    "oracle-tools",
+    "oracle-policy",
+    "python-static",
+    "history-unit",
+    "guard-build",
+    "native-history-guarded",
+    "auth-browser-short-tmp-final"
+  ],
+  "verificationSHA256": "059c1885cd3c3ce3fd4a79e805481dd43faace756ef046ede1c8ff2ef23c5de7",
+  "secondaryMovesSHA256": "1f59ffa6d114f9c16874ddb365c51de569247cabc178a41d18a8a5557ad736f3",
+  "rootCombinedValidation": "parent-owned; not claimed here",
+  "productionRuntimeChanges": []
+}

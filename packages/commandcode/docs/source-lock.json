@@ -1,0 +1,497 @@
+{
+  "schema": 1,
+  "referenceReview20261117": {
+    "checkedAt": "2026-11-17",
+    "communityCommit": "324acd6007f2d513c5072fe2e9fe1db3524ae03d",
+    "communityVersion": "0.1.24",
+    "communityPackageTree": "305e867f7f675041d4905c951fb2495a9d00fcb3",
+    "communityBehaviorDelta": false,
+    "officialPackage": "command-code",
+    "officialVersion": "1.89.2",
+    "archiveSHA256": "d9b5db423a6d7c83f01c940acc02349a0ed8c7d3586b3f709e300862f29718c6",
+    "integrity": "sha512-CPIF+sp9XqI0+qJsmxNZ6RuAxhLlclGfDnsAImBCtXuAoRsBJHHu0JLgWCtyl+DRFudV8DZfFm2++mVSTJGbNA==",
+    "files": {
+      "package.json": "e1033f2a0f23f992d2e1d9b65a59ec13a1b2b9205cb87d5181e549a4e939c00b",
+      "dist/cli.mjs": "84c1d1fdebc6307e6408aed841bdf98feec326f8dbb3148abc78382f01f0102b",
+      "dist/index.mjs": "157feefa0140e78f060ef2c1f9c50d10de702196ea229dc73db6bbcc39a0bcbb"
+    },
+    "namedNativeFunctionsByteIdentical": 22,
+    "wireOrConfigPortIdentified": false,
+    "headerVersionAlignment": "Native and SystemOne share cliVersion 1.89.2; former native 1.89.1 and separate SystemOne 1.88.2 fail the new actual-HTTP expectations",
+    "verification": {
+      "oldRuntime": "Seven actual FAIL events from five HTTP leaves, parent and package; not a compile or setup failure",
+      "focusedRace20": {"exit": 0, "passEvents": 121},
+      "moduleRace": {"exit": 0, "passEvents": 225, "commandPackagesWithoutTests": 2},
+      "vetExit": 0,
+      "gofmtOutput": "",
+      "packet": "root-commandcode-reference-20261117-01",
+      "liveVendorOrClient": false
+    },
+    "artifactExecuted": false,
+    "reaEvidence": "ev_3dc59d2a15ec2448894362d5b0f1c1d3b0e8653801fda82cad8a573b4ac95d24",
+    "reaCoverage": "Partial static graph; not whole-harness semantic or runtime acceptance",
+    "report": "SOURCES.md",
+    "extractionPinsChanged": false
+  },
+  "currentVerification": {
+    "date": "2026-11-16",
+    "report": "LOCAL-CLOSURE-20261116.md",
+    "packet": "/tmp/magpie-sol-decision-accounting-20261116/mac-current01",
+    "publicHelperSHA256": "075db96b4b10ac50a01ef2cee1381480759716dba38942fb5a0f118355642a22",
+    "hostSourceInventory": "SOURCE.json; exact frozen dirty source, not an asserted commit",
+    "state": "bounded common-host closure and existing confirmed ZDR owner adoption; Astra review pending",
+    "historicalBoundary": "requestPolicyAdoption retains original OBS checkpoint identities; donor extraction pins are unchanged"
+  },
+  "plugin": {
+    "id": "protocol-commandcode",
+    "version": "0.1.3",
+    "sdkMinimum": "1.12",
+    "nativeABI": 1
+  },
+  "requestPolicyAdoption": {
+    "state": "unpublished API1.12 working adoption; Astra review separate",
+    "sdkMinimum": "1.12",
+    "capability": "request-policy",
+    "packageVersionChanged": false,
+    "hostSource": "usbox:/tmp/magpie-obs-policy-fix-20261115/candidate-01.tar.gz",
+    "hostManifestSHA256": "8724cf734d51d881f6d88561eceefeaecf9f722e1bc4e1a078fcb8f010cccdd4",
+    "hostArchiveSHA256": "9015f443e9ea051f26c7399d6fa0292e4229d1d8f15e332d2b5fc9f4f85f4208",
+    "publicHelperSHA256": "be486205f9b4cc2e37dd003e20e0602dd27470788a1c3419ac045f3f1acd1c3d",
+    "sourceSelection": "Original archive bytes verified against all 10987 manifest paths; shared source directory drift is separately recorded, never patched",
+    "messageRuleSource": "community-commandcode; only existing donor message meanings, no invented machine code rules",
+    "additionalReadOnlyDonor": {
+      "commit": "57d1cc6a9f49389d495ea9be8d986c70de7767bf",
+      "files": {
+        "packages/commandcode/index.mjs": "ef6f9e6f9241dfa5deddde5326408e1560cfd653b41b2eead3a0f85f11af9631",
+        "packages/commandcode/errors.test.mjs": "d9adb8c674d1c85d2307984170818681ced1a145362f235af399f26f129d2363"
+      }
+    },
+    "contract": "REQUEST-POLICY.md",
+    "verification": "REQUEST-POLICY-VERIFICATION.json",
+    "packet": "usbox:/tmp/magpie-sol-two-policy-20261116"
+  },
+  "latestCommittedDonorReview": {
+    "checkedAt": "2026-11-16",
+    "communityRef": "origin/main",
+    "communityCommit": "b35d4b35b2446bd929896ddeb58f3cb299e9e2d1",
+    "communityVersion": "0.1.24",
+    "packageTree": "305e867f7f675041d4905c951fb2495a9d00fcb3",
+    "previousReviewCommit": "57d1cc6a9f49389d495ea9be8d986c70de7767bf",
+    "extractionCommit": "26ea8faf7793ca66dd8e7a8b90128a5235552a1f",
+    "decision": "no-op: complete package tree is identical; extraction and literal fixture pins remain original",
+    "npmLatest": {
+      "checkedBy": "parent; supplied registry result, not independently fetched by SOL",
+      "checkedAt": "2026-11-16",
+      "version": "1.89.1",
+      "shasum": "e5c8e74d8a1f35dfd67f0bb5980161a571d61eb1",
+      "integrityMatchesExistingSource": true,
+      "decision": "no artifact delta; no download or repeated whole-harness reverse engineering"
+    },
+    "record": "DONOR-REVIEW-20261116.json",
+    "runtimePort": false,
+    "packageVersionChanged": false
+  },
+  "sources": [
+    {
+      "id": "community-commandcode",
+      "role": "recovered vendor transport, auth, entitlement and sanitized fixture evidence",
+      "repository": "https://github.com/magpie-community/plugins",
+      "commit": "26ea8faf7793ca66dd8e7a8b90128a5235552a1f",
+      "version": "0.1.24",
+      "paths": [
+        "packages/commandcode/index.mjs",
+        "packages/commandcode/*.test.mjs",
+        "packages/commandcode/testdata"
+      ],
+      "files": {
+        "packages/commandcode/index.mjs": "ef6f9e6f9241dfa5deddde5326408e1560cfd653b41b2eead3a0f85f11af9631",
+        "packages/commandcode/package.json": "d140d387285fdcb9f538f84ec2bd84e818a4c4a1609448fb68a122e3b8c34273",
+        "packages/commandcode/jev.test.mjs": "67d94f5369c7cda8f5a52f95d1224063db8b3914a61e395487a6268a0d0c6b78",
+        "packages/commandcode/google-schema.test.mjs": "ef0d9f3761767d9db0f3cbfa5baf8688fd46c4988e483e758b6364c9e38bd650",
+        "packages/commandcode/think-off.test.mjs": "a7eb70b4d5554e9814c36392bab78530bc1f31338224181d814e6552559267ff",
+        "packages/commandcode/testdata/models-2026-10-13.json": "51445d1c33222bf92a137c8070dbab532abd7afde4415cbdee3d53600143980d",
+        "packages/commandcode/testdata/subscriptions-goat.json": "1cd866e6b36034a87c43dcda226b5b15e8e304e5574cbb3994c35a18aa8d795c",
+        "packages/commandcode/testdata/credits-goat.json": "6438361859b848a4cc0b299518f4c0522062bb01a6f5384a8b94b2703c28fdd7",
+        "LICENSE": "5e8730b694ba31696dd68d693f8bf5e2c75f7e40fd5f6fbc3f067cf9490b24fb"
+      },
+      "checkedAt": "2026-11-15",
+      "currentComparison": {
+        "commit": "57d1cc6a9f49389d495ea9be8d986c70de7767bf",
+        "packageTree": "305e867f7f675041d4905c951fb2495a9d00fcb3",
+        "pinnedPackageTree": "305e867f7f675041d4905c951fb2495a9d00fcb3",
+        "commandcodeDiffEmpty": true
+      }
+    },
+    {
+      "id": "cliproxyapi-maintained",
+      "role": "independent Go-plan wire, stream and billing cross-check",
+      "repository": "https://github.com/router-for-me/CLIProxyAPI",
+      "commit": "842cedec8f85c808f45bb2c7b66a1ee5dd23bcf9",
+      "version": "maintained local main snapshot; v8 native transport captures CLI 1.74.1",
+      "paths": [
+        "internal/runtime/executor/commandcode_executor.go",
+        "internal/runtime/executor/commandcode"
+      ],
+      "files": {
+        "internal/runtime/executor/commandcode/transport.go": "1e2be65fac8df0b0ed0ac24e19c0fef71e719d726c63360a62f8e6ced970da0b",
+        "internal/runtime/executor/commandcode/request.go": "f50e2dc5e91b122740a4410161051fa18aab675b6b4586d0f177523b881a8a05",
+        "internal/runtime/executor/commandcode/stream.go": "09fd25550997259c4b9e22cf6c204281f063ba735d97a0b6226a97513866c698",
+        "internal/runtime/executor/commandcode_executor.go": "472c64c701ed4fb534b4ecc0eb90aaff280e8da9e22779cb7814cf8e8d0f498f",
+        "go.mod": "78dc3df6a4f2ccd3e78600546f0de96e7428066db9dcf90606c0db945b9c7b19"
+      },
+      "checkedAt": "2026-11-15",
+      "localCheckout": "/Users/maratkarimov/work/SIB/Proxy/CLIProxyAPI-family/CLIProxyAPI-u2-331t-up42",
+      "worktreeHasUnresolvedMerge": true,
+      "onlyCommittedSourceInspected": true,
+      "fetchedOriginMain": "e96d4c4818851cf0e96d27b2bc8b67379e449d9e",
+      "upstreamNativeCommandcodePathsAbsent": true,
+      "previousPin": "7638884b40a60c3fb534126b334b178f3b3bbcbb"
+    },
+    {
+      "id": "official-commandcode-harness",
+      "role": "current published native request and bounded pause-continuation evidence; static source and isolated functions only",
+      "repository": "https://registry.npmjs.org/command-code",
+      "revisionKind": "npm-tarball",
+      "version": "1.89.1",
+      "publishedAt": "2026-11-13T23:07:47.521Z",
+      "checkedAt": "2026-11-15",
+      "distribution": {
+        "url": "https://registry.npmjs.org/command-code/-/command-code-1.89.1.tgz",
+        "shasum": "e5c8e74d8a1f35dfd67f0bb5980161a571d61eb1",
+        "integrity": "sha512-1evcx4rL0NqFt4LSUNCgL0kDliMIAjQkVleUnrycIrAdrTxi18bs6njirPp9U2rTkL7nCuv2aat6i+q05qTXDg==",
+        "sha256": "c3d5e0b1f3d28784476a15b8041ec0181a0517bc79f06bb19257083e0e97f187"
+      },
+      "paths": [
+        "dist/cli.mjs",
+        "dist/index.mjs",
+        "package.json",
+        "CHANGELOG.md"
+      ],
+      "files": {
+        "package.json": "ff148d539427f4ed90839dff6c21d484a997676a45687bc56b042b7157a326a7",
+        "dist/cli.mjs": "51d650c5c8cf9a63619ff38285886d4e2076a2cd5940db6bd10a5646916e5cd4",
+        "dist/index.mjs": "157feefa0140e78f060ef2c1f9c50d10de702196ea229dc73db6bbcc39a0bcbb",
+        "CHANGELOG.md": "60238ab4e26b35085d2a3cd6687527cd179f15d13a869419e3552dc0b8dc87d9"
+      },
+      "redistributed": false,
+      "completeHarnessExecuted": false
+    },
+    {
+      "id": "sdk-tested-host",
+      "role": "merged SDK API 1.9 base, exact physical packet and supplied binary; completion overlay acceptance remains separate",
+      "repository": "https://github.com/TransmuteLabs/magpie",
+      "commit": "66ac2f7fdaeb208e8f4d60f53aea7b33ed396c55",
+      "commitTree": "94ec4c8de4e5b366a6e3fb854df2176007587ab8",
+      "tree": "94ec4c8de4e5b366a6e3fb854df2176007587ab8",
+      "revisionKind": "frozen-physical-tree",
+      "compatibilityOverlay": {
+        "basePhysicalTree": "94ec4c8de4e5b366a6e3fb854df2176007587ab8",
+        "files": {
+          "internal/provider/extension_transport.go": "8125bc29256164ee697b0227dfb099c77da4c4cf152c28290909714fbba45e1e",
+          "internal/provider/extension_transport_completion_test.go": "8b540a1f5885dea340228cf0759534d615e1124f8f6228ce0fdf21d387a08898",
+          "internal/gateway/gateway.go": "c64180438c93c38008e201fd9b7d2bbe3a7bcd5aca5ee2a61a38f7b7272cbd7c",
+          "internal/gateway/continuation.go": "3778446a7fbdd6dcf1add27a699c695618741dbd8a684f479c690e7f505bb5cc",
+          "internal/gateway/search.go": "780f363a0cd071cfbc6898c113d9ede6d825d6435c4a1def85719348231626be",
+          "internal/gateway/chat.go": "1aacc276ef6acc62edc42aca00c87d59bf89652e74d7af3bc26135f643e1a290",
+          "internal/gateway/responses.go": "0234911ec90b8edd3580074523b254e0f8860e4c2a8730792de3013caab18be9",
+          "internal/gateway/anthropic.go": "16ad7eca5ffcca7df61708811c6ae85a7dede3067cf7f08aa5bf4b659b2780d0",
+          "internal/gateway/codeassist.go": "15cc3ccce05910f56797e6a337a44de657483b0f7d5984256798d022eb0abb60",
+          "internal/gateway/extension_transport_completion_test.go": "0e336fa431c5680e53da313ed61eb7998d6db0d9e2f17953eccf5a2dc2ec4afe"
+        },
+        "sourceSnapshot": "usbox:/tmp/magpie-commandcode-completion.QL5FOqka/closure94-typed-input2/overlay",
+        "owningReferenceSHA256": "cbd2d2be1d1128e13809c6877f74e7c4e8502062fe4453e8ffabca9292180f0d",
+        "patchSHA256": "8f699c58724a8612c87089775ca85bebf27477a34c94c423bee52e665f5d9440",
+        "binaryPath": "usbox:/tmp/magpie-commandcode-completion.QL5FOqka/closure94-typed-binary/magpie",
+        "binarySHA256": "8b1a102fae32aca85e54b75f478bd6585efe70d3a33900f7c6ed4c1fce041c4f",
+        "scopedReceiptReview": "Raman / auto:gpt-6-astra; no remaining HIGH/MEDIUM in exact input2 receipt slice; independent 66 PASS on equivalent proposal1 plus input2 source review",
+        "combinedInstalledReplay": {
+          "receipt": "usbox:/tmp/magpie-commandcode-completion.QL5FOqka/closure94-typed-native/results.json",
+          "receiptSHA256": "e7fa4a6a5213c9d2da01d5b74c6d904ed8df48b2f368d66cd7c895e6d4c13847",
+          "moduleLibrarySHA256": "9d7f706ea0e7851c8054bad30459836d857952ee02a6fe0dc7c3bf2c7aea6074",
+          "scopedCompatibilityAccepted": true,
+          "hostMergeClaimed": false,
+          "scope": "Actual clean one-package install; installed Go-plan Chat/Responses/Messages whole/stream/search, decisions and agent race20 each 20 PASS; ordinary owner complete/truncated Provider API SSE all three protocols."
+        },
+        "priorSyntaxGuardBinarySHA256": "e329ba8de5d1d6cb673551ddabc22b425d9424515b6e790b62d484368400f46c",
+        "priorBinarySHA256": "361fcd8b185955672280de6b5c7f8af9a6709abe58ca3583766a3ddbbadf27d0",
+        "priorBinarySourceSnapshot": "usbox:/tmp/magpie-commandcode-completion.QL5FOqka/host4b9-authority-input2",
+        "priorSyntaxGuardProductionFilesIdenticalAcrossBases": true,
+        "typedDecoderCorrectionChangesProductionFiles": true,
+        "evidence": "docs/history/EVIDENCE-COMPLETION.json",
+        "candidatePacketUnmodified": true,
+        "leaderMergeAcceptancePending": true
+      },
+      "binary": {
+        "path": "usbox:/tmp/magpie-upstream-signing-closure.ofRrrBdz/magpie",
+        "sha256": "a8e09770909f78ae89cc6175a45bb98e1dacdb305b62856f46956928cb8ecbe2"
+      },
+      "previousPhysicalHost": {
+        "commit": "c11acbc2bebec1fb213ef562900d35188cdf55fe",
+        "commitTree": "87009a6040909fc43b036d1d775dcaf03a7038a7",
+        "tree": "8fe78ab9df13d733d61462eacce19bff523c1e58",
+        "evidence": "docs/history/EVIDENCE-SDK19-FINAL-REPIN.json",
+        "binarySHA256": "c018c44332ff9238779d1d01340dfd751209c2c694942fd0406e4d6a3c96cc86"
+      },
+      "historicalAcceptedHost": {
+        "commit": "46756a48c9c9f204a8369638dc63cbcb83d02031",
+        "tree": "db40ddbf8944b54f9f689d444644af4c3bc76881",
+        "evidence": "docs/history/EVIDENCE-SDK19-DECISION-OPTIONS.json",
+        "pinnedSDKFileHashesUnchanged": true
+      },
+      "snapshot": {
+        "sourceIdentitySHA256": "56ffb3c7c68dd2c89c9c72f30bda6a0c0c5b487667f3ac9174fdb5b5a220ebb6",
+        "archiveSHA256": "131aeaa8fa9052dab47854ead8cb8b57f7f4dadca92715dbad307f4424c2de9e",
+        "evidence": "usbox:/tmp/magpie-upstream-signing-closure.ofRrrBdz/source.json",
+        "receiptSHA256": "d97b5eca0017294ddccc457ee691411ede08c190e12a0d7857f27af6d49ec7c7",
+        "paths": 10849,
+        "physicalTreeIsAuthoritative": true,
+        "captureHead": "adcf4ce5edbe2fe9595c4fceb9e809c23f74d60d",
+        "committedTreeMatchesPhysicalTree": true,
+        "captureHeadIdentifiesPhysicalTree": false,
+        "sharedPreservationHunksPending": false,
+        "releaseAcceptancePending": true
+      },
+      "version": "consolidated SDK API 1.9 / native ABI 1; module minimum API 1.9",
+      "paths": [
+        "pkg/extension",
+        "pkg/protocolext",
+        "sdk/js/ui.d.ts",
+        "internal/agent/commandcode.go",
+        "internal/agent/extension_actions.go",
+        "internal/agent/route.go",
+        "internal/provider/extension_transport.go",
+        "internal/provider/extension_models_cache.go",
+        "internal/provider/extension_outcome.go",
+        "internal/provider/extension_decisions.go",
+        "internal/provider/models.go",
+        "internal/gateway/decide.go",
+        "internal/gateway/decide_group.go",
+        "internal/gateway/decisions_systemone.go",
+        "internal/gateway/extension_usage.go",
+        "internal/gateway/classify.go",
+        "internal/gateway/rules.go",
+        "internal/gateway/embeddings.go",
+        "internal/agent/extension_controller.go",
+        "internal/agent/extension_controller_sync.go",
+        "internal/agent/extension_binding_store.go",
+        "sdk/js/agent-model-metadata.js"
+      ],
+      "files": {
+        "pkg/extension/usage_contract.go": "8f6554cd9a6fc02ac6bfea6c70ddc55a2daf18a96b6d1d794711526034060bbd",
+        "internal/provider/extension_transport.go": "6714f5108143e6d27cbfa58c38593f3abeedee9bdfc3e249813bf9741db18844",
+        "internal/gateway/upstream.go": "19575030db8be3748eb0a53a4643695e40a6ecd4a9f20d338e0b438907d8c1fd",
+        "internal/gateway/sse.go": "6e32450dd03f86289549d5ae1ad537717c869163ed5d98459eaa969dd69c4e00",
+        "pkg/extension/types.go": "8cc171a4aded2b045cad262f1a90fa468e14bc10f6f54cf56d728cfcbd7bffaa",
+        "sdk/js/ui.d.ts": "a824ef50dc97c3a2339a05e48a07e70b06330632092a1c78c53c07daf1cc0575",
+        "internal/extension/usage_runtime.go": "ff6063419132894965e25a8bf99e31d86c113e0463454c866f785ad67e7e5ed7",
+        "internal/provider/extension_usage_barrier.go": "ce071d48f05849cd09b0886dda7e6c8e71df8c1d3f855f775303bd71f5113f16",
+        "internal/agent/commandcode.go": "8ecfb0410b3fa62110da9ee3592aeaeb53bbdac2a7f822c733f6f03f09b3e37d",
+        "pkg/extension/provider_operations.go": "85e72c7ad3b0248038c6d069821cf823e0711453ef8a1a56d29f396239eca0dd",
+        "pkg/extension/account_operations.go": "8ff460fa9d8f5a7368cbce146a597afe9ca5250dbe75d97bbdb4d3e9d76374ee",
+        "internal/provider/extension_operations.go": "a500a40f4fa77e4f11b5c22a2e88e9472eb443efb57735a98dc9e2c3454b4be4",
+        "internal/provider/extension_models_cache.go": "8f9722a7a03e6602c05492417ade08523932bc54b9d4cb10df3c477c5a1d43e0",
+        "internal/agent/extension_actions.go": "2af1762d15166bb0460129c6ee642614c2320c23c668db320a24857db187bdba",
+        "internal/agent/agent.go": "e2da489afe8f1d1cbffd38f38bad61c59a67e9f2893dbdaae76c2cdfc13e00fa",
+        "internal/gateway/decide_group.go": "0a08e013cb36fb72a40d9a395d69a3c2451f11777a1a6a257d155f0233441fc1",
+        "internal/gateway/decide.go": "1bae55daa740c5e0fa23df321e442a941a270e8b649e208aebfeda9c049e1e34",
+        "internal/gateway/embeddings.go": "ffc9dffcd758f6232aedf8da5a52cca40e5b6e1015dbed24ac2b8ec816e7b542",
+        "internal/provider/extension_outcome.go": "7b085385c25122171a1cdeaa6e5e5538cb10644e97c6896518754d79ac38e444",
+        "internal/provider/models.go": "b4545764b4d56668047a11627812039b3aa9aa4844f1af672139169784ceae96",
+        "internal/agent/route.go": "1046549936937f31a7481fb268513fbada99af6c0188ebd194ad69291e70f87f",
+        "pkg/extension/usage_facts.go": "757a43e57974550f7a65b9319ac5634a5088c9f1b58300006de9eacad9e8f5e7",
+        "pkg/extension/decision_operations_test.go": "ae940ee48e0febc60aea3a38a6be2fd05f97bed9ca34df10c419ca8ae60efc5b",
+        "internal/provider/extension_decisions.go": "65c5a18d29d683131f8ce83a2a900356c4f570b3a6228637f78f8260e3975128",
+        "internal/gateway/decisions_systemone.go": "367f1c5c21cfe8257416c385a7dfc855e589d7561d9c6f9e8d4b378a20a6b27b",
+        "internal/gateway/extension_usage.go": "578e38f74e0744d7506e024b7397c1a3ecf3cf7f1009eb1d5cf42d883086d6df",
+        "internal/gateway/classify.go": "7a7ac279ee88caa241f6de18cae1d1eac285e130e5e317e0219347d42e16f750",
+        "internal/gateway/rules.go": "23eceb3f1af1f5e878b373700eec57c683b7bdbb73330da1e8b5d6072cfdfadb",
+        "internal/gateway/extension_decisions_test.go": "6fa2bc495071256e63f57febfca547917b0f8f40e408ff37b93de6aa51892872",
+        "go.mod": "efdbeed99080455ef66a04ebea0b4d7ecfffe0c7a1d08eed2404c5ba36551b44",
+        "go.sum": "f330d668c351f13fe2b9ff9e8d97c1503bdee257705117147f6cc6982f37221b",
+        "pkg/extension/contract.go": "7a523a36395a5e5c8b742673e4a817b0a83f76ce5c89bae26f4fc9a0d845aefc",
+        "pkg/extension/composite.go": "754257d2c08911ff512ba43cf9cd3886cacc0cc12ee1da3961953926ca75b7a1",
+        "pkg/extension/manifest.go": "5e89d2270aadf1c93fcc00ef9765b4548c5c116ad53910e2f3daf8e4b177301f",
+        "pkg/extension/agent_model_metadata.go": "7d12314395ec9670cc743719199f0e67320eb7c9290e53848fdfda122c1afe27",
+        "pkg/extension/agent_model_metadata_test.go": "ce754f32922858dd0f58dd8192b1368185539071b66e42f1f2190f5a0e03b07a",
+        "internal/agent/extension_controller.go": "ebe43017633dabb45980a659d0983de81378bdc40a23e84d7ed8217bcfeacf23",
+        "internal/agent/extension_controller_sync.go": "c51e6cd4bad75c37e386c9fa388da8bb6b022b28688c7ff17da53a4b94234443",
+        "internal/agent/extension_binding_store.go": "1182d1c84f82bf5c9d5646c6cc9c013da2844bbce0349fcdae611280faf04202",
+        "internal/agent/extension_model_metadata_test.go": "6d9e5ff657166f2b1c1f71d43a91ea8497ce0216531cf433754b63ca92656b88",
+        "sdk/js/index.js": "fea841a815fb452b66bdf70c6bb0474271ecfca760d02d4b93d40cee9069a9d4",
+        "sdk/js/index.d.ts": "588d5ae130f0157d9e39d2694cc21b06b40f45e8ce1980f00e25e7db7a4ba16f",
+        "sdk/js/manifest.js": "38ef86f5b2f9573813686d261019a7a00148a7ef97460af33ce4f67b6b4d40d3",
+        "sdk/js/package.json": "afe51697c612accd8a4ab5ed1c5bdc9ab8198fd8f31790caaebc4704ed38306e",
+        "pkg/extension/agent_decision_models.go": "8a1215b67f0f649097d02d7cd17a4fc717422bda543194c0dcbb25393bbef5d8",
+        "internal/agent/plugged_deciders.go": "3ba8c2f2cd3bda75c23051638ca1a81dfc8e985740d9c8bc95efdf34af49c469",
+        "internal/agent/extension_decision_models.go": "92ae3ed217c3a64a26042a9abb238536f6affc01e1c5474fdbef870026f69ff2",
+        "sdk/js/agent-decision-models.js": "a6e14b0cbd5a4b3128032af0be5c2cc0aef735e198cf645dfc7fc65d8abee7bd",
+        "sdk/js/agent-decision-models.d.ts": "5b61775dbde0aaf87c5a64d5f0f6c279cc6df45c32c3ffbd43b2e7c37e5a3a3a",
+        "sdk/js/agent-model-metadata.js": "a06e751fbf7c698188080f06cb3bbbd6b2ce61a790e65578670c6996d282f5bd",
+        "sdk/js/agent-model-metadata.d.ts": "36eac3560b46b586d962fda3075d8a33b9fd4f760a57225a1428886f4637013c",
+        "sdk/js/test/agent-model-metadata.test.js": "a07b21c00b033cec5261d79a1d0a476a4d516eb98085279f59d595ceb21f4039",
+        "sdk/js/test/agent-model-metadata-types.ts": "33f311fcb10ed543a04199881ec17cb1d2c0b7d880d4b893905576b2b8e6ab3e"
+      },
+      "checkedAt": "2026-11-15"
+    }
+  ],
+  "fixtures": [
+    {
+      "path": "src/testdata/models-2026-10-13.json",
+      "source": "community-commandcode",
+      "sourcePath": "packages/commandcode/testdata/models-2026-10-13.json",
+      "sha256": "51445d1c33222bf92a137c8070dbab532abd7afde4415cbdee3d53600143980d",
+      "transformation": "byte-identical sanitized donor fixture"
+    },
+    {
+      "path": "src/testdata/subscriptions-goat.json",
+      "source": "community-commandcode",
+      "sourcePath": "packages/commandcode/testdata/subscriptions-goat.json",
+      "sha256": "1cd866e6b36034a87c43dcda226b5b15e8e304e5574cbb3994c35a18aa8d795c",
+      "transformation": "byte-identical sanitized donor fixture"
+    },
+    {
+      "path": "src/testdata/credits-goat.json",
+      "source": "community-commandcode",
+      "sourcePath": "packages/commandcode/testdata/credits-goat.json",
+      "sha256": "6438361859b848a4cc0b299518f4c0522062bb01a6f5384a8b94b2703c28fdd7",
+      "transformation": "byte-identical sanitized donor fixture"
+    },
+    {
+      "path": "src/testdata/go-models.json",
+      "source": "community-commandcode",
+      "sourcePath": "packages/commandcode/index.mjs",
+      "sha256": "f8c476bc42c1db5eca35f4f6c905dbbb5e2a547b78a4d8af7af6b0a05ac8d0a3",
+      "transformation": "JSON serialization of the full exported static _internal.GO_MODELS table on usbox"
+    },
+    {
+      "path": "docs/SYSTEMONE-SDK-FIXTURES.json",
+      "source": "community-commandcode",
+      "sourcePath": "packages/commandcode/jev.test.mjs",
+      "sha256": "94b35faba3bf107060c78c8abb147ca8817ef1d477d3100f36458daf9e09ed4c",
+      "transformation": "literal donor request/answer/headers plus locally authored pending host and agent scenarios grounded in sdk-tested-host; proposed expectations are not observed host results"
+    }
+  ],
+  "watch": [
+    {
+      "source": "community-commandcode",
+      "paths": [
+        "packages/commandcode/index.mjs",
+        "packages/commandcode/testdata"
+      ],
+      "behaviors": [
+        "plan prefixes",
+        "credit versus USD pools",
+        "model entitlements",
+        "ZDR",
+        "browser callback",
+        "Jev remains a decision",
+        "Google nested references retain constraints",
+        "native effort fits the recovered table"
+      ],
+      "tests": [
+        "TestSubscriptionUnknownIsNotNoPlan",
+        "TestCreditUnitsDoNotAbsorbPurchasedDollars",
+        "TestCatalogPlanAndExtraCredits",
+        "TestBrowserCallbackRequiresExactStateAndOrigin",
+        "TestJevAliasesCannotBecomeConversationModels",
+        "tests/systemone_donor.mjs",
+        "TestGoogleSchemaPreservesNestedReferencesAndData",
+        "TestGoogleSchemaRefusesCyclesAndExpansionLimits",
+        "TestGenerateFitsRecoveredModelEfforts"
+      ]
+    },
+    {
+      "source": "cliproxyapi-maintained",
+      "paths": [
+        "internal/runtime/executor/commandcode/request.go",
+        "internal/runtime/executor/commandcode/stream.go"
+      ],
+      "behaviors": [
+        "tool identity",
+        "reasoning and image parts",
+        "terminal handling",
+        "cache input accounting"
+      ],
+      "tests": [
+        "TestGeneratePreservesReasoningToolsImagesAndRoles",
+        "TestGenerateStreamRequiresFinalFinishAndRejectsLateError",
+        "TestGenerateStreamToolIdentityUsageAndNoDuplicate"
+      ]
+    },
+    {
+      "source": "official-commandcode-harness",
+      "paths": [
+        "dist/cli.mjs"
+      ],
+      "behaviors": [
+        "identical-body continuation only after complete pause_turn",
+        "five-continuation bound",
+        "additive per-segment usage",
+        "native off effort is sent only when the model supports thinking",
+        "native tool-result images and choice/parallel controls are not established"
+      ],
+      "tests": [
+        "tests/harness_probe.mjs",
+        "TestModuleGoPlanContinuesOnlyCompletedPausedBodies",
+        "TestGenerateRecoveredDisabledReasoning",
+        "TestGenerateRefusesUnknownNestedControls",
+        "TestGenerateRefusesUnsupportedOrMalformedSemantics",
+        "tests/native_go_plan_test.go.txt"
+      ]
+    },
+    {
+      "source": "sdk-tested-host",
+      "paths": [
+        "pkg/extension",
+        "internal/provider/extension_transport.go",
+        "internal/gateway/upstream.go",
+        "internal/gateway/sse.go"
+      ],
+      "behaviors": [
+        "scoped auth and proxy",
+        "native lifecycle",
+        "accepted versus uncertain execution",
+        "canonical Provider API SSE terminal recognition preserves forwarded bytes and rejects EOF-only or malformed completion",
+        "inclusive native/Chat usage becomes uncached SDK input with separate cache reads and writes",
+        "UI account generations",
+        "persistent selected-account catalog",
+        "SDK 1.7 decision operations remain distinct from chat and native account operations",
+        "API 1.9 effective agent output and effort metadata preserves unknown versus empty levels and repeated user edits",
+        "API 1.9 decisionModels uses the finite public DTO without granting conversational or vendor configuration authority"
+      ],
+      "tests": [
+        "TestModuleManifestNegotiatesOnlyImplementedCapabilities",
+        "TestModuleGoPlanUsesNativeAndDoesNotReplayTruncation",
+        "TestProviderStreamCompletionPreservesBytesAndUncertainty",
+        "tests/astra_provider_probe_test.go.txt",
+        "TestUsageAcknowledgesTheHostRevision",
+        "TestUsageUnknownDoesNotAcknowledgeTheHostBarrier",
+        "TestSystemOneActionsCannotBypassOperation",
+        "TestSystemOneUsesRecoveredWire",
+        "TestSystemOneInterruptedAnswerIsUncertainWithoutReplay",
+        "tests/native_owner.go.txt",
+        "TestAgentEffectiveMetadataAndUserChoices",
+        "TestAgentEffectiveMetadataRefusesInvalidDefaultAndEffort",
+        "TestAgentOffUsesVendorSpellingAcrossSyncAndDisconnect",
+        "TestAgentDecisionModelsStayOutsideConversationConfig",
+        "TestAgentDecisionModelsRejectInvalidPublicDTO",
+        "tests/native_agent_metadata_test.go.txt"
+      ]
+    }
+  ],
+  "limits": [
+    "SystemOne requires SDK 1.7 admission and execution; legacy module actions cannot bypass it, and Jev never receives chat authority.",
+    "Provider API Chat/Responses/Messages preserve their native response bytes. The Go-plan module wire accepts canonical Chat; the host's generic adapters translate other clients. The base candidate requires the separately recorded generic completion overlay; final merged-host replay remains pending.",
+    "Provider API streaming requests and SSE responses require an explicit canonical protocol terminal before a completed SDK receipt. EOF-only, malformed events and malformed tails stay uncertain without altering forwarded bytes; opaque non-streaming JSON forwarding remains unchanged.",
+    "The authorized generic host fix drains at most MaxChunkBytes trailing body bytes for at most two seconds before canceling and joining. Caller cancellation, late errors, excessive tails and missing receipts retain uncertainty and no-replay. The immutable candidate packet remains unchanged; source overlay identity is distinct from its tree and any future commit.",
+    "Only a complete native pause_turn body permits an identical-body continuation, at most five. Truncation, late errors, exhausted pauses and refused continuations stay uncertain without a successful terminal or retry.",
+    "Inclusive native input stays inclusive in Chat output; the completed SDK receipt subtracts cache reads and writes once to match the host ledger. Inconsistent late cache splits cannot authorize continuation or success.",
+    "Unsupported native controls are refused: direct non-Chat module protocols, tool-result images, non-auto tool_choice, parallel_tool_calls=false, disabled reasoning without recovered thinking support, response_format and stream options other than include_usage=true.",
+    "Google Chat/native function schemas inline supported nested local references with annotations; cyclic or excessive expansion is explicitly refused. Direct root definitions, unresolved/external references and non-schema data are preserved.",
+    "No live vendor requests, real browser approval, real CLI credential import or actual CommandCode CLI continuation is acceptance evidence.",
+    "Explicit CommandCode profile config uses host-checked file snapshots and native Library locations; native history is not recovered or advertised.",
+    "API 1.9 agent snapshots supply effective maxOutput/efforts/defaultEffort; canonical none uses vendor off, only CommandCode-supported levels are emitted, unknown limits are not invented and user overrides remain authoritative.",
+    "API 1.9 decisionModels is validated separately; no recovered CommandCode decision-configuration schema authorizes writing it into vendor settings or conversational models.",
+    "Canceling a host authentication receipt blocks account installation; pending loopback callbacks additionally expire after ten minutes or component disposal."
+  ]
+}

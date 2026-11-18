@@ -1,0 +1,50 @@
+// OpenCode keeps a session as rows, not a file of lines: since 1.2 in its
+// SQLite database (opencode.db: session, message and part tables, each
+// message and part a JSON document), before that as JSON files under
+// storage/ — session/<project>/<id>.json, message/<session>/<id>.json and
+// part/<message>/<id>.json. The database is made from those files once,
+// which stay behind, so where there is a database only it is read. An
+// assistant message carries its model and its tokens, input without the
+// cache and output without the reasoning. A subagent's work is a session
+// of its own whose parent is the session it ran in, and counts there.
+//
+// OpenCode 2 keeps its sessions in the same database but in tables of its
+// own (packages/core/src/session/sql.ts): session_v2, the session row as
+// before (directory, a title that may be null, parent_id, time_created and
+// _updated), and session_message, one row a message with its kind in type
+// (user, assistant, synthetic, system, compaction, idle, …), its order in
+// seq and the rest in data. A user message's data is its prompt, {text,
+// files, …}, with no parts of its own; an assistant's has model {id,
+// providerID, variant}, content (its text, reasoning and tools), cost,
+// tokens {input, output, reasoning, cache {read, write}} counted as before,
+// and time {created, completed} (packages/schema/src/session-message.ts,
+// token-usage.ts). A compaction's data has its own tokens. On its first
+// start OpenCode 2 copies every old session into these tables
+// (packages/core/src/database/v1-migration.bun.ts, which records kv
+// migration.v1-v2 {"phase":"completed"} when done) and leaves the old
+// tables behind unwritten, so once it has, only the new tables are read;
+// while it is under way, an old session not yet copied is read from the
+// old ones.
+
+// OpenCodeDir is OpenCode's data folder: $XDG_DATA_HOME/opencode, else
+// ~/.local/share/opencode — on Windows too, where OpenCode keeps it there.
+func OpenCodeDir() string {
+	if d := appdir.Getenv("XDG_DATA_HOME"); d != "" {
+		return filepath.Join(d, "opencode")
+	}
+	home, _ := os.UserHomeDir()
+	return filepath.Join(home, ".local", "share", "opencode")
+}
+
+// openCodeDB is OpenCode's database: $OPENCODE_DB (a path in the data
+// folder unless absolute), else opencode.db there.
+func openCodeDB() string {
+	if p := appdir.Getenv("OPENCODE_DB"); p != "" && p != ":memory:" {
+		if filepath.IsAbs(p) {
+			return p
+		}
+		return filepath.Join(OpenCodeDir(), p)
+	}
+	return filepath.Join(OpenCodeDir(), "opencode.db")
+}
+

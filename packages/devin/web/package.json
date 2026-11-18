@@ -1,0 +1,10 @@
+{
+  "name": "magpie-devin",
+  "version": "0.8.0",
+  "private": true,
+  "type": "module",
+  "magpie": {
+    "page": {"title": "Devin", "file": "web/index.html"},
+    "permissions": []
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "mode": "syntax-v2",
+  "command": [
+    "python3",
+    "-c",
+    "import ast;ast.parse(open('host_e2e.py').read());print('syntax ok')"
+  ],
+  "exit": 0,
+  "seconds": 0.01776986406184733,
+  "runnerSHA256": "5b120bd23f912d3071ee7da4bd5314ca4cb4a9b7546c15e2a36854314b6d5d1b",
+  "home": "/tmp/magpie-minimax-host-e2e.fhLVWFGt/mm-env-s73cirlw"
+}

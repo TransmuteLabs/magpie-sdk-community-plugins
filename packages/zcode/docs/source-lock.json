@@ -1,0 +1,738 @@
+{
+  "schema": 1,
+  "plugin": {
+    "id": "zcode",
+    "version": "0.15.0",
+    "sdkMinimum": "1.12",
+    "nativeABI": 1
+  },
+  "sources": [
+    {
+      "id": "community-zcode-0168",
+      "role": "bounded-Start-transport-admission-port-separate-from-original-extraction",
+      "repository": "https://github.com/magpie-community/plugins",
+      "commit": "324acd6007f2d513c5072fe2e9fe1db3524ae03d",
+      "version": "0.1.68",
+      "checkedAt": "2026-11-17",
+      "observedZcodeTree": "91595e647e66e6b45105ce45fcea2291b85d0634",
+      "checkoutCommit": "57d1cc6a9f49389d495ea9be8d986c70de7767bf",
+      "implementationStatus": "bounded source and terminal-evidence approved; per-instance exact-route transport scope only",
+      "verification": {
+        "testedPackageIdentitySHA256": "0ebae38a4bca56c1ae75d2afa7dc21237636072871d245023103c1e5094dee7f",
+        "authorPacket": "sol-zcode-donor0168-20261117-01",
+        "authorDeliverySHA256": "1262148eadf296577a9e7631e3723b0a17035881b7a77bca499c76e7113daaf3",
+        "authorSealSHA256": "6f13294e99ddb6aa273196dd2da65072f88a2a8c2553c34edb14405a1ae481a9",
+        "independentReview": {
+          "verdict": "APPROVE / bounded source and terminal-evidence positive",
+          "path": "astra-zcode-donor0168-static-review-20261117-01/TERMINAL-CLOSURE.txt",
+          "sha256": "e2364854061c13dcc069726acbbc1d8c2e210aa96bc63482adb0d67f9ddb6ba7",
+          "reviewerExecutedTests": false
+        },
+        "gates": {
+          "selectedRace20NamedPassEvents": 1620,
+          "packageNamedPassEvents": 530,
+          "packagePassEvents": 6,
+          "commandPackagesWithoutTests": 3,
+          "bodyReleaseMutant": "actual named route-capacity assertion RED",
+          "vetExit": 0,
+          "gofmtListEmpty": true
+        }
+      },
+      "paths": ["packages/zcode/package.json", "packages/zcode/index.mjs", "packages/zcode/README.md", "packages/zcode/concurrency.test.mjs", "packages/zcode/inflight.test.mjs", "packages/zcode/own.test.mjs", "packages/zcode/start.test.mjs"],
+      "checkedFiles": {
+        "packages/zcode/package.json": "33172a41cd1238f640153b26b81a4bbfd264416dea80cd220f7b810864563fe3",
+        "packages/zcode/index.mjs": "804410b252752a21f2b43074b90bb2443a76094b2e77faebf50c0310d9337ca3",
+        "packages/zcode/README.md": "7a088a264b104040c880661fd99b1c9a1208ba36bc56bef72b95e07cbf98349b",
+        "packages/zcode/concurrency.test.mjs": "21b4b78e93859e13a469d7b6c12f5b71005899bd3e13e162451b36a9c0282b96",
+        "packages/zcode/inflight.test.mjs": "d6290278fad7b538c0b3ee8ee77ab53402f0ef38aa7b1df335ead02a7563e6c0",
+        "packages/zcode/own.test.mjs": "0e7a2a5c8f85955300c238e664b1a7dd6311267f4a92163d647baedaefaef13f",
+        "packages/zcode/start.test.mjs": "8cf49df9262126b557ca051ea9789fcc83a3cc7eedaedec76832d1f3cf86200b"
+      },
+      "updates": [
+        {"commit": "a96714544ef04a5ee171177c22479c36567804a8", "version": "0.1.67", "behavior": "desktop enc:v2 import diagnostic inspected; not applicable to this module's explicit polling/snapshot auth"},
+        {"commit": "36dc4007fc8824e5e03f03b4714e17ca0005565c", "version": "0.1.68", "behavior": "remove active-account default2; reuse existing Start admission with account3 and exact origin/proxy route6, one wait deadline, free-first fullness bypass and response-lifetime release"}
+      ],
+      "limits": ["Per-module-instance known transport admission only; overlapping generations, other processes/apps and shared physical-IP enforcement remain outside this port.", "Host logical request budget, permitted recovery, durable accounting and accepted/output/uncertain fences remain authoritative.", "No automatic desktop credential-store import or enc:v2/Keychain reader was added.", "Module versions, original extraction pin and historical source entries remain unchanged. The named author gates and independent source/evidence review do not establish installed-host, live vendor/client, distribution/release or full GUI acceptance; the tested identity remains the original sealed source before this metadata-only reconciliation."]
+    },
+    {
+      "id": "sdk-baseline-repair-20261116",
+      "role": "frozen-parent-host05-public-api112-package-regression-verification",
+      "repository": "https://github.com/TransmuteLabs/magpie",
+      "commit": "705d67efc78f72cdc63973318ecaaaa661c1e04e",
+      "commitRole": "base lineage only; snapshotSHA256 identifies the tested uncommitted source",
+      "snapshotSHA256": "0db2f2e148b7263e196db2e1e4f40e2fd3a4bfba31fddf842a9417e6b57f4926",
+      "archiveSHA256": "6e77ad51d2d9d8e1d6d97ba541572af9bbf42a06e1dd72d512b7048a0aafb7b5",
+      "version": "API1.12 immutable local candidate-05, 11001 files; package regression repair, not parent final combined acceptance",
+      "checkedAt": "2026-11-16",
+      "paths": ["go.mod", "pkg/extension/request_policy.go", "pkg/extension/contract.go", "pkg/extension/types.go", "docs/subsystems/request-policy.md"],
+      "checkedFiles": {
+        "go.mod": "efdbeed99080455ef66a04ebea0b4d7ecfffe0c7a1d08eed2404c5ba36551b44",
+        "pkg/extension/request_policy.go": "075db96b4b10ac50a01ef2cee1381480759716dba38942fb5a0f118355642a22",
+        "pkg/extension/contract.go": "db12b1abf7c07bead3b09d989e7a50689088e39fdd56dc82369efaace00642ef",
+        "pkg/extension/types.go": "8f1eaec948c85e95abf7a9f4a3c72d97c6e37e75b301013ef1803a59e92731c3",
+        "docs/subsystems/request-policy.md": "fc5ff2916eff81d97b0682dd5b33f9611d92bd42209e29501b88059917fe1a56"
+      }
+    },
+    {
+      "id": "sdk-native-foreground-20261116",
+      "role": "frozen-existing-public-api110-source-resume-and-process-adoption",
+      "repository": "https://github.com/TransmuteLabs/magpie",
+      "commit": "705d67efc78f72cdc63973318ecaaaa661c1e04e",
+      "commitRole": "base lineage only; snapshotSHA256 identifies the tested uncommitted source",
+      "snapshotSHA256": "9c69eb56fd9d5f71a571139de8aa1912453109df6deaa532b1684d820092a226",
+      "baseSourceIdentity": "be51cbe0649261d5a9da7fa67c9c41744f4875934c49e5419f90557a8912e996",
+      "version": "API1.10 contracts in captured API1.12 candidate-context-02; not a committed release or parent final combined acceptance",
+      "checkedAt": "2026-11-16",
+      "capabilityFloors": {"agentProcess": "1.10", "sourceAgentResume": "1.10", "requestPolicy": "1.12"},
+      "paths": ["pkg/extension/process.go", "pkg/extension/process_manifest.go", "pkg/extension/storage_source.go", "pkg/extension/session_source.go", "internal/extension/process_owner.go", "internal/extension/process_grant.go", "internal/extension/module_window.go"],
+      "checkedFiles": {
+        "pkg/extension/process.go": "60c03138ffa566dc25378f59cf4cd42d0d214dbf32dde23f4300e9a75ae4a2a5",
+        "pkg/extension/process_manifest.go": "68bf8306b4de8fcff96163263659c1c5040c32f95cd3fc6ca27f03d5e9104dc0",
+        "pkg/extension/storage_source.go": "cd3cecb52da2e6ac976fa3ab4e4238090a664c68b4cf2772a65e8a348df5111c",
+        "pkg/extension/session_source.go": "91297be48057f1ef999bb0e66f0a9fd12f9e5d4ca2f0ca67dcd7518d4413c7ee",
+        "internal/extension/process_owner.go": "eff1318134c6786fda31d5dcb78edacf74e7aa97070e35bd68bf897a8945a98b",
+        "internal/extension/process_grant.go": "461b07d97a1b1db563e79ce5d7c477d65bf2062f90b0089a002ed66f75a0a003",
+        "internal/extension/module_window.go": "d85dee6eec36449aec220c43a07d88e1beca71e61fd27c5781c02c3058e5ac52"
+      }
+    },
+    {
+      "id": "vendor-native-foreground-20261116",
+      "role": "read-only-existing-v4-source-contract-no-fetch-or-donor-edit",
+      "repository": "https://github.com/zai-org/ZCode",
+      "commit": "fec975905a2abd4c07e35c40d51fa097a2258ec9",
+      "version": "desktop 3.18.2 / CLI 0.17.1; same donor, module adoption only",
+      "checkedAt": "2026-11-16",
+      "paths": ["packages/shared/src/zcode-protocol-v4/command.ts", "packages/shared/src/zcode-protocol-v4/snapshot.ts", "packages/shared/src/zcode-protocol-v4/transport.ts", "packages/shared/src/zcode-protocol/index.ts"],
+      "checkedFiles": {
+        "packages/shared/src/zcode-protocol-v4/command.ts": "9e8a8f5171a0d51c41675750db07cdeaef17da268b069ffaa43abacca9ce1b1a",
+        "packages/shared/src/zcode-protocol-v4/snapshot.ts": "4255a575a8f85046ee9499b24e654254e661a2b57b950c1327d43ffb9ab40811",
+        "packages/shared/src/zcode-protocol-v4/transport.ts": "3c976653e7d349b4eaabaef0a1b98b475a9d9cab0bb8e754edfbb44785ca6228",
+        "packages/shared/src/zcode-protocol/index.ts": "925d6b856d9c1c2e0e868803c080a50ba3ce4b2d36ccbd4c5917462ea80f58f6"
+      }
+    },
+    {
+      "id": "community-zcode-20261116-noop-audit",
+      "role": "post-api12-terminal-gates-read-only-noop-comparison",
+      "repository": "https://github.com/magpie-community/plugins",
+      "commit": "b35d4b35b2446bd929896ddeb58f3cb299e9e2d1",
+      "checkoutCommit": "57d1cc6a9f49389d495ea9be8d986c70de7767bf",
+      "observedOriginHEAD": "b35d4b35b2446bd929896ddeb58f3cb299e9e2d1",
+      "observedZcodeTree": "d1be84b45f19c7d51bf3bf1c428ddc7ae95dfbf7",
+      "comparedCommits": ["57d1cc6a9f49389d495ea9be8d986c70de7767bf", "87a8cf03c62fa55ca845c51648e8859ece580336"],
+      "version": "0.1.66",
+      "noBehaviorDelta": true,
+      "paths": ["packages/zcode"],
+      "checkedAt": "2026-11-16",
+      "checkedFiles": {
+        "packages/zcode/package.json": "4573dc6bd65068959b9af616aa59e2c7746011cef0e79d8dc3782e0ef2022091",
+        "packages/zcode/index.mjs": "cd81a4e3f59cadefa677d262a9969b284ccc6c0bdae4fe9a7fe456155bbd73a8"
+      }
+    },
+    {
+      "id": "vendor-zcode-20261116-noop-audit",
+      "role": "post-api12-terminal-gates-full-tree-noop-comparison",
+      "repository": "https://github.com/zai-org/ZCode",
+      "commit": "fec975905a2abd4c07e35c40d51fa097a2258ec9",
+      "tree": "5e90fec80706b8381f94e4eef48cf821b9868916",
+      "observedOriginHEAD": "fec975905a2abd4c07e35c40d51fa097a2258ec9",
+      "version": "desktop 3.18.2 / CLI 0.17.1",
+      "noBehaviorDelta": true,
+      "paths": ["package.json", "apps/zcode-cli/package.json"],
+      "checkedAt": "2026-11-16",
+      "checkedFiles": {
+        "package.json": "a94d4a04b3ba8e8f693c7a41597488c1884ba6d37b5e7b9800f0c979f20424df"
+      }
+    },
+    {
+      "id": "sdk-request-policy12",
+      "role": "frozen-public-api12-source-for-transport-policy-adoption-not-final-parent-acceptance",
+      "repository": "https://github.com/TransmuteLabs/magpie",
+      "commit": "705d67efc78f72cdc63973318ecaaaa661c1e04e",
+      "snapshotSHA256": "e2ca42c6fa8529b781a61aec04862355a5b28183646cc57ee028f6133fb74c34",
+      "archiveSHA256": "2724334c33e6f79d587d0a31c40eeb8db7d764a9faa09a67b81c5a32ba017626",
+      "version": "API 1.12 physical 10987-file candidate-01 snapshot; base commit differs from the working source. Parent coordinates subsequent permit-validation and revoked-diagnostic fixes.",
+      "paths": ["pkg/extension/request_policy.go", "pkg/extension/contract.go", "pkg/extension/stream.go", "pkg/extension/types.go", "docs/subsystems/request-policy.md"],
+      "checkedAt": "2026-11-16",
+      "checkedFiles": {
+        "pkg/extension/request_policy.go": "be486205f9b4cc2e37dd003e20e0602dd27470788a1c3419ac045f3f1acd1c3d",
+        "pkg/extension/contract.go": "db12b1abf7c07bead3b09d989e7a50689088e39fdd56dc82369efaace00642ef",
+        "pkg/extension/stream.go": "f6edaca8af99dbdc191fd06def818140beedb5a9b7bbc7af91dba2a03add45d3",
+        "pkg/extension/types.go": "8f1eaec948c85e95abf7a9f4a3c72d97c6e37e75b301013ef1803a59e92731c3",
+        "docs/subsystems/request-policy.md": "2b7954d320cc45dbb9bc8ede0691c0efa5aff8ee94b6fc50f64c8f03ab14ca80"
+      }
+    },
+    {
+      "id": "vendor-request-policy",
+      "role": "locally-read-existing-vendor-refusal-and-reset-hint-contract-no-fetch",
+      "repository": "https://github.com/zai-org/ZCode",
+      "commit": "fec975905a2abd4c07e35c40d51fa097a2258ec9",
+      "version": "Existing desktop 3.18.2 / CLI 0.17.1 baseline; code facts and reset-word Beijing timestamps only",
+      "paths": ["apps/zcode-cli/packages/adapters/src/model/failure-provider-business-codes.ts", "apps/zcode-cli/packages/adapters/src/model/workflow-model-failure-policy.ts", "apps/zcode-cli/packages/adapters/src/model/failure-inspection.ts"],
+      "checkedAt": "2026-11-16",
+      "checkedFiles": {
+        "apps/zcode-cli/packages/adapters/src/model/failure-provider-business-codes.ts": "012c1a101009d5b91c00d2d43f202d5126b84b7e41a6f94bc1e672ebaebad626",
+        "apps/zcode-cli/packages/adapters/src/model/workflow-model-failure-policy.ts": "9faaa9561e222f8fd2b10644ca9dae9e5398dee814eec2512605179e5e13733e",
+        "apps/zcode-cli/packages/adapters/src/model/failure-inspection.ts": "e3c2ba0bea9b1c1c56f7b69b9ef4853ed24e28cb4095216b2146cd3943a2bdc6"
+      }
+    },
+    {
+      "id": "sdk-base-history9",
+      "role": "user-supplied-merged-api9-base-for-scoped-installed-storage-replay",
+      "repository": "https://github.com/TransmuteLabs/magpie",
+      "commit": "66ac2f7fdaeb208e8f4d60f53aea7b33ed396c55",
+      "tree": "94ec4c8de4e5b366a6e3fb854df2176007587ab8",
+      "physicalTree": "94ec4c8de4e5b366a6e3fb854df2176007587ab8",
+      "captureParent": "adcf4ce5edbe2fe9595c4fceb9e809c23f74d60d",
+      "archiveSHA256": "131aeaa8fa9052dab47854ead8cb8b57f7f4dadca92715dbad307f4424c2de9e",
+      "snapshotSHA256": "d97b5eca0017294ddccc457ee691411ede08c190e12a0d7857f27af6d49ec7c7",
+      "binarySHA256": "a8e09770909f78ae89cc6175a45bb98e1dacdb305b62856f46956928cb8ecbe2",
+      "version": "Merged API 1.9 base supplied by owner; 10849-path immutable physical source, capture parent is separate",
+      "paths": ["pkg/extension/storage_source.go", "pkg/extension/storage_reader.go", "pkg/extension/native/storage_reader_unix.go", "internal/sessions/extension_storage_source.go", "internal/sessions/sessions.go"],
+      "checkedAt": "2026-11-15",
+      "checkedFiles": {
+        "go.mod": "efdbeed99080455ef66a04ebea0b4d7ecfffe0c7a1d08eed2404c5ba36551b44",
+        "go.sum": "f330d668c351f13fe2b9ff9e8d97c1503bdee257705117147f6cc6982f37221b",
+        "pkg/extension/storage_source.go": "c61c6f97453ea532d4c17648ff49e7707454f04f3945843e161c83d4c6de0496",
+        "pkg/extension/storage_reader.go": "7f7a9fe10b587cc21214c1ef8d5d6eab5667d72d506eb34d5218d9e616b94961",
+        "pkg/extension/native/storage_reader_unix.go": "2d174a75aedb67847c0cf549f192b1209af3bb35b1e1a342256ae33b1cbbbde2",
+        "internal/sessions/extension_storage_source.go": "2d60348d3b21c1eb161aeba1867b1003bbb12aac1f1ef7311c5ef76de9efcb90",
+        "internal/sessions/sessions.go": "adb6f9bad3e7434b03b0eba3f9f4a82f8fa19d94e6536625eba0114d03ef94e6"
+      }
+    },
+    {
+      "id": "vendor-sqlite-history",
+      "role": "official-current-cli-sqlite-history-schema-ordering-projection",
+      "repository": "https://github.com/zai-org/ZCode",
+      "commit": "fec975905a2abd4c07e35c40d51fa097a2258ec9",
+      "version": "Desktop 3.18.2 / CLI 0.17.1; automatic default CLI history only, no execution authority",
+      "paths": ["apps/zcode-cli/packages/adapters/src/storage/session-store", "apps/zcode-cli/packages/contracts/src/interfaces/session-store.port.ts", "packages/shared/src/sqlite-migrations/legacy.ts", "packages/services/src/session/sourceServerWorkspaceAliasRepo.ts"],
+      "checkedAt": "2026-11-15",
+      "checkedFiles": {
+        "apps/zcode-cli/packages/adapters/src/storage/session-store/paths.ts": "a29e8b17dddbd5eee3f2edd760f5be8d82c2ea810e59ec6622698850c6ee2a93",
+        "apps/zcode-cli/packages/adapters/src/storage/session-store/migrations.ts": "2e300edf4100a5bec307267ac8ba89ac54ad1d9bb465b1dd848e3d582cb60963",
+        "apps/zcode-cli/packages/adapters/src/storage/session-store/rows.ts": "983e3a02fef7af40afd568ccacaac5c0745603756359c797e101e8dbdef851fd",
+        "apps/zcode-cli/packages/adapters/src/storage/session-store/codecs.ts": "19214a28a77eb266f5e36d8fcbdab3a15e70e50b9ab07ca5e5127a122267f50b",
+        "apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/messages.ts": "26d218de4123de4fb378da2a278f8895d7e6455c172d7bf1bdc4f6e2d2112ec8",
+        "apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/sessions.ts": "e17d8efd023b8060d8a80a39d5deb35324925fa190cc09432d69ca08a9886032",
+        "apps/zcode-cli/packages/contracts/src/interfaces/session-store.port.ts": "acb095c27dbea7b7924b6d11de8beaa51aad87e60ff5ad209f4eec2369c82e30",
+        "packages/shared/src/sqlite-migrations/legacy.ts": "77f8a1cfc4f60e8c74326f2570803e5d804f1e2d9566b889e69d1db0fd58a02b",
+        "packages/services/src/session/sourceServerWorkspaceAliasRepo.ts": "63eb2e0fcde4911afdd167561a3bf183fbeab402ec2cfa8579483646d1ec6d00"
+      }
+    },
+    {
+      "id": "rooted-vfs-donor",
+      "role": "read-only-sibling-source-adapted-into-independent-module-no-runtime-dependency",
+      "repository": "https://github.com/TransmuteLabs/magpie-sdk-plugin-provider-opencode",
+      "commit": "ed9c811f9fa931e70da4c7e393ae4ba1b0844946",
+      "version": "Existing API8 rooted read-only VFS and Unix lock patterns; adapted locally for API9 ZCode",
+      "paths": ["history_vfs_unix.go", "history_vfs_other.go", "history_lock_unix.go", "history_lock_linux.go", "history_lock_darwin.go", "history_probe_unix.go"],
+      "checkedAt": "2026-11-15",
+      "checkedFiles": {
+        "history_vfs_unix.go": "3ee924b1fc1873f5acb74c3a03df7c38d2736355b25d885debe5ab04762306db",
+        "history_vfs_other.go": "53106ddc2f5ad2988c239f2e0ab766568bdbe58e7cb696881be51d52bd8e11ff",
+        "history_lock_unix.go": "240cf0517eeb39dc6fc5a91d7b3eefb68d294f9e5c9d0fc6b9ea90a9b6b23682",
+        "history_lock_linux.go": "eaa44b38e13996237e485ac3971af27e6989cce1a3f43eab3aace731c6df36e4",
+        "history_lock_darwin.go": "2da3fbf5ced0e11eab271c982f6ab9f880d82213ee2e9f3f61c43cb6528a3b69",
+        "history_probe_unix.go": "e3554a25d0bfa021a3fb6188929a573d1edef2c531c4bd658385f0b44090cc85"
+      }
+    },
+    {
+      "id": "sdk-completion-candidate9",
+      "role": "read-only-candidate-for-installed-package-replay-not-merged-host-acceptance",
+      "repository": "https://github.com/TransmuteLabs/magpie",
+      "commit": "adcf4ce5edbe2fe9595c4fceb9e809c23f74d60d",
+      "physicalTree": "36f8e629b1092b089d4d59e0f9d8473a1f602ff8",
+      "archiveSHA256": "5f07aab7ab2a782131789197fe3c26778e33f9ee3d54e459ba63f62ef9fecdfc",
+      "snapshotSHA256": "6f58e53b6d383dc78018b9ed1437663d042186d07d971b40459aaede1b6d3ee8",
+      "binarySHA256": "0bd335b7b6191f64d7f4ba6d1df273928e6ade33fd7966b5245987ac6a10c509",
+      "version": "Candidate API 1.9 physical source with 10846 paths; commit is parent at capture, not a merge commit or final host acceptance",
+      "paths": ["pkg/extension", "internal/sessions/sessions.go"],
+      "checkedAt": "2026-11-15",
+      "checkedFiles": {
+        "go.mod": "efdbeed99080455ef66a04ebea0b4d7ecfffe0c7a1d08eed2404c5ba36551b44",
+        "go.sum": "f330d668c351f13fe2b9ff9e8d97c1503bdee257705117147f6cc6982f37221b",
+        "pkg/extension/agent_metadata.go": "8afc5ea9c997dd4aa5d6b650bb1aa2eaf2dddf0b8a941eb8fd65d84c2c28319b",
+        "pkg/extension/agent_model_metadata.go": "7d12314395ec9670cc743719199f0e67320eb7c9290e53848fdfda122c1afe27",
+        "pkg/extension/account_operations.go": "8ff460fa9d8f5a7368cbce146a597afe9ca5250dbe75d97bbdb4d3e9d76374ee",
+        "pkg/extension/account_tasks.go": "4dbfbe1b06bb3e34ba0e827a057542147a61b85544357be024b5e6268bb6fee5",
+        "pkg/extension/storage_source.go": "c61c6f97453ea532d4c17648ff49e7707454f04f3945843e161c83d4c6de0496",
+        "pkg/extension/storage_reader.go": "7f7a9fe10b587cc21214c1ef8d5d6eab5667d72d506eb34d5218d9e616b94961",
+        "pkg/extension/native/storage_reader_unix.go": "2d174a75aedb67847c0cf549f192b1209af3bb35b1e1a342256ae33b1cbbbde2",
+        "internal/sessions/sessions.go": "adb6f9bad3e7434b03b0eba3f9f4a82f8fa19d94e6536625eba0114d03ef94e6"
+      }
+    },
+    {
+      "id": "sdk-final-native9",
+      "role": "previous-frozen-host-for-same-library-native-lifecycle",
+      "repository": "https://github.com/TransmuteLabs/magpie",
+      "commit": "c11acbc2bebec1fb213ef562900d35188cdf55fe",
+      "physicalTree": "8fe78ab9df13d733d61462eacce19bff523c1e58",
+      "archiveSHA256": "01117ce6f6f8842d16fcd81224dad1795020b3b5c4d69b9145d562fd88171e37",
+      "snapshotSHA256": "7ce4753ff79f3493acb4f61c1826d3f52145f8b156537ac61f493b39c9a50cc6",
+      "binarySHA256": "c018c44332ff9238779d1d01340dfd751209c2c694942fd0406e4d6a3c96cc86",
+      "testedModuleCommit": "c8281b6c97d751207f429bcbc1861daa2c465abb",
+      "nativeLibrarySHA256": "1b408ffbb73a7db0874d9321777947c5eb89d25c66e2c089fa84b3f12c686bc3",
+      "fixtureLibrarySHA256": "57c6c01915dd6b46cde2c031394f6ee5a7972023f0887021930e8a6183122327",
+      "version": "Frozen SDK API 1.9 host for the c8281b6 native lifecycle repin; production and endpoint-overlaid fixture libraries are reused byte-for-byte. Physical source identity is separate from the base commit and later test-only corrections.",
+      "paths": ["pkg/extension", "internal/agent/extension_actions.go", "internal/agent/extension_decision_models.go", "internal/provider/extension_catalog_projection.go", "internal/provider/extension_provider.go", "internal/extension/account_stamp.go"],
+      "checkedAt": "2026-11-14",
+      "checkedFiles": {
+        "go.mod": "efdbeed99080455ef66a04ebea0b4d7ecfffe0c7a1d08eed2404c5ba36551b44",
+        "go.sum": "f330d668c351f13fe2b9ff9e8d97c1503bdee257705117147f6cc6982f37221b",
+        "pkg/extension/contract.go": "7a523a36395a5e5c8b742673e4a817b0a83f76ce5c89bae26f4fc9a0d845aefc",
+        "pkg/extension/manifest.go": "5e89d2270aadf1c93fcc00ef9765b4548c5c116ad53910e2f3daf8e4b177301f",
+        "pkg/extension/types.go": "8cc171a4aded2b045cad262f1a90fa468e14bc10f6f54cf56d728cfcbd7bffaa",
+        "pkg/extension/agent_decision_models.go": "8a1215b67f0f649097d02d7cd17a4fc717422bda543194c0dcbb25393bbef5d8",
+        "pkg/extension/agent_model_metadata.go": "7d12314395ec9670cc743719199f0e67320eb7c9290e53848fdfda122c1afe27",
+        "pkg/extension/provider_defaults.go": "b1a02ec5ba7e68c4a5cf952a763131eaf1afb71a63f7385ae8eae345d52c18c2",
+        "pkg/extension/rich_quota.go": "bd03ac2e9dce0732c45c262dd0526cd8c15847ab9f728aa00eb364c6a5197a9b",
+        "internal/agent/extension_actions.go": "2af1762d15166bb0460129c6ee642614c2320c23c668db320a24857db187bdba",
+        "internal/agent/extension_decision_models.go": "92ae3ed217c3a64a26042a9abb238536f6affc01e1c5474fdbef870026f69ff2",
+        "internal/agent/agent.go": "dabc2db61cad9fd02f385d1601fac4526cddb45bc1c7a0c1ee758ed80a70b42c",
+        "internal/provider/extension_catalog_projection.go": "32e11612b3b3a347a9ae69a33b4fbbf4c91a86b50190e3f17952fab50702030b",
+        "internal/provider/extension_provider.go": "d462dcae52387d6ae2f4c89f635ab73342d6ec1982da71731d776c2bdf0519ee",
+        "internal/extension/account_stamp.go": "38fc2659465f712b79cb75167d06414f3b7c9df1ff6d01873dd9803cc5f50dc0"
+      }
+    },
+    {
+      "id": "sdk-agent-options9",
+      "role": "current-frozen-physical-sdk-source-for-api9-agent-options-compatibility",
+      "repository": "https://github.com/TransmuteLabs/magpie",
+      "commit": "46756a48c9c9f204a8369638dc63cbcb83d02031",
+      "physicalTree": "db40ddbf8944b54f9f689d444644af4c3bc76881",
+      "archiveSHA256": "e188abd5d115c7da3167a6296e7d07f9bd31766a738ea4e6326ff093e4a74a61",
+      "version": "Frozen SDK API 1.9 source for typed agent options; physical inventory is independently identified from the shared commit and historical uncommitted acceptance snapshots.",
+      "paths": ["pkg/extension", "internal/agent/extension_actions.go", "internal/agent/extension_decision_models.go", "internal/agent/agent.go", "sdk/js/agent-decision-models.js", "sdk/js/agent-decision-models.d.ts", "docs/subsystems/extension-agents-sessions.md"],
+      "checkedAt": "2026-11-14",
+      "checkedFiles": {
+        "go.mod": "efdbeed99080455ef66a04ebea0b4d7ecfffe0c7a1d08eed2404c5ba36551b44",
+        "go.sum": "f330d668c351f13fe2b9ff9e8d97c1503bdee257705117147f6cc6982f37221b",
+        "pkg/extension/agent_decision_models.go": "8a1215b67f0f649097d02d7cd17a4fc717422bda543194c0dcbb25393bbef5d8",
+        "pkg/extension/agent_decision_models_test.go": "6073c4fafdb9a2f299ce4c7aff6ac594d50e71c59dc330598c92f1c50509a6ee",
+        "pkg/extension/agent_model_metadata.go": "7d12314395ec9670cc743719199f0e67320eb7c9290e53848fdfda122c1afe27",
+        "pkg/extension/manifest.go": "5e89d2270aadf1c93fcc00ef9765b4548c5c116ad53910e2f3daf8e4b177301f",
+        "pkg/extension/contract.go": "7a523a36395a5e5c8b742673e4a817b0a83f76ce5c89bae26f4fc9a0d845aefc",
+        "internal/agent/extension_actions.go": "2af1762d15166bb0460129c6ee642614c2320c23c668db320a24857db187bdba",
+        "internal/agent/extension_decision_models.go": "92ae3ed217c3a64a26042a9abb238536f6affc01e1c5474fdbef870026f69ff2",
+        "internal/agent/agent.go": "dabc2db61cad9fd02f385d1601fac4526cddb45bc1c7a0c1ee758ed80a70b42c",
+        "sdk/js/agent-decision-models.js": "a6e14b0cbd5a4b3128032af0be5c2cc0aef735e198cf645dfc7fc65d8abee7bd",
+        "sdk/js/agent-decision-models.d.ts": "5b61775dbde0aaf87c5a64d5f0f6c279cc6df45c32c3ffbd43b2e7c37e5a3a3a",
+        "sdk/js/index.d.ts": "588d5ae130f0157d9e39d2694cc21b06b40f45e8ce1980f00e25e7db7a4ba16f",
+        "docs/subsystems/extension-agents-sessions.md": "805083a4aaf951d7844537844863a5b0dfe7f876d9abbf3651004bc55ee39ff2"
+      }
+    },
+    {
+      "id": "sdk-concurrency-quota9",
+      "role": "immutable-source-snapshot-for-api9-concurrency-and-rich-quota-verification",
+      "repository": "https://github.com/TransmuteLabs/magpie",
+      "commit": "ae957e5a8a77553a6cf6f484c8b58a69393f3887",
+      "snapshotSHA256": "fe82cca0a913ea8a4307478050e241747c555524353221fdab81d43458f8ce16",
+      "archiveSHA256": "efcd0cdb05b61399e818641b570479bccabbfc422bde5c5f8d442ece54bcd57c",
+      "version": "Uncommitted API 1.9 union snapshot over ae957e5; includes scoped lane adapters and the independently reported cold configuration/account-stamp finding. Parent closure and final committed-host acceptance remain separate.",
+      "paths": ["pkg/extension", "sdk/js", "internal/provider", "internal/gateway", "internal/gui/assets/app.js", "internal/extension/account_stamp.go"],
+      "checkedAt": "2026-11-14",
+      "checkedFiles": {
+        "pkg/extension/contract.go": "7a523a36395a5e5c8b742673e4a817b0a83f76ce5c89bae26f4fc9a0d845aefc",
+        "pkg/extension/types.go": "f451d316d80ee742629cf972be2f78825eb832452e4cea3e23cefaf5a2daa923",
+        "pkg/extension/manifest.go": "45604077f6a0d8ea092b17e284a3a7db7c359e750c756ddea595cb1357b29b8d",
+        "pkg/extension/provider_defaults.go": "b1a02ec5ba7e68c4a5cf952a763131eaf1afb71a63f7385ae8eae345d52c18c2",
+        "pkg/extension/rich_quota.go": "bd03ac2e9dce0732c45c262dd0526cd8c15847ab9f728aa00eb364c6a5197a9b",
+        "pkg/extension/usage_contract.go": "8f6554cd9a6fc02ac6bfea6c70ddc55a2daf18a96b6d1d794711526034060bbd",
+        "sdk/js/provider-defaults.js": "3ee2a558c5aa9c65825ba9e5c99ac481269dba606ad38393cb6891a5234c04e1",
+        "sdk/js/rich-quota.js": "938bcf739b0282405aee47ac4eda7c64497f3a57ebe868e360a474e04851f7d8",
+        "sdk/js/usage.js": "042fde9647c75f837c83f6aac023943cd6943e1176560b02364f0c67a71f0fb6",
+        "sdk/js/index.d.ts": "6f505be8e65e066eededcabeef77a9621b2fd6c79ac7f748ad5a1836efdc4d66",
+        "internal/provider/concurrency.go": "b964d9712fcbb95b41b1e1e2510d06981ed710bbcc12eadc6c3d2f9976d1599f",
+        "internal/provider/extension_defaults.go": "14ee79cf92fb8c1457ec7e36dbcf0e7a1ea3b1bf14464750c8d997e4773a4223",
+        "internal/provider/extension_models_cache.go": "8f9722a7a03e6602c05492417ade08523932bc54b9d4cb10df3c477c5a1d43e0",
+        "internal/provider/extension_refresh.go": "53e37f404e5a0311036c2e3fc223fd0398dd7035e17ad1aaac4b84c9eb8b4c53",
+        "internal/provider/extension_provider.go": "d462dcae52387d6ae2f4c89f635ab73342d6ec1982da71731d776c2bdf0519ee",
+        "internal/provider/quota_amount.go": "aa7d3e5f6b09a5e754dc5eaab1e3dfa77ff391d4d1a2c0917838758914ae84a2",
+        "internal/provider/routing.go": "ef9d7fe4862d4c01f845d7e63dbb9c79c20488d5b61b9f01a6a19c0c5695f79d",
+        "internal/gui/assets/app.js": "835f5addde33949ce8ceb511b1ae260c0ba935d278bcb6d9a4b5bf281d7f7ca9",
+        "internal/extension/account_stamp.go": "e9f60bf6ea82ffc7dc87985bf5eac73515becfa21736c24d89af211c3bdaa5b0"
+      }
+    },
+    {
+      "id": "sdk-host",
+      "role": "previous-full-package-committed-sdk-and-verification-host",
+      "repository": "https://github.com/TransmuteLabs/magpie",
+      "commit": "9e88f10982a1d66c1b402fba27caddda8ac4ac4e",
+      "tree": "4f6525135603b84cdc552403923f39b44fa1dea4",
+      "version": "Committed consolidated SDK API 1.6 with SDK-only startup and effect-free agent sync authority fixes; excludes concurrent uncommitted SDK 1.7 work",
+      "paths": ["pkg/extension", "pkg/protocolext", "sdk/js", "internal/extension", "internal/agent/extension_controller.go", "internal/library/extension_agent.go"],
+      "checkedAt": "2026-11-14"
+    },
+    {
+      "id": "sdk-observability7",
+      "role": "immutable-source-snapshot-for-api7-adoption-verification",
+      "repository": "https://github.com/TransmuteLabs/magpie",
+      "commit": "9e88f10982a1d66c1b402fba27caddda8ac4ac4e",
+      "tree": "43b7e290d9c3370881780b23ad49222f5d27f44b",
+      "archiveSHA256": "dd5bf036acdbb39bf1d93a415816b4ccea5700c40c49f2f430eea3dacd411454",
+      "version": "Uncommitted API 1.8 source snapshot; the full module consumes only API 1.7 Facts and diagnostics. Final committed host freeze acceptance is separate.",
+      "paths": ["pkg/extension/usage_facts.go", "pkg/extension/diagnostics.go", "pkg/extension/stream.go", "pkg/extension/types.go", "internal/extension/diagnostics.go"],
+      "checkedAt": "2026-11-14",
+      "checkedFiles": {
+        "pkg/extension/usage_facts.go": "757a43e57974550f7a65b9319ac5634a5088c9f1b58300006de9eacad9e8f5e7",
+        "pkg/extension/diagnostics.go": "f9a0b2d8f395634515cdabdd091102bd008ff44021c93eb844ee453ee2d85d02",
+        "pkg/extension/stream.go": "d08569436bd0a1db6537c7a49265af1ca7b4ee66dbb62086e7161668c40a4bb6",
+        "pkg/extension/types.go": "5ddb4ea0fa40f3faff614b8ce2c595e8fb8df8bafce43c0ba83ec582b79d3ba0",
+        "internal/extension/diagnostics.go": "f54d3dfd59cf81c629473052cf475aa129863a0401e2cfbe543e76ee41f1ed80"
+      }
+    },
+    {
+      "id": "vendor-baseline",
+      "role": "previous-implemented-vendor-baseline",
+      "repository": "https://github.com/zai-org/ZCode",
+      "commit": "b95ebaffeab641907b38652f45c1502bd762972d",
+      "version": "desktop 3.18.0 / CLI 0.17.1",
+      "paths": ["package.json", "apps/zcode-cli/package.json", "packages/services/src", "apps/zcode-cli/packages/adapters/src"],
+      "checkedAt": "2026-11-14"
+    },
+    {
+      "id": "vendor-current-audit",
+      "role": "bounded-auth-start-billing-marketing-attribution-observability-and-owned-agent-source",
+      "repository": "https://github.com/zai-org/ZCode",
+      "commit": "fec975905a2abd4c07e35c40d51fa097a2258ec9",
+      "version": "desktop 3.18.2 / CLI 0.17.1",
+      "paths": [
+        "package.json",
+        "apps/zcode-cli/package.json",
+        "packages/services/src/model-provider/zaiStartPlanBilling.ts",
+        "packages/services/src/marketing-touch/marketingTouchService.ts",
+        "packages/shared/src/marketingTouch.ts",
+        "packages/shared/src/protocol.ts",
+        "packages/services/src/coding-plan-subscription/bigmodelCodingPlanSubscriptionProvider.ts",
+        "packages/services/src/model-provider/accountProviderConnectionResolver.ts",
+        "packages/services/src/model-provider/accountProviderRequestAuthService.ts",
+        "packages/services/src/model-provider/codingPlanProviderAvailability.ts",
+        "packages/services/src/bigmodel/codingPlanEntitlement.ts",
+        "packages/services/src/oauth/oauthService.ts",
+        "packages/services/src/oauth/repo/oauthCredentialRepo.ts",
+        "packages/shared/src/credential-security/systemCredentialCipher.ts",
+        "packages/provider-node/src/provider-config-file-codec.ts",
+        "packages/provider-node/src/runtime-paths.ts",
+        "packages/provider/src/config/rule-data-schema.ts",
+        "packages/provider/src/config/provider-data-schema.ts",
+        "packages/shared/src/model-selection.ts",
+        "apps/zcode-cli/packages/cli/src/provider-runtime-env.ts",
+        "apps/zcode-cli/docs/usage/03-config.md",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/server.ts",
+        "apps/zcode-cli/packages/adapters/src/storage/session-store",
+        "apps/zcode-cli/packages/core/src/context",
+        "apps/zcode-cli/packages/adapters/src/model/runner-attribution.ts",
+        "apps/zcode-cli/packages/adapters/src/model/runner-normalization.ts",
+        "apps/zcode-cli/packages/adapters/src/model/runner-diagnostics.ts",
+        "apps/zcode-cli/packages/adapters/src/model/model-execution.ts",
+        "apps/zcode-cli/tools/provider-regression/src/usage.ts",
+        "packages/desktop/test/e2e/helpers/upstream-capture.ts",
+        "packages/desktop/test/e2e/helpers/upstream-replay-server.ts",
+        "apps/zcode-cli/packages/adapters/src/logging",
+        "packages/shared/src/zcodeEndpoint.ts"
+      ],
+      "checkedAt": "2026-11-14",
+      "checkedFiles": {
+        "package.json": "a94d4a04b3ba8e8f693c7a41597488c1884ba6d37b5e7b9800f0c979f20424df",
+        "apps/zcode-cli/package.json": "971f8f3e93e747643c37a42c3716d8f81cfc21e5abc031f09d93f82e98a3ebe7",
+        "packages/services/src/model-provider/zaiStartPlanBilling.ts": "5506ee83909b66de70db7a63dbb912ad0a719b9cd1265740037bad0967c1aded",
+        "packages/services/src/marketing-touch/marketingTouchService.ts": "baeeb10c995ef9353e2bc37ec13c41b99feedf5d37c7783ae2c4668c086918c1",
+        "packages/shared/src/marketingTouch.ts": "91f4dee419af9508b0641e748b9919d8fc900a7a4cd9e03d24a493daa212cbc8",
+        "packages/shared/src/protocol.ts": "6b85d885f9e1529f6220c462a985f1fb464021ffc9c72bf90549df051f048e68",
+        "packages/services/src/coding-plan-subscription/bigmodelCodingPlanSubscriptionProvider.ts": "0ded7b0a11261d724cb4c0fb430ed08d9dbe28123af00020674ad22f1851df66",
+        "packages/services/src/model-provider/codingPlanProviderAvailability.ts": "a47d1cb96a23acdf2225a6794f4476ddf6071124568104af37f78c8883df450d",
+        "packages/services/src/model-provider/accountProviderConnectionResolver.ts": "aca2297001b33634ac0ffadd84af8b3462c9986d12d0dc3d21075bcb50684eb1",
+        "packages/services/src/bigmodel/codingPlanEntitlement.ts": "4ea04548a97aa3928cc47fef5ec56d42d82683e7f9f1a06c9b20bbcc28a06363",
+        "apps/zcode-cli/packages/core/src/context/builder.ts": "e72dfe964eb6f2debbd5e632f8f193953127322e74d0ff6df7560c1b839c805c",
+        "apps/zcode-cli/packages/core/src/context/dynamic-sections.ts": "0c0bb8b6cb2e3672baae7e31117d394c7306d3b4955c5f6428de7a2c1b0b62bf",
+        "apps/zcode-cli/packages/core/src/context/sections/identity.ts": "c313c23c92c32651370dce27cd63e3e59afe357bf9200e9ff05811792fe80a25",
+        "apps/zcode-cli/packages/core/src/context/sections/cli-prefix.ts": "117ad6a31aa829796d01e95e2cc5b607d7c9db07f1b02c0a1793cf5d8c937f35",
+        "apps/zcode-cli/packages/core/src/context/sections/current-date.ts": "693f07bab0cda6774db8dfc36645bf93e3d7103d3980b85e8820cc19ab1835f2",
+        "apps/zcode-cli/packages/adapters/src/model/runner-attribution.ts": "e0601af7bfa7c2fcedd0e2a2a5e03f099bc99461cc2e2b2c84c230e8e9baf434",
+        "apps/zcode-cli/packages/adapters/src/model/runner-normalization.ts": "92d53da356bd0a5ab89a3809caecf7042a37927a8ce8d91dd220192a0424cd34",
+        "apps/zcode-cli/packages/adapters/src/model/runner-diagnostics.ts": "afe79fca6cb3a5aa0eb11331205f9c18504d2d48dfc402b65fc9ab6c51d58b5e",
+        "apps/zcode-cli/packages/adapters/src/model/model-execution.ts": "19d5f93ed46e81748360d2fdd708911a45c584741a3048ef567bf1c289c3de67",
+        "apps/zcode-cli/tools/provider-regression/src/usage.ts": "356431cb97c2d4f86dfea5885874313325109b4fe0d3bcdee7d95c96f9ebbbd6",
+        "packages/desktop/test/e2e/helpers/upstream-capture.ts": "30a2f350d49b2cd74054ac4b9e275da867b9609c84f5f7e66424f70ef5a15055",
+        "packages/desktop/test/e2e/helpers/upstream-replay-server.ts": "7dc2dfb24f5cf082a6e6011637d9a692ec3aca3c4c98cd66563a7e7436e82dbf",
+        "apps/zcode-cli/packages/adapters/src/storage/session-store/migrations.ts": "2e300edf4100a5bec307267ac8ba89ac54ad1d9bb465b1dd848e3d582cb60963",
+        "apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/usage.ts": "4821441bfd46fbd6c0e3125997d8f90ff05d6f852a5ad168cce14d6538d8e96c",
+        "apps/zcode-cli/packages/adapters/src/logging/index.ts": "eb552c0d1859de126c726bdb8d39321caccbb9f4b0b690091ccb38a66e5be325",
+        "apps/zcode-cli/packages/adapters/src/logging/serialize.ts": "ef6fe91ab6d60f2ffaa96e197e2e223e47d326c526f3942704e5af088570efa8",
+        "apps/zcode-cli/packages/adapters/src/logging/retention.ts": "a9f90fdfe1a26b9037a03cc833424a6d65f6fb88189f3eaf663c70825d5583be",
+        "packages/shared/src/zcodeEndpoint.ts": "5e191377bdfd8c84cf8588251359fa2e1f64f7600ee220bb1cf2ddde563e9eac",
+        "packages/provider-node/src/provider-config-file-codec.ts": "7a57fa943a527eeb901a6707326f143e2a17231fe6c1c07f850eff02065b8dfc",
+        "packages/provider-node/src/runtime-paths.ts": "28a42710029e53876c374389664e0d0a43899ed121b97b9c77a46cf41518ee03",
+        "apps/zcode-cli/packages/cli/src/provider-runtime-env.ts": "0209c59775378750de3c6eeb82ca1640f5dcb32e4dc6ed6725d5b4c9ddc43110",
+        "packages/provider/src/config/rule-data-schema.ts": "bada2de66dd08a4fd98cb6aa2521da7faa69be6ef9bbe9dc2481d93748d974f8",
+        "packages/provider/src/config/provider-data-schema.ts": "ee884a115201b65045191a1f82b31c3353a3fd0ae956e1623326223429f52c68",
+        "packages/shared/src/model-selection.ts": "653a4671723d4a3302e84ba13f29d4d55a17e5e8082b44d54ba1f9087dbd3e44",
+        "apps/zcode-cli/docs/usage/03-config.md": "fb9082049ad83ed29c38eb5feef5b81a71ab68db491329ab0c22b70cd6fe4eb6"
+      }
+    },
+    {
+      "id": "archived-controller",
+      "role": "implementation-donor-and-financial-state-contract",
+      "repository": "https://github.com/TransmuteLabs/magpie",
+      "commit": "893f560cccdeb8fa2e98eadb60427990c10eedcc",
+      "version": "archived devzeus; vendor baseline 3.18.0",
+      "paths": [
+        "internal/plugin/bundled/zcode",
+        "internal/provider/zcode_account_journal.go",
+        "internal/provider/zcode_execution.go",
+        "internal/provider/zcode_claim.go",
+        "internal/provider/zcode_reset.go",
+        "internal/sessions/zcode.go",
+        "internal/sessions/zcode_fork_test.go"
+      ],
+      "checkedAt": "2026-11-14"
+    },
+    {
+      "id": "community-zcode",
+      "role": "bounded-gift-claim-start-risk-concurrency-and-quota-domain-donor",
+      "repository": "https://github.com/magpie-community/plugins",
+      "commit": "26ea8faf7793ca66dd8e7a8b90128a5235552a1f",
+      "version": "0.1.61",
+      "paths": ["packages/zcode"],
+      "checkedAt": "2026-11-14",
+      "checkedFiles": {
+        "packages/zcode/package.json": "c3ba49c27df561cec86def92fabccb1b48e2ab93a9401694e5bf54b728c57bc2",
+        "packages/zcode/index.mjs": "b29c486235227c339807755872c020af0b8df61a26812fa160230d74778ef277",
+        "packages/zcode/gift.test.mjs": "1f66df99849f06e44b41a30781a33cba43ae95381cedc3fb3d7bc859b52df184",
+        "packages/zcode/dual.test.mjs": "a12701020b6240ddc576a31e4130ae21e4ad04d1509d849a9301ad72cae6eb57",
+        "packages/zcode/checkin.test.mjs": "508fc1edcee95fe1770eeaa927dfaf94f35180899002dd2c1a2226c6fc7d6ed8",
+        "packages/zcode/inflight.test.mjs": "a734815f0319f5f8899cd19a5ea2a0d5e8813a57de150a6258bcb7ea72a6c6b9"
+      }
+    },
+    {
+      "id": "community-zcode-0166",
+      "role": "bounded-cn-identity-start-requeue-unclaimed-trial-and-gift-billing-regressions",
+      "repository": "https://github.com/magpie-community/plugins",
+      "commit": "87a8cf03c62fa55ca845c51648e8859ece580336",
+      "version": "0.1.66",
+      "checkoutCommit": "26ea8faf7793ca66dd8e7a8b90128a5235552a1f",
+      "observedOriginHEAD": "a60667b57040f62080da60f6018cc7351fa1953f",
+      "paths": ["packages/zcode"],
+      "checkedAt": "2026-11-14",
+      "updates": [
+        {"commit": "3f37b858db8074959447c16ed06ac51d444c7fcf", "version": "0.1.63", "behavior": "active CN identity"},
+        {"commit": "8e19b6a0e712e4ea844ccd5e3fe95522f570ae05", "version": "0.1.64", "behavior": "bounded Start requeue beside inflight"},
+        {"commit": "1dbbc1fb489d7ac40b0620d802301075e25332b6", "version": "0.1.65", "behavior": "unclaimed weekend Trial hint"},
+        {"commit": "87a8cf03c62fa55ca845c51648e8859ece580336", "version": "0.1.66", "behavior": "gift-only model exclusion and failed-plan billing fence"}
+      ],
+      "checkedFiles": {
+        "packages/zcode/package.json": "4573dc6bd65068959b9af616aa59e2c7746011cef0e79d8dc3782e0ef2022091",
+        "packages/zcode/index.mjs": "cd81a4e3f59cadefa677d262a9969b284ccc6c0bdae4fe9a7fe456155bbd73a8",
+        "packages/zcode/prompt.mjs": "d0032db8a3560bfba3ecce34ed8513268dc6d3ad9192f50775285da1fc26b527",
+        "packages/zcode/README.md": "eb727eaa79a9bbe401a08a345f7954a21b4b40079ad6668fee65dbd04fd1cb1d",
+        "packages/zcode/own.test.mjs": "272d4b168562ea2d8747fae3cd656d245e7af6bfd617ab4487f2bf4dd473310e",
+        "packages/zcode/gift.test.mjs": "ca94080ee971a0d252931d0ff1d77e4e4f596b8eb1053c190d3fb690893e4135",
+        "packages/zcode/inflight.test.mjs": "79de3251e69d5974f7180d5a943985ba247cc38934db05be279902e144a4ffb4",
+        "packages/zcode/dual.test.mjs": "a12701020b6240ddc576a31e4130ae21e4ad04d1509d849a9301ad72cae6eb57",
+        "packages/zcode/checkin.test.mjs": "508fc1edcee95fe1770eeaa927dfaf94f35180899002dd2c1a2226c6fc7d6ed8"
+      }
+    },
+    {
+      "id": "community-zcode-current-audit",
+      "role": "fresh-community-ref-with-no-zcode-domain-delta",
+      "repository": "https://github.com/magpie-community/plugins",
+      "commit": "57d1cc6a9f49389d495ea9be8d986c70de7767bf",
+      "version": "0.1.66; packages/zcode unchanged from ported 87a8cf03",
+      "observedZcodeTree": "d1be84b45f19c7d51bf3bf1c428ddc7ae95dfbf7",
+      "paths": ["packages/zcode"],
+      "checkedAt": "2026-11-15",
+      "checkedFiles": {
+        "packages/zcode/package.json": "4573dc6bd65068959b9af616aa59e2c7746011cef0e79d8dc3782e0ef2022091",
+        "packages/zcode/index.mjs": "cd81a4e3f59cadefa677d262a9969b284ccc6c0bdae4fe9a7fe456155bbd73a8",
+        "packages/zcode/prompt.mjs": "d0032db8a3560bfba3ecce34ed8513268dc6d3ad9192f50775285da1fc26b527"
+      }
+    },
+    {
+      "id": "vendor-control-completion",
+      "role": "fresh-official-native-launch-and-financial-control-audit",
+      "repository": "https://github.com/zai-org/ZCode",
+      "commit": "fec975905a2abd4c07e35c40d51fa097a2258ec9",
+      "version": "desktop 3.18.2 / CLI 0.17.1; fresh origin/main unchanged",
+      "paths": [
+        "packages/shared/src/model-config.ts",
+        "packages/shared/src/model-selection.ts",
+        "packages/services/src/usage-stats/providers/bigmodelUsageQuotaProvider.ts",
+        "packages/ui/src/lib/codingPlanQuotaResetCoordinator.ts",
+        "apps/zcode-cli/packages/cli/src/arguments.ts",
+        "apps/zcode-cli/packages/cli/src/run.ts",
+        "packages/services/src/zcode-agent/zcodeAgentProcessManager.ts",
+        "packages/shared/src/zcode-agent-runtime.ts",
+        "packages/shared/src/zcode-protocol/index.ts",
+        "packages/shared/src/zcode-protocol-v4",
+        "packages/services/src/zcode-agent/zcodeStdioTransport.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/transport.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/provider-runtime-headers.ts",
+        "docs/zcode-protocol-model-backed-control-requests.md"
+      ],
+      "checkedAt": "2026-11-15",
+      "checkedFiles": {
+        "packages/shared/src/model-config.ts": "5d8f79c5add78054fad680493e530fa8ed01af99ffb907875a216cc462e6c0f0",
+        "packages/shared/src/model-selection.ts": "653a4671723d4a3302e84ba13f29d4d55a17e5e8082b44d54ba1f9087dbd3e44",
+        "packages/services/src/usage-stats/providers/bigmodelUsageQuotaProvider.ts": "f6b78dc35f941c82ecef16ae82a31f8041f38b635cce6815f8acfa80bd0dae38",
+        "packages/ui/src/lib/codingPlanQuotaResetCoordinator.ts": "30a880f6fc080c2b8b50c81d61492172487c7d09017068c4275e57f06386a2bf",
+        "apps/zcode-cli/packages/cli/src/arguments.ts": "28fd9de33f8fd8e36360b2da0c4c6b84729aa14e110271f84859e8bd5651a8ce",
+        "apps/zcode-cli/packages/cli/src/run.ts": "999a7b4e9f3101cb3f050541253010e40cc8d16dae8207c827f3f1657c3e7faa",
+        "packages/services/src/zcode-agent/zcodeAgentProcessManager.ts": "c192e17a03c4b86da136a57d61f3b2535a9eca16ca6848499620574d31bcda41",
+        "packages/shared/src/zcode-agent-runtime.ts": "49a4c8350533e34320762197f4cac97a4a0710889a417f505c110db89a03f1fc",
+        "packages/shared/src/zcode-protocol/index.ts": "925d6b856d9c1c2e0e868803c080a50ba3ce4b2d36ccbd4c5917462ea80f58f6",
+        "packages/shared/src/zcode-protocol-v4/core.ts": "0e4b5c4a7ddbad7d0665355c7e1c79927ab3b1f089a729f32a1ba7c8ce017c60",
+        "packages/shared/src/zcode-protocol-v4/transport.ts": "3c976653e7d349b4eaabaef0a1b98b475a9d9cab0bb8e754edfbb44785ca6228",
+        "packages/shared/src/zcode-protocol-v4/command.ts": "9e8a8f5171a0d51c41675750db07cdeaef17da268b069ffaa43abacca9ce1b1a",
+        "packages/shared/src/zcode-protocol-v4/wire.ts": "b7dbb4556fdf10a3e9cc1dfe81ffe5a74d7dc05904db71efe18ecc7e96ee489a",
+        "packages/shared/src/zcode-protocol-v4/wire-codec.ts": "ac2494a3acc795c809c94ee9393f50271a9c2a0fd33813459e5ab93842ceef75",
+        "packages/services/src/zcode-agent/zcodeStdioTransport.ts": "928f6ecde57be8587f30c0e877563d724c6107d411c45ea46a5902972adfbf90",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/transport.ts": "504fd35153b4192469707986931de0e99ee7748ca528308e649f09552cbed4d0",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/provider-runtime-headers.ts": "bd2400ce2219ac1a6b82376b8b0acab6b7d67118a067399a37ab057f0b905818",
+        "docs/zcode-protocol-model-backed-control-requests.md": "427f6f8bf1587d17b461b425dea27d1bfe5cf2991d962d87a53384dfd695b921"
+      }
+    }
+  ],
+  "watch": [
+    {
+      "source": "vendor-native-foreground-20261116",
+      "paths": ["packages/shared/src/zcode-protocol-v4/command.ts", "packages/shared/src/zcode-protocol-v4/snapshot.ts", "packages/shared/src/zcode-protocol-v4/transport.ts", "packages/shared/src/zcode-protocol/index.ts"],
+      "behaviors": ["one durable native sendText", "ACK differs from terminal query", "owned V4 workspace/session/command/control projection", "string and integer reverse RPC IDs", "correlated reverse reply/cancel", "stop bypasses pending turn", "loss/revocation never replays", "successful close joins read callback replies before terminal publication"],
+      "tests": ["src/native_wire_test.go", "src/native_wire_close_test.go", "src/controller/native_test.go", "src/testdata/native-contract/process_test.go.fixture", "web/page.test.mjs", "web/app.test.mjs"]
+    },
+    {
+      "source": "community-zcode-20261116-noop-audit",
+      "paths": ["packages/zcode"],
+      "behaviors": ["new fetched main ref has the exact previously ported 0.1.66 subtree", "no runtime port or fictitious version increment"],
+      "tests": ["src/sources_test.go", "docs/DONOR-NOOP-20261116.md"]
+    },
+    {
+      "source": "vendor-zcode-20261116-noop-audit",
+      "paths": ["package.json", "apps/zcode-cli/package.json"],
+      "behaviors": ["full vendor tree remains the existing fec9759 baseline", "desktop and CLI versions remain distinct from plugin and SDK versions"],
+      "tests": ["src/sources_test.go", "docs/DONOR-NOOP-20261116.md"]
+    },
+    {
+      "source": "sdk-request-policy12",
+      "paths": ["pkg/extension/request_policy.go", "pkg/extension/stream.go", "docs/subsystems/request-policy.md"],
+      "behaviors": ["host-owned transport admission and wait", "fresh whole-execution refusal", "same logical root budget across callbacks and siblings", "accepted/output/uncertain/canceled/revoked no replay"],
+      "tests": ["src/request_policy_test.go", "tests/request_policy_installed.py", "src/start_requeue_test.go", "src/billing_outcomes_test.go", "src/lanes_test.go"]
+    },
+    {
+      "source": "vendor-request-policy",
+      "paths": ["apps/zcode-cli/packages/adapters/src/model/failure-provider-business-codes.ts", "apps/zcode-cli/packages/adapters/src/model/workflow-model-failure-policy.ts", "apps/zcode-cli/packages/adapters/src/model/failure-inspection.ts"],
+      "behaviors": ["actual machine codes before normalization", "reset-word Beijing timestamp provenance", "unknown reset remains unknown", "exact selected free/paid model applicability"],
+      "tests": ["src/request_policy_test.go", "src/gift_test.go", "src/response_observability_test.go"]
+    },
+    {
+      "source": "vendor-sqlite-history",
+      "paths": ["apps/zcode-cli/packages/adapters/src/storage/session-store", "apps/zcode-cli/packages/contracts/src/interfaces/session-store.port.ts", "packages/shared/src/sqlite-migrations/legacy.ts", "packages/services/src/session/sourceServerWorkspaceAliasRepo.ts"],
+      "behaviors": ["official default CLI root", "authoritative SQL row ownership", "sequence and complete blockIndex order", "soft deletion", "real-user title selection", "fork-copy and orphan accounting", "exact zero versus absent native counters", "opaque external body/media remain unavailable", "optional official session database generation and primary-file incarnation invalidate stale selections"],
+      "tests": ["src/storage_test.go", "src/storage_sqlite_linux_test.go", "src/testdata/automatic-history/writer.py", "src/testdata/automatic-history/host_test.go.fixture"]
+    },
+    {
+      "source": "rooted-vfs-donor",
+      "paths": ["history_vfs_unix.go", "history_lock_unix.go", "history_lock_linux.go", "history_lock_darwin.go", "history_probe_unix.go"],
+      "behaviors": ["finite rooted descriptors", "real DB/WAL/SHM read transactions", "no source writes", "separate-process checkpoint exclusion", "coordinated POSIX descriptor lifetime", "lease revocation through publication"],
+      "tests": ["src/storage_sqlite_linux_test.go", "src/testdata/automatic-history/verify.py", "src/testdata/automatic-history/host_test.go.fixture"]
+    },
+    {
+      "source": "community-zcode-current-audit",
+      "paths": ["packages/zcode"],
+      "behaviors": ["fresh community ZCode subtree equals the already ported 0.1.66 subtree", "no donor checkout mutation or additional runtime"],
+      "tests": ["src/sources_test.go", "src/donor0166_test.go"]
+    },
+    {
+      "source": "vendor-control-completion",
+      "paths": ["packages/shared/src/model-config.ts", "packages/services/src/usage-stats/providers/bigmodelUsageQuotaProvider.ts", "apps/zcode-cli/packages/cli/src/arguments.ts", "packages/services/src/zcode-agent/zcodeAgentProcessManager.ts"],
+      "behaviors": ["effective SDK model limits and defaults replace suffix guesses", "unknown differs from explicitly reasonless", "previous catalog only replaces matching generated fields", "exact opportunity success and denial envelopes", "unknown reset debt survives restart and generation changes", "explicit recovery never replays a vendor mutation", "live resume and duplex process authority remain separate"],
+      "tests": ["src/agent_metadata_test.go", "src/reset_control_test.go", "web/page.test.mjs", "tests/ui_e2e.py", "src/testdata/completion/verify.py"]
+    },
+    {
+      "source": "sdk-final-native9",
+      "paths": ["pkg/extension/manifest.go", "pkg/extension/agent_decision_models.go", "internal/agent/extension_actions.go", "internal/provider/extension_catalog_projection.go", "internal/extension/account_stamp.go"],
+      "behaviors": ["same-library native ABI and ordinary lifecycle on the exact frozen host", "package source lock and API floor agree", "unknown ingress ownership and unexpected owned GET/POST fail closed", "foreign socket rejection uses process lineage rather than names or marked headers"],
+      "tests": ["src/sources_test.go", "src/agent_options_test.go", "src/testdata/agent/run.py", "src/testdata/agent/ingress.py", "src/testdata/agent/ingress_test.py"]
+    },
+    {
+      "source": "sdk-agent-options9",
+      "paths": ["pkg/extension/agent_decision_models.go", "pkg/extension/agent_model_metadata.go", "internal/agent/extension_actions.go", "internal/agent/agent.go"],
+      "behaviors": ["public typed decision facts and validator", "absent legacy and empty API9 list accepted", "unknown option fields and malformed decision facts refused before plan", "decision-only models never enter chat config or selection", "ordinary host presentation and prior model snapshots remain compatible"],
+      "tests": ["src/agent_options_test.go", "src/agent_test.go", "src/sources_test.go"]
+    },
+    {
+      "source": "community-zcode-0166",
+      "paths": ["packages/zcode/index.mjs", "packages/zcode/own.test.mjs", "packages/zcode/inflight.test.mjs", "packages/zcode/gift.test.mjs"],
+      "behaviors": ["selected CN user never follows a same-name cached profile", "known unused Start cap beside inflight requeues at the front within one wait budget", "unclaimed Trial names are read-only and cached per selected session", "gift-only excluded or unknown balance never dispatches", "failed paid-plan read never creates paid authority"],
+      "tests": ["src/donor0166_test.go", "src/start_requeue_test.go", "src/sources_test.go", "src/testdata/donor0166/verify.py", "src/testdata/donor0166/provenance.py"]
+    },
+    {
+      "source": "sdk-concurrency-quota9",
+      "paths": ["pkg/extension/provider_defaults.go", "pkg/extension/rich_quota.go", "internal/provider/concurrency.go", "internal/provider/extension_provider.go", "internal/gui/assets/app.js"],
+      "behaviors": ["ordinary held-request and fanout owners", "explicit user zero wins", "queued configuration replacement revocation", "sparse exact count and wallet zero", "metadata does not invent allowance or cost", "cold configuration read does not imply account mutation"],
+      "tests": ["src/quota_metadata_test.go", "src/testdata/api9/verify.py", "src/testdata/api9/account_stamp_probe_test.go.fixture", "src/testdata/observability/verify.py"]
+    },
+    {
+      "source": "sdk-observability7",
+      "paths": ["pkg/extension/usage_facts.go", "pkg/extension/diagnostics.go", "pkg/extension/stream.go", "internal/extension/diagnostics.go"],
+      "behaviors": ["sparse exact zero", "per-execution cumulative snapshot", "failed-terminal last event", "source model before Trial rewrite", "no invented execution currency or credits", "scoped code-only diagnostics cannot alter execution"],
+      "tests": ["src/response_observability_test.go", "src/testdata/observability/verify.py", "src/testdata/observability/installed.py"]
+    },
+    {
+      "source": "sdk-host",
+      "paths": ["pkg/extension", "sdk/js/ui.js", "internal/extension/window_auth_store.go", "internal/extension/actions.go", "internal/agent/extension_controller.go", "internal/library/extension_profile_target_test.go"],
+      "behaviors": ["selected generation", "credential publication", "no accepted exchange replay", "native file-plan rollback", "exact agent binding revision", "literal launch config path", "inherited Library target", "explicit client header passthrough is distinct from native admission authority"],
+      "tests": ["src/window_test.go", "src/agent_test.go", "src/testdata/agent/run.py", "tests/ui_auth_e2e.py", "src/testdata/sqlite-rollback/host_test.go.fixture"]
+    },
+    {
+      "source": "vendor-current-audit",
+      "paths": ["packages/services/src/model-provider", "packages/services/src/marketing-touch", "packages/shared/src/marketingTouch.ts", "packages/services/src/oauth", "packages/shared/src/credential-security", "packages/provider-node/src/provider-config-file-codec.ts", "apps/zcode-cli/packages/cli/src/provider-runtime-env.ts"],
+      "behaviors": ["Start identity independent of linked paid family", "exact account scope", "credential data-root ownership", "schema-1 provider rules and model selection", "manual model and foreign config preservation", "grant bucket applicability", "exact marketing action and supported client locales"],
+      "tests": ["src/auth_flow_test.go", "src/auth_cn_test.go", "src/auth_recovery_test.go", "src/auth_auto_test.go", "src/completion_test.go", "tests/auth_e2e.py", "src/agent_test.go", "src/testdata/agent/run.py", "src/gift_test.go", "src/billing_outcomes_test.go"]
+    },
+    {
+      "source": "vendor-current-audit",
+      "paths": ["apps/zcode-cli/packages/core/src/context", "apps/zcode-cli/packages/adapters/src/model/runner-attribution.ts", "apps/zcode-cli/packages/adapters/src/model/runner-normalization.ts", "apps/zcode-cli/packages/adapters/src/storage/session-store", "apps/zcode-cli/packages/adapters/src/logging"],
+      "behaviors": ["CLI source-shaped Start envelope", "stable user-turn attribution", "uncached input and cache usage", "native attempt and raw usage rows", "lossless diagnostic logs and incomplete tail"],
+      "tests": ["src/completion_test.go", "src/protocol/start_test.go", "src/response_usage_test.go", "src/history/log_test.go", "src/historydb/observability_test.go", "src/lanes_test.go"]
+    },
+    {
+      "source": "archived-controller",
+      "paths": ["internal/provider/zcode_account_journal.go", "internal/sessions/zcode_fork_test.go"],
+      "behaviors": ["pending reset and claim debt", "old generation never becomes current", "fork-copy counts", "lossless SQLite snapshots"],
+      "tests": ["src/historydb/sqlite_test.go", "src/historydb/resource_test.go", "src/sessions_test.go", "src/testdata/sqlite-rollback/run.py"]
+    },
+    {
+      "source": "community-zcode",
+      "paths": ["packages/zcode/index.mjs", "packages/zcode/checkin.test.mjs", "packages/zcode/gift.test.mjs", "packages/zcode/dual.test.mjs", "packages/zcode/inflight.test.mjs", "packages/zcode/toolsearch.test.mjs"],
+      "behaviors": ["gift claim acknowledgments", "strict trial pool", "free-first quota isolation", "Start concurrency and network holds", "explicit feed check-in and durable principal rate holds", "ToolSearch roundtrip"],
+      "tests": ["src/gift_test.go", "src/billing_outcomes_test.go", "src/start_guard_test.go", "src/billing_test.go", "src/protocol/request_test.go", "src/protocol/response_test.go", "src/testdata/parity/verify.py"]
+    }
+  ],
+  "limits": [
+    "The full 0.15.0 module now adopts existing API1.10 source-agent resume and AgentProcess on the captured 9c69eb56 host source. The overall SDK floor stays 1.12 for request-policy. Parent owns final combined-host acceptance; late callerCtx integration is outside this snapshot.",
+    "Foreground native.run starts one host-owned app-server --stdio child with profile-HOME cwd and separately configured V4 workspace. It does not attach an existing desktop process or grant arbitrary process cwd. Only matching magpie reverse requests receive headersApplied:false; other interactions fail closed without credential publication.",
+    "Pending native commands retain separate durable intent across loss, cancellation and account/config/profile/off revocation. A fresh command ID cannot replace unresolved input for the same configured workspace/session. No native reconciliation/reset action is exposed; operators must preserve the original controller journal.",
+    "Historical native lifecycle verification pinned base c11acbc2bebec1fb213ef562900d35188cdf55fe, physical source tree 8fe78ab9df13d733d61462eacce19bff523c1e58 and binary c018c44332ff9238779d1d01340dfd751209c2c694942fd0406e4d6a3c96cc86. Those c8281b6 lineage/native libraries remain historical evidence, not acceptance of the changed foreground package.",
+    "Agent options retain and validate public decisionModels separately from chat models. Decision metadata does not configure a ZCode decision client or authorize decision-only models in the chat catalog.",
+    "Both current compositions require SDK 1.12 request-policy. The ordinary full distribution is 0.15.0 with provider/controller/owned-agent/UI and rooted default CLI SQLite history; explicit --headless retains the 0.7.3 provider-only composition. Historical API4/API9 receipts and source locks retain their original identities.",
+    "API1.12 verification uses the frozen e2ca42c6 physical host source. Permit-validation and revoked-diagnostic changes belong to the host owner; final combined host replay is coordinated by parent. No live vendor, actual client, publication or committed-host acceptance is inferred.",
+    "The 0.14.0 continuation uses fresh official fec9759 and community 57d1cc6a; the latter's ZCode tree d1be84b4 is identical to the ported 0.1.66. Previous c8281b6 native library acceptance does not establish acceptance of this changed package. Final merged-host pin and actual-client resume/control remain separate.",
+    "Wire ClientVersion 3.18.2 accompanies the confirmed unlinked-Start and explicit zai_cn login-channel ports. The bounded vendor audit is not full native-agent parity.",
+    "Community source is a read-only behavior donor, never an installed plugin dependency or duplicate auth owner.",
+    "Gift aliases, dual usage and free-first routing use valid selected ZCode sessions, including manual paid imports. Confirmed inactive paid accounts expose gift-only plain models and Trial; losing gift confirmation never authorizes paid dispatch. Trial never spends paid quota; free-first replays only fully read code 1005/1113 refusals with no output markers and freshly confirmed paid capacity.",
+    "Community 0.1.63-0.1.66 were read through exact Git objects without changing the donor checkout. Our manual Start now also requires a current named spendable gift bucket; unknown balance fails closed instead of copying the donor's permissive unknown-balance send. A failed discovered paid-plan read never authorizes either inference path.",
+    "A sustained known output-free Start concurrency refusal beside other inflight requests narrows queue capacity; only the next host-permitted dispatch can requeue at the head within one two-minute queue deadline. Retry counts and waits belong to the host. Unclaimed Trial hints retain the three-second read bound and ten-minute selected-session cache; they never claim a plan or create quota.",
+    "billing.offers and billing.checkin require a private dataDir and verified selected principal. The ordinary page has selected-generation offers and explicitly confirmed check-in controls. No automatic scheduler or native-operation integration is declared. Code 0 without a plan acknowledges a claim without inventing an entitlement.",
+    "Public RequestWithPolicy replaces local paid/Start transport timers. Fresh RefusedExecution results require independently proved whole-inference rejection with no accepted/output publication. Unknown-scope code 3009 and request-security code 3007 never establish account failover. Native ticket/card inference, transport uncertainty and partial output are never repeated; paid requests remain outside Start holds.",
+    "The full API 1.12 module retains API7 source-backed uncached input/output/cache-read/cache-write, one-hour cache subsets, reasoning, model, IDs, stop and tier. The pinned ZCode Messages source supplies no authoritative per-execution credits, monetary amount/currency, deferred counts or upstream-provider fact; lookalike unknown fields remain raw bytes, not measured facts.",
+    "API 1.7 adoption is verified against the exact uncommitted 43b7e290 source archive recorded separately from the previous committed host lock. Final shared-host release acceptance remains a separate gate.",
+    "Current donor0.1.68 port retains the provider default of 3 requests per account and omits maxAccounts; explicit user limits, including zero, still belong to host owners. Existing Start transport admission adds6 per exact origin/proxy route inside one module instance; this is not host-global or cross-process physical-IP enforcement. Historical API9 two-account evidence retains its original snapshot. Paid/gift counts and periods remain source-backed; numeric period codes supply no unit, balance, currency, credits or execution cost.",
+    "The API9 union snapshot retains the independently reproduced account-stamp cold-read finding. The exact unchanged probe and proposed parent-only fix are tested through Go overlay; that conditional acceptance is not an integrated parent fix.",
+    "Start FIFO limits, adaptive caps, gift quota rests and shared outbound-route holds are per module instance, not persistent cross-process admission. No generic host ownership or native ticket/header guard was changed.",
+    "SQLite runtime reuses exact existing host-locked modernc sqlite/libc; Python is verification-only. go.mod/go.sum and SQLITE-DEPENDENCIES.md record versions and graph evidence.",
+    "The single API 1.9 native/UI bundle retains the SDK 1.5 zcode-native profile of zcode, checked default-HOME provider-file plans and inherited Library placement. Actual client startup and custom data-root/Library placement are outside its synthetic launch proof.",
+    "The 0.15 default CLI automatic history source uses the existing API9 rooted storage descriptor and module-local read-only DB/WAL/SHM transaction. It never checkpoints, writes or independently copies the live source. External media/body refs remain explicit unavailable transcript markers; custom native roots, desktop task-index association, financial import and native resume/V4 remain separate.",
+    "Synthetic installed Darwin child execution is bounded verification. No live vendor/account/app verification, rendered-browser acceptance, Windows process runtime or published distribution is claimed.",
+    "Watch entries identify regression surfaces, not complete coverage of every donor behavior; confirmed unported deltas are in COMMUNITY-PARITY.md and VENDOR-DIFF-3.18.2.md."
+  ]
+}

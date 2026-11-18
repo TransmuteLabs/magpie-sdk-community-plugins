@@ -1,0 +1,11 @@
+{
+  "prototype": true,
+  "requiresHostAPI": "^1.5",
+  "bindings": [
+    { "id": "page.execution-list", "from": "window:page", "action": "execution.summary", "provider": "zcode" },
+    { "id": "page.billing-status", "from": "window:page", "action": "billing.status", "provider": "zcode" },
+    { "id": "page.reset-status", "from": "window:page", "action": "reset.status", "provider": "zcode" },
+    { "id": "page.reset-use", "from": "window:page", "action": "reset.use", "provider": "zcode" },
+    { "id": "page.billing-claim", "from": "window:page", "action": "billing.claim", "provider": "zcode" }
+  ]
+}

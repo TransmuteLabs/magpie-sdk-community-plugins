@@ -1,0 +1,49 @@
+const EventType = Schema.Struct({
+  server: Schema.String,
+  name: Schema.String,
+  description: Schema.optional(Schema.String),
+  inputSchema: Schema.Record(Schema.String, Schema.Unknown),
+})
+const EventTypeList = Schema.Struct({ types: Schema.Array(EventType) })
+/** The most of an event type's description `events` shows. */
+const MAX_DESCRIPTION = 300
+
+      editor.add({
+        name: "events",
+        description:
+          "List the event types `watch` can follow on the workspace's MCP servers, with each one's server, name, description and input schema.",
+        input: Schema.Struct({}),
+        output: EventTypeList,
+        options: { namespace, codemode: true },
+        execute: () =>
+          call(member, "GET", "/api/event-watches/types").pipe(
+            Effect.flatMap(expectOk),
+            Effect.flatMap(HttpClientResponse.schemaBodyJson(EventTypeList)),
+            // Each on one line, with what `watch` needs; a server's description is cut short.
+            Effect.map((body) =>
+              body.types.map((type) => {
+                const description = type.description?.replace(/\s+/g, " ").trim().slice(0, MAX_DESCRIPTION)
+                return {
+                  server: type.server,
+                  name: type.name,
+                  ...(description ? { description } : {}),
+                  inputSchema: type.inputSchema,
+                }
+              }),
+            ),
+            Effect.map((types) => ({
+              output: { types },
+              content:
+                types.length === 0
+                  ? "No event types to watch: connect a server that offers them in Extensions."
+                  : types
+                      .map(
+                        (type) =>
+                          `${type.server} ${type.name}${type.description ? `: ${type.description}` : ""} Arguments: ${JSON.stringify(type.inputSchema)}`,
+                      )
+                      .join("\n"),
+            })),
+            Effect.scoped,
+            Effect.mapError(failure),
+          ),
+      })

@@ -1,0 +1,13 @@
+{
+  "name": "magpie-minimax",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "magpie": {
+    "page": {
+      "title": "MiniMax",
+      "file": "web/index.html"
+    },
+    "permissions": []
+  }
+}

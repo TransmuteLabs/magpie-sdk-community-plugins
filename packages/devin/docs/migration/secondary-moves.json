@@ -1,0 +1,30 @@
+{
+  "schema": 1,
+  "moves": [
+    {
+      "from": "src/codec/EVIDENCE.md",
+      "to": "docs/history/codec/EVIDENCE.md",
+      "sha256": "da63d41dc1b24151fe81e97935edbbd5dfd34237614a23c9a208480933ec4e51"
+    },
+    {
+      "from": "src/codec/README.md",
+      "to": "docs/history/codec/README.md",
+      "sha256": "b6990091497ca728846772a74d0fa72fa3b2e38135df7bfdb46825d48a57552d"
+    },
+    {
+      "from": "src/outbound/EVIDENCE.md",
+      "to": "docs/history/outbound/EVIDENCE.md",
+      "sha256": "1a7a5be48aae2bf66f82e95b97cd3d3adaa835d8a851d11987ecefc069bea98f"
+    },
+    {
+      "from": "src/outbound/HOST-GAPS.md",
+      "to": "docs/history/outbound/HOST-GAPS.md",
+      "sha256": "8b81c944741386ee71718ee42b6e2884d55de6e60d0cf2998bc17ec1475ffc7d"
+    },
+    {
+      "from": "src/outbound/README.md",
+      "to": "docs/history/outbound/README.md",
+      "sha256": "89d7facc643d70e3ed74048d3b898344052dda7fcbda5bc216bc8bb1b591e4bb"
+    }
+  ]
+}

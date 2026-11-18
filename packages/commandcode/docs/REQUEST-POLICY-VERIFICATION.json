@@ -1,0 +1,52 @@
+{
+  "date": "2026-11-16",
+  "author": "SOL; Astra review reserved",
+  "status": "adapter checks pass; exact-host terminal audit has unresolved parent gates",
+  "package": {"id": "protocol-commandcode", "version": "0.1.3", "sdkMinimum": "1.12", "nativeABI": 1, "published": false},
+  "packet": "usbox:/tmp/magpie-sol-two-policy-20261116",
+  "source": {
+    "snapshot": "candidate04/packages/commandcode",
+    "manifest": "api12-commandcode-source.json",
+    "manifestSHA256": "6cb8c4887e770a9341f368210fabc13a6758e0ae7935895e90799de66d16b81e",
+    "files": 95,
+    "boundary": "Exact tested package including formatted source, tests, scripts, manifests and then-current docs; this verification file and subsequent donor audit are separate additions"
+  },
+  "host": {
+    "selection": "Original OBS candidate-01 archive, extracted into packet/sdk-obs-original; no host implementation overlay",
+    "files": 10987,
+    "manifestSHA256": "8724cf734d51d881f6d88561eceefeaecf9f722e1bc4e1a078fcb8f010cccdd4",
+    "archiveSHA256": "9015f443e9ea051f26c7399d6fa0292e4229d1d8f15e332d2b5fc9f4f85f4208",
+    "sharedDirectoryDrift": "internal/provider/extension_transport.go; preserved and not used as the requested original source",
+    "testOverlay": "Only package-owned Go test injection into internal/gateway; production host source unchanged"
+  },
+  "controls": {
+    "oldRuntimeUnit": "red-fixed-01: compiling TestRequestPolicyOriginalFinalRefusal fails on missing final facts in Chat/Responses/Messages/Jev",
+    "oldRuntimeOrdinaryHost": "native-red-fixed-01: installed old module fails sibling recovery with status409 and exactly one vendor dispatch",
+    "race": {"passedTestsAndSubtests": 96, "fail": 0, "skip": 0},
+    "vetBuildFormat": "pass",
+    "ordinaryFullPackageBuildAndArchiveValidation": "pass",
+    "wholeTwoPackageHostAudit": {"cases": 31, "pass": 24, "fail": 7}
+  },
+  "artifacts": {
+    "defaultNativeSHA256": "96d50fc45b1cbd6b577640de2cbe6ad5e4ba9a944b19ee46854c12d6d8036395",
+    "archive": "protocol-commandcode-0.1.3-linux-amd64.zip",
+    "archiveSHA256": "e84847c0b368a7d82448b1db2bcb381c847ac767c7f0d0938971d9a240363ca8",
+    "ordinaryHostUsedDefaultBuiltArtifact": true
+  },
+  "receiptSHA256": {
+    "red-fixed-01-receipt.json": "02362a64d1b4f99291a87567802f7cba5210b761d69737087f6fef4b343e2aca",
+    "native-red-fixed-01-receipt.json": "8a39264940564dbecee1a3e142c2a416e7a8226591fe2f7900b61cef8caacaf5",
+    "green-final-04-receipt.json": "e7811bf22eb1534863ad2206e42718116753f3ae077b9e50dfe54260ff5da7df",
+    "distribution-final04-receipt.json": "ae9d9467fc6a2872ffb156a94a38ba32e9853e25e11191fec0869e5672bee10d",
+    "native-final-04-receipt.json": "ec8d86c7f613a3f879c038810843d707bb571ef6c69ceb5af283d1d42b0874a9"
+  },
+  "remainingParentGates": [
+    "Jev /v1/systemone: maxTotalRetries0 and request/content-terminal operator rules still send policy-A then policy-B; fixed host decide_group.go does not consume the final shared refusal",
+    "Chat root/model retry-budget exhaustion: one vendor send and Recent entry are retained, but usage.Load has zero ledger rows; same failure reproduced with OpenCode",
+    "Parent root registry/readiness metadata must reflect actual API1.12 floor; no root files changed",
+    "Independent Astra combined review and public SDK helper permit/disable/diagnostic work are not declared complete"
+  ],
+  "verifiedJev": "Actual Front /v1/systemone and translated /v1/decisions each succeed with one send, selected CLI identity and exactly41 input/3 output; interrupted answer returns409 with one send and no replay",
+  "notVerified": ["live vendor or credentials", "installed vendor apps", "non-Linux execution", "broad host suites", "SDK publication", "independent review"],
+  "execution": "Regular usbox uid1000, isolated HOME/XDG, pinned offline Go1.26.8 and existing descendant network guard; no source deletion, staging, commits, branches, worktrees or dependency additions"
+}

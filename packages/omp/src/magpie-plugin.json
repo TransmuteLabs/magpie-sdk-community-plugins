@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "id": "omp-sessions",
+  "version": "0.1.0",
+  "runtime": "native",
+  "entry": "plugin.so",
+  "contract": {
+    "version": {"major": 1, "minor": 10},
+    "capabilities": ["session-migration", "module-rpc", "session-source", "session-related-inputs"]
+  },
+  "compatibility": {
+    "hostAPI": "^1.10",
+    "nativeABI": 1
+  },
+  "actions": [
+    {"id":"session.inputs.v1","inputSchema":{"type":"object"},"effect":"read"}
+  ],
+  "sessionSources": [
+    {
+      "id": "omp-history", "agent": "omp", "codec": "omp-v3", "container": "jsonl",
+      "stores": [{"slot": "main", "nativeRootSlot": "omp.sessions"}],
+      "layout": {"kind": "bucketed", "idFrom": "filename-after-first-underscore"},
+      "descendants": {"kind": "journal-stem-jsonl", "excludeDirectories": ["btw-history"]},
+      "transcript": true, "resume": "native"
+    }
+  ],
+  "sessions": [
+    {"id": "omp-to-document", "name": "OMP v3 to OMP conversation document"},
+    {"id": "document-to-omp", "name": "OMP conversation document to OMP v3"},
+    {"id":"omp-to-claude","name":"Carry OMP context into Claude Code","from":"omp","to":"claude","outputDir":".claude/projects"},
+    {"id":"omp-to-codex","name":"Carry OMP context into Codex","from":"omp","to":"codex","outputDir":".codex/sessions"},
+    {"id":"claude-to-omp","name":"Carry Claude Code context into OMP","from":"claude","to":"omp","outputDir":".omp/agent/sessions"},
+    {"id":"codex-to-omp","name":"Carry Codex context into OMP","from":"codex","to":"omp","outputDir":".omp/agent/sessions"}
+  ]
+}

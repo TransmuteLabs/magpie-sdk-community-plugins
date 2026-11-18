@@ -1,0 +1,107 @@
+diff --git a/pkg/extension/contract.go b/pkg/extension/contract.go
+--- a/pkg/extension/contract.go
++++ b/pkg/extension/contract.go
+@@ -69,6 +69,8 @@
+ }
+ 
+ type ProviderDescriptor struct {
++	MaxConcurrency *int `json:"maxConcurrency,omitempty"`
++	MaxAccounts *int `json:"maxAccounts,omitempty"`
+ 	ID         string                      `json:"id"`
+ 	Name       string                      `json:"name"`
+ 	Protocols  []protocolext.Protocol      `json:"protocols"`
+diff --git a/pkg/extension/types.go b/pkg/extension/types.go
+--- a/pkg/extension/types.go
++++ b/pkg/extension/types.go
+@@ -171,6 +171,11 @@
+ }
+ 
+ type UsageWindow struct {
++	Amount *float64 `json:"amount,omitempty"`
++	Balance *float64 `json:"balance,omitempty"`
++	Display string `json:"display,omitempty"`
++	Unit string `json:"unit,omitempty"`
++	Span int64 `json:"span,omitempty"`
+ 	Name      string   `json:"name"`
+ 	Used      float64  `json:"used"`
+ 	Limit     float64  `json:"limit,omitempty"`
+diff --git a/pkg/extension/manifest.go b/pkg/extension/manifest.go
+--- a/pkg/extension/manifest.go
++++ b/pkg/extension/manifest.go
+@@ -53,6 +53,12 @@
+ 	manifest.Providers = slices.Clone(manifest.Providers)
+ 	for index := range manifest.Providers {
+ 		provider := &manifest.Providers[index]
++		if provider.MaxConcurrency != nil {
++			provider.MaxConcurrency = new(*provider.MaxConcurrency)
++		}
++		if provider.MaxAccounts != nil {
++			provider.MaxAccounts = new(*provider.MaxAccounts)
++		}
+ 		provider.Options = cloneProviderOptions(provider.Options)
+ 		provider.AccountTasks = slices.Clone(provider.AccountTasks)
+ 		if provider.Checkin != nil {
+@@ -230,6 +236,9 @@
+ 	}
+ 	ids = map[string]bool{}
+ 	for _, provider := range manifest.Providers {
++		if err := ValidateProviderDefaults(manifest, provider); err != nil {
++			return err
++		}
+ 		if !validID(provider.ID) || ids[provider.ID] || !validName(provider.Name) {
+ 			return fmt.Errorf("invalid or duplicate provider descriptor %q", provider.ID)
+ 		}
+diff --git a/sdk/js/manifest.js b/sdk/js/manifest.js
+--- a/sdk/js/manifest.js
++++ b/sdk/js/manifest.js
+@@ -1,4 +1,5 @@
+ import { Buffer } from "node:buffer";
++import { validateProviderDefaults } from "./provider-defaults.js";
+ import { posix } from "node:path";
+ import { MAX_CHUNK_BYTES, MAX_FRAME_BYTES, SDKError } from "./bytes.js";
+ import { actionOwner, componentID, validateComposite, checkHostCompatibility } from "./composite.js";
+@@ -191,6 +192,7 @@
+         if (!has("inbound-codec") || !endpoint(descriptor.path) || paths.has(descriptor.path)) fail("Invalid, reserved or duplicate inbound path");
+         paths.add(descriptor.path);
+       } else if (key === "providers") {
++        validateProviderDefaults(manifest, descriptor);
+         if (descriptor.calls !== undefined && (typeof descriptor.calls !== "boolean"
+           || descriptor.calls && (contract.version.minor < 8 || !has("usage-reporter") || !has("account-auth"))))
+           fail("Outside calls require SDK API 1.8, usage reporting and account auth");
+diff --git a/sdk/js/index.js b/sdk/js/index.js
+--- a/sdk/js/index.js
++++ b/sdk/js/index.js
+@@ -1,3 +1,5 @@
++export { validateProviderDefaults } from "./provider-defaults.js";
++export { validateRichQuotaWindow } from "./rich-quota.js";
+ export { validateAccountSelection } from "./account-selection.js";
+ export { validateAccountCheckinRequest, validateAccountCheckinResult } from "./account-checkin.js";
+ export { accountKeepAliveLead } from "./account-keepalive.js";
+diff --git a/sdk/js/index.d.ts b/sdk/js/index.d.ts
+--- a/sdk/js/index.d.ts
++++ b/sdk/js/index.d.ts
+@@ -367,9 +367,12 @@
+ export interface UsageWindow {
++  amount?: number | null; balance?: number | null; display?: string; unit?: string; span?: number;
+   name: string; used: number; limit?: number; resetsAt?: number;
+   unknown?: boolean; error?: string; asOf?: number; models?: string[]; notModels?: string[]; aside?: boolean;
+ }
++export function validateProviderDefaults(manifest: Manifest, provider: NonNullable<Manifest["providers"]>[number]): void;
++export function validateRichQuotaWindow(manifest: Manifest, window: UsageWindow): void;
+ export interface UsageResult {
+   usage: Usage; windows?: UsageWindow[]; asOf?: number; readDeferred?: boolean; error?: string; revision?: string;
+ }
+ export interface UsageInvalidateRequest {}
+ export interface UsageInvalidateResult { revision: string }
+diff --git a/sdk/js/package.json b/sdk/js/package.json
+--- a/sdk/js/package.json
++++ b/sdk/js/package.json
+@@ -50,6 +50,8 @@
+     "middleware.d.ts",
+     "usage.js",
++    "provider-defaults.js",
++    "rich-quota.js",
+     "usage-facts.js",
+     "own-calls.js",
+     "own-calls.d.ts",
+     "routing.js",

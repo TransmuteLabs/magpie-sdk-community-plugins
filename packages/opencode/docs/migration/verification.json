@@ -1,0 +1,375 @@
+{
+  "scope": "relocation; current package only; no new domain audit",
+  "remoteRoot": "/tmp/magpie-opencode-relocation.AaLNo9c6",
+  "sdk": "/tmp/magpie-astra-combined-20261115-v4/source",
+  "sdkContentSHA256": "609a7b5a1bfd8da599639900e19a2635296b5f5d1ce85bcbd8df0df702d5b493",
+  "sourceFiles": 142,
+  "sourceContentSHA256": "999118bae0efaa8f50a1a3a507bce830cc25f84dcb475c66f1cebd8196b0b646",
+  "sharedHelperSHA256": "1f386b59297faeddfa9b1c1f0b8d0dd25954dbe7322de161b62f32c99060442e",
+  "checks": [
+    {
+      "gate": "auth-browser-isolated",
+      "exit": 1,
+      "seconds": 0.57,
+      "command": [
+        "node",
+        "--test",
+        "tests/auth_ui.test.cjs"
+      ],
+      "cwd": "/tmp/magpie-opencode-relocation.AaLNo9c6/candidate/packages/opencode",
+      "sdk": "/tmp/magpie-astra-combined-20261115-v4/source",
+      "home": "/tmp/magpie-opencode-relocation.AaLNo9c6/auth-browser-isolated-home-jp5kof_8",
+      "receiptSHA256": "06a31e8d79bf5067297bd11df474208e4b71ac21b720954e3a16ad7f2eb1162a",
+      "logSHA256": "177e6b2c613e387a0dc866da40793e3766385d861aff749c687a692d0ddc13ae"
+    },
+    {
+      "gate": "auth-browser",
+      "exit": 1,
+      "seconds": 0.6,
+      "command": [
+        "node",
+        "--test",
+        "tests/auth_ui.test.cjs"
+      ],
+      "cwd": "/tmp/magpie-opencode-relocation.AaLNo9c6/candidate/packages/opencode",
+      "sdk": "/tmp/magpie-astra-combined-20261115-v4/source",
+      "home": "/tmp/magpie-opencode-relocation.AaLNo9c6/auth-browser-home-__tks101",
+      "receiptSHA256": "10502f636026126980ca079c45152f29cf31ca94f364dd12fa0038bb77ed51d6",
+      "logSHA256": "a071eaa6957811c3544446f8f7232e0aaf5356762846f22c15d8a8e58093f4da"
+    },
+    {
+      "gate": "auth-browser-short-tmp-final",
+      "exit": 0,
+      "seconds": 1.34,
+      "command": [
+        "node",
+        "--test",
+        "tests/auth_ui.test.cjs"
+      ],
+      "cwd": "/tmp/magpie-opencode-relocation.AaLNo9c6/candidate/packages/opencode",
+      "sdk": "/tmp/magpie-astra-combined-20261115-v4/source",
+      "home": "/tmp/magpie-opencode-relocation.AaLNo9c6/auth-browser-short-tmp-final-home-q0tole6_",
+      "receiptSHA256": "3f3f5df495845c45c17c2377909b3d9162e0718e003ca4d3aafc4368cc4dad31",
+      "logSHA256": "8355ab5660e6159e52eece67e15cbd7fdbe50a668dd1ca1bbca462c84e2a02c1"
+    },
+    {
+      "gate": "auth-browser-short-tmp",
+      "exit": 1,
+      "seconds": 0.59,
+      "command": [
+        "node",
+        "--test",
+        "tests/auth_ui.test.cjs"
+      ],
+      "cwd": "/tmp/magpie-opencode-relocation.AaLNo9c6/candidate/packages/opencode",
+      "sdk": "/tmp/magpie-astra-combined-20261115-v4/source",
+      "home": "/tmp/magpie-opencode-relocation.AaLNo9c6/auth-browser-short-tmp-home-_b8zgt4c",
+      "receiptSHA256": "acd2b0ca78a15eba40ba63a7720313ed46c4cef9215cd4793ff2e46723f88bb6",
+      "logSHA256": "c32085656f12aa7e73ac7f0454f4b41ea87f61be5677050fe06354aa2a935438"
+    },
+    {
+      "gate": "baseline-build",
+      "exit": 2,
+      "seconds": 0.04,
+      "command": [
+        "python3",
+        "/tmp/magpie-opencode-relocation.AaLNo9c6/baseline/packages/opencode/scripts/build.py",
+        "--output",
+        "/tmp/magpie-opencode-relocation.AaLNo9c6/baseline-dist",
+        "--sdk",
+        "/tmp/magpie-astra-combined-20261115-v4/source"
+      ],
+      "cwd": "/tmp/magpie-opencode-relocation.AaLNo9c6/baseline/packages/opencode",
+      "sdk": "/tmp/magpie-astra-combined-20261115-v4/source",
+      "home": "/tmp/magpie-opencode-relocation.AaLNo9c6/baseline-build-home-zzzdg5o0",
+      "receiptSHA256": "bc27cb6a59dff0c9f2e84eed4a757d7edd6c38009720e4c404d53053f152733f",
+      "logSHA256": "9ea767dff8f2dd5bcc287e2d9f2121680c38c14539002a9d22f68964df0a54d8"
+    },
+    {
+      "gate": "baseline-provenance",
+      "exit": 1,
+      "seconds": 5.42,
+      "command": [
+        "go",
+        "test",
+        "-json",
+        "-count=1",
+        "-run",
+        "^TestSourceLock",
+        "-timeout=2m",
+        "."
+      ],
+      "cwd": "/tmp/magpie-opencode-relocation.AaLNo9c6/baseline/packages/opencode/src",
+      "sdk": "/tmp/magpie-astra-combined-20261115-v4/source",
+      "home": "/tmp/magpie-opencode-relocation.AaLNo9c6/baseline-provenance-home-iy45nktj",
+      "receiptSHA256": "6fd5a22256d2d5f3ace9f312883da8f8f3d09261c9ad23848a1bcd4d820685ac",
+      "logSHA256": "2d27e4f62ec8b0829da294730a2a7431dc436d619690c96976d0c51f4b5878f6"
+    },
+    {
+      "gate": "build",
+      "exit": 0,
+      "seconds": 2.16,
+      "command": [
+        "python3",
+        "/tmp/magpie-opencode-relocation.AaLNo9c6/candidate/packages/opencode/scripts/build.py",
+        "--output",
+        "/tmp/magpie-opencode-relocation.AaLNo9c6/dist",
+        "--sdk",
+        "/tmp/magpie-astra-combined-20261115-v4/source"
+      ],
+      "cwd": "/tmp/magpie-opencode-relocation.AaLNo9c6/candidate/packages/opencode",
+      "sdk": "/tmp/magpie-astra-combined-20261115-v4/source",
+      "home": "/tmp/magpie-opencode-relocation.AaLNo9c6/build-home-njkc174j",
+      "receiptSHA256": "7e66ded07ea272d43e14da6adb8b0fb7e19e8854c2506bf3be0ea9ed88700d5d",
+      "logSHA256": "02bfcffc763971b896dd44867422d0f9e79b5cda5fb5b9f04f2fdc1b8f8907f3"
+    },
+    {
+      "gate": "format",
+      "exit": 0,
+      "seconds": 0.01,
+      "command": [
+        "gofmt",
+        "-l",
+        "."
+      ],
+      "cwd": "/tmp/magpie-opencode-relocation.AaLNo9c6/candidate/packages/opencode/src",
+      "sdk": "/tmp/magpie-astra-combined-20261115-v4/source",
+      "home": "/tmp/magpie-opencode-relocation.AaLNo9c6/format-home-4a76htuv",
+      "receiptSHA256": "6ba074aedb198fa83914d27fc780386d355ed2fb7c4de11e14caa21ea6becc9a",
+      "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "gate": "go",
+      "exit": 0,
+      "seconds": 10.0,
+      "command": [
+        "go",
+        "test",
+        "-json",
+        "-race",
+        "-count=1",
+        "-timeout=5m",
+        "./..."
+      ],
+      "cwd": "/tmp/magpie-opencode-relocation.AaLNo9c6/candidate/packages/opencode/src",
+      "sdk": "/tmp/magpie-astra-combined-20261115-v4/source",
+      "home": "/tmp/magpie-opencode-relocation.AaLNo9c6/go-home-slxebx_3",
+      "receiptSHA256": "7f415c834adea19ee7bef51b48e4dbce6c5096aa3db50b209003a1af2d6b2e81",
+      "logSHA256": "cf5fb40b89762a67a816c3cc82c3c4d2c0e3cb908a669608d913f380b67d0ba3"
+    },
+    {
+      "gate": "guard-build",
+      "exit": 0,
+      "seconds": 0.1,
+      "command": [
+        "gcc",
+        "-std=c11",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-O2",
+        "-o",
+        "/tmp/magpie-opencode-relocation.AaLNo9c6/loopback-guard",
+        "tests/loopback_guard.c"
+      ],
+      "cwd": "/tmp/magpie-opencode-relocation.AaLNo9c6/candidate/packages/opencode",
+      "sdk": "/tmp/magpie-astra-combined-20261115-v4/source",
+      "home": "/tmp/magpie-opencode-relocation.AaLNo9c6/guard-build-home-3kf6gw9m",
+      "receiptSHA256": "7472945807c04f85b15f2a588e8220444b7908682758e07ad026d735e3e611ce",
+      "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "gate": "history-unit",
+      "exit": 0,
+      "seconds": 2.26,
+      "command": [
+        "node",
+        "--test",
+        "tests/history_ui.test.mjs"
+      ],
+      "cwd": "/tmp/magpie-opencode-relocation.AaLNo9c6/candidate/packages/opencode",
+      "sdk": "/tmp/magpie-astra-combined-20261115-v4/source",
+      "home": "/tmp/magpie-opencode-relocation.AaLNo9c6/history-unit-home-_p8elb31",
+      "receiptSHA256": "816fa6e49a4f107a96ce8336b4a9bc3849d2499579a24fb421af8dd78adff4b3",
+      "logSHA256": "b19a3a8516d2ec0fe28ccabaf48f82b58279356c88e4ee7d47b13f8a3395b5c9"
+    },
+    {
+      "gate": "native-history-guarded",
+      "exit": 0,
+      "seconds": 3.04,
+      "command": [
+        "/tmp/magpie-opencode-relocation.AaLNo9c6/loopback-guard",
+        "/tmp/magpie-opencode-relocation.AaLNo9c6/native-history-loopback.json",
+        "python3",
+        "tests/storage_e2e.py",
+        "/tmp/magpie-astra-combined-20261115-v2/magpie",
+        "/tmp/magpie-opencode-relocation.AaLNo9c6/dist",
+        "/tmp/magpie-opencode-relocation.AaLNo9c6/native-history"
+      ],
+      "cwd": "/tmp/magpie-opencode-relocation.AaLNo9c6/candidate/packages/opencode",
+      "sdk": "/tmp/magpie-astra-combined-20261115-v4/source",
+      "home": "/tmp/magpie-opencode-relocation.AaLNo9c6/native-history-guarded-home-dd9gzmq5",
+      "receiptSHA256": "2265c921a01f55fcb6e871d6de19e763a975dd59def81d5cbafc04158522615f",
+      "logSHA256": "6b0f42ddd5d4ee35c4e8b09e26d87e2194b15d55a03825bda775abf4155e4cc2"
+    },
+    {
+      "gate": "native-history",
+      "exit": 125,
+      "seconds": 0.0,
+      "command": [
+        "/tmp/magpie-opencode-relocation.AaLNo9c6/loopback-guard",
+        "/tmp/magpie-opencode-relocation.AaLNo9c6/native-history-loopback.json",
+        "python3",
+        "tests/storage_e2e.py",
+        "/tmp/magpie-astra-combined-20261115-v2/magpie",
+        "/tmp/magpie-opencode-relocation.AaLNo9c6/dist",
+        "/tmp/magpie-opencode-relocation.AaLNo9c6/native-history"
+      ],
+      "cwd": "/tmp/magpie-opencode-relocation.AaLNo9c6/candidate/packages/opencode",
+      "sdk": "/tmp/magpie-astra-combined-20261115-v4/source",
+      "home": "/tmp/magpie-opencode-relocation.AaLNo9c6/native-history-home-q0xnk8if",
+      "receiptSHA256": "714fcfda978505484d81ddb61dc83312f3b7797d0673cb465b6817043fccb447",
+      "logSHA256": "7de4ca50aea221b2eb0fbaff049b498ed73b1cb99baf03afcd2b2ef91164aade"
+    },
+    {
+      "gate": "oracle-policy",
+      "exit": 0,
+      "seconds": 0.11,
+      "command": [
+        "node",
+        "tests/zen_policy_oracle.mjs",
+        "--check"
+      ],
+      "cwd": "/tmp/magpie-opencode-relocation.AaLNo9c6/candidate/packages/opencode",
+      "sdk": "/tmp/magpie-astra-combined-20261115-v4/source",
+      "home": "/tmp/magpie-opencode-relocation.AaLNo9c6/oracle-policy-home-d325f_ho",
+      "receiptSHA256": "bbade445f9bf93e056a48f79467eb091a7f2b555ea3275b391eca47c9a91554b",
+      "logSHA256": "c0e893dfae77f08e3e6c3c67b93092473d70e25d3aa8b5b8333c55c632ed9e0e"
+    },
+    {
+      "gate": "oracle-tools",
+      "exit": 0,
+      "seconds": 0.12,
+      "command": [
+        "node",
+        "tests/zen_tools_oracle.mjs",
+        "--check"
+      ],
+      "cwd": "/tmp/magpie-opencode-relocation.AaLNo9c6/candidate/packages/opencode",
+      "sdk": "/tmp/magpie-astra-combined-20261115-v4/source",
+      "home": "/tmp/magpie-opencode-relocation.AaLNo9c6/oracle-tools-home-099tahaf",
+      "receiptSHA256": "ece4e74d8dd9bc61b3121867380429b1894a1e4077ec86c3d337c4f5a0e6fcf4",
+      "logSHA256": "f5d46a40e561d1082bf7d594e5af436d444cbed03e2a4ce57011f00f01526db7"
+    },
+    {
+      "gate": "package",
+      "exit": 0,
+      "seconds": 0.04,
+      "command": [
+        "python3",
+        "tests/check_distribution.py",
+        "/tmp/magpie-opencode-relocation.AaLNo9c6/dist"
+      ],
+      "cwd": "/tmp/magpie-opencode-relocation.AaLNo9c6/candidate/packages/opencode",
+      "sdk": "/tmp/magpie-astra-combined-20261115-v4/source",
+      "home": "/tmp/magpie-opencode-relocation.AaLNo9c6/package-home-caur4gwr",
+      "receiptSHA256": "9375ad6bad243e7d919f499d07ca726af70b87c46455d0f6bab0c84f847bfd93",
+      "logSHA256": "8081f748c9115f3ca56135b882e0f47072790fa302ae809b59e55dec41525114"
+    },
+    {
+      "gate": "python-static",
+      "exit": 0,
+      "seconds": 0.04,
+      "command": [
+        "python3",
+        "-c",
+        "import ast,pathlib; files=list(pathlib.Path('tests').rglob('*.py'))+list(pathlib.Path('scripts').rglob('*.py')); [ast.parse(p.read_text(), filename=str(p)) for p in files]; print(str(len(files))+' Python files parsed')"
+      ],
+      "cwd": "/tmp/magpie-opencode-relocation.AaLNo9c6/candidate/packages/opencode",
+      "sdk": "/tmp/magpie-astra-combined-20261115-v4/source",
+      "home": "/tmp/magpie-opencode-relocation.AaLNo9c6/python-static-home-9m1lnh85",
+      "receiptSHA256": "f948978fa777bc8336b2c015c9298d8e88695e41672405805bc2446b0b3d51b0",
+      "logSHA256": "a74299d6bdb2b06daeaf0dce1b88c20ac07f764456d7e420af9bd0568c6e879c"
+    },
+    {
+      "gate": "vet",
+      "exit": 0,
+      "seconds": 0.52,
+      "command": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "cwd": "/tmp/magpie-opencode-relocation.AaLNo9c6/candidate/packages/opencode/src",
+      "sdk": "/tmp/magpie-astra-combined-20261115-v4/source",
+      "home": "/tmp/magpie-opencode-relocation.AaLNo9c6/vet-home-tav2b9do",
+      "receiptSHA256": "a18ed79c05a9542821349b858466a4d0617f50e521d8b3c4542c31bf7ef75a0a",
+      "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "goEvents": {
+    "run": 377,
+    "output": 754,
+    "pass": 377
+  },
+  "distribution": {
+    "package": {
+      "id": "opencode",
+      "version": "0.8.0",
+      "sdkMinimum": "1.9",
+      "nativeABI": 1
+    },
+    "files": {
+      "SOURCES.md": "4cf4be437221838bc2cd96bb638361e5d91c9cd3dc6d337bdc592fd800935c2d",
+      "donor-provenance.json": "df5f03868c7c2a88f25b5d57566e85728a00c570ac54e17fb1c1403f4cf8cc85",
+      "lib/opencode.so": "a5391d7daa9a092cf0ba961ad552894516b56b54dabb0eef0c794c7eb64f127f",
+      "magpie-plugin.json": "7b00ce40e4b8170b1add82522ff78145547b3a16cda8ed6dc51aaf0d1c69bf0a",
+      "package.json": "a75c15ddedb54da26218b74e4ba19bbf8b08c83e25a74b32003e1633e075db83",
+      "source-lock.json": "5ee6afb70886f646462fc505a983a1fe64d29bfa2493032cfb0dd658fa941fac",
+      "web/account-selection.js": "24f473dfeda11f176b63839b9f0f0f2f5879aa1204a4eb501f161f167dd6b4b3",
+      "web/app.browser.js": "caa8f52f4b3d7567df9f892aa16c5a12efdc87948b3885930361c65159abe31c",
+      "web/app.js": "d15ea6332f5f7cc1e640376c022da66b560c0f02778722c1d95246d33a2a6b47",
+      "web/errors.js": "ad9795cc8f73066f4a1fb467e283feb885352e3685e1cf945dc54f5fdb44e472",
+      "web/history.js": "ec044dca7dbed0f7ab9a0adbd30d9ccd01049141682f06c487e59d4297f0fefe",
+      "web/index.html": "9ba0d6cf268e69c558c108c00f5d78d31fc25fa56bcb1240b121afdc564b50a7",
+      "web/sdk-ui.js": "3d65ad3c9fe965d195234275e2aac2d4f5a262918882855b0742f271b723a721"
+    }
+  },
+  "nativeHistory": {
+    "ordinaryHost": true,
+    "nativeFullPackage": true,
+    "actualModuleSQLiteReader": true,
+    "actualOpenCodeBinary": false,
+    "renderedStorageConsentUI": false,
+    "oldHostHistoryUnsupported": false,
+    "installedModules": [
+      "opencode"
+    ],
+    "moduleVersion": "0.8.0",
+    "sdkMinimum": "1.9",
+    "stockLibrarySHA256": "a5391d7daa9a092cf0ba961ad552894516b56b54dabb0eef0c794c7eb64f127f",
+    "separateWriterPID": 4192246,
+    "hostPID": 4192266,
+    "committedWALVisible": true,
+    "mainOnlySessionCount": 0,
+    "splitPartsBeforeInline": true,
+    "instructionEpochApplied": true,
+    "selectedBlobHydrated": true,
+    "donorDBWALSHMUnchanged": true,
+    "foreignBlobAndRawPathDenied": true,
+    "ownerCookieAndOriginChecked": true,
+    "consentRevisionAndRootChecked": true,
+    "laterWALCommitObserved": true,
+    "checkpointLocksReleased": true,
+    "foreignOffPublicationDenied": true,
+    "liveAccountsOrVendors": false,
+    "network": "seccomp loopback only",
+    "output": "/tmp/magpie-opencode-relocation.AaLNo9c6/native-history"
+  },
+  "limits": [
+    "Linux amd64 synthetic fixtures only; no live vendor/native OpenCode binary/platform readiness",
+    "Initial browser startup and nested seccomp setup failures are retained separately",
+    "Host executable reused from successful v2; Go production unchanged in v3/v4; source4 SDK selected",
+    "Historical packet runners preserved, not rerun; parent owns combined workspace validation"
+  ]
+}

@@ -1,0 +1,29 @@
+export const withParts = Effect.fnUntraced(function* (
+  db: DatabaseService,
+  rows: ReadonlyArray<typeof SessionMessageTable.$inferSelect>,
+) {
+  const assistantIDs = rows.flatMap((row) => (row.type === "assistant" ? [row.id] : []))
+  if (assistantIDs.length === 0) return rows
+  const partsByMessage = new Map<SessionMessage.ID, Array<(typeof SessionPartTable.$inferSelect)["data"]>>()
+  for (const ids of DatabaseBatch.batches(assistantIDs, 1)) {
+    const partRows = yield* db
+      .select()
+      .from(SessionPartTable)
+      .where(inArray(SessionPartTable.message_id, ids))
+      .orderBy(asc(SessionPartTable.message_id), asc(SessionPartTable.ordinal))
+      .all()
+      .pipe(Effect.orDie)
+    for (const part of partRows) {
+      const list = partsByMessage.get(part.message_id)
+      if (list) list.push(part.data)
+      else partsByMessage.set(part.message_id, [part.data])
+    }
+  }
+  if (partsByMessage.size === 0) return rows
+  return rows.map((row) => {
+    const parts = partsByMessage.get(row.id)
+    if (!parts) return row
+    const inline = "content" in row.data ? row.data.content : undefined
+    return { ...row, data: { ...row.data, content: Array.isArray(inline) ? [...parts, ...inline] : parts } }
+  })
+})

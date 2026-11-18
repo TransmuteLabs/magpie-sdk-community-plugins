@@ -1,0 +1,85 @@
+{
+  "schema": 1,
+  "latestCommittedDonorReview": {
+    "checkedAt": "2026-11-17",
+    "communityCommit": "324acd6007f2d513c5072fe2e9fe1db3524ae03d",
+    "version": "0.2.9",
+    "packageTree": "098cf5e689d6df7e675b7b5ef81c9e4780fa4bc7",
+    "comparison": "Complete package tree is identical to the extraction pin and previous reviewed commit",
+    "runtimePort": false,
+    "packageVersionChanged": false,
+    "extractionPinsChanged": false,
+    "report": "SOURCES.md"
+  },
+  "plugin": {
+    "id": "minimax",
+    "version": "0.1.0",
+    "sdkMinimum": "1.12",
+    "nativeABI": 1
+  },
+  "sources": [
+    {
+      "id": "community-minimax",
+      "repository": "https://github.com/magpie-community/plugins",
+      "commit": "57d1cc6a9f49389d495ea9be8d986c70de7767bf",
+      "version": "0.2.9",
+      "checkedAt": "2026-11-16",
+      "currentComparison": {
+        "commit": "b35d4b35b2446bd929896ddeb58f3cb299e9e2d1",
+        "packageTree": "098cf5e689d6df7e675b7b5ef81c9e4780fa4bc7",
+        "pinnedPackageTree": "098cf5e689d6df7e675b7b5ef81c9e4780fa4bc7",
+        "packageDiffEmpty": true
+      },
+      "role": "source donor only; no community runtime dependency",
+      "files": {
+        "packages/minimax/README.md": "05c9dad88dc487404f1de68c21b061aea9492190842fbaab0708ee531fb0f40f",
+        "packages/minimax/checkin.test.mjs": "0caa8f8d113c748ee077ca50a8bf24817f0480df4ce99cfac63b381859be0382",
+        "packages/minimax/compact-tools.test.mjs": "b298d0b9bdfbd42bf8d710cd4ffc6fd1ce43ed10db4eac499d045c39d5a37eb8",
+        "packages/minimax/connector-tools.mjs": "18460bc35304421729791ef35991932dc1fa76440c69293957aa6eba8600bf03",
+        "packages/minimax/connector-tools.test.mjs": "3332b3f27b71cbeca9d83ca91c2ac1b562a59e80a14d6e703d3e66145fd3cadb",
+        "packages/minimax/fake.mjs": "0417c72b4862b153d153de511f8458d741619f538f664908cb3226a84b5ab886",
+        "packages/minimax/fallback.test.mjs": "f20ac592e1d56e08969b0452cfc85d79e8d13dc26ecce12c31f1097f3fd2b03c",
+        "packages/minimax/index.mjs": "2db25b05b4dd6e67e070c7d992e872c2ce58855a9fd0e3adde598e6787cbb9a9",
+        "packages/minimax/magpie.mjs": "c157e5647db120cf4da0f4b375a9915d38be2d574da3d976ca263b12341100ce",
+        "packages/minimax/matrix-tools.json": "1650b31dcd168343c89a0455d3766d0fc10a4bb75e5a035d35a2ae539d366bfd",
+        "packages/minimax/modalities.test.mjs": "0f912c21ea6a8a9ca35c818446eb430dc14a295071629ec30358e0142882c45c",
+        "packages/minimax/models.test.mjs": "2fa9b36acb6aff1d568a6f93697bfeacef8eed92141aae85c353c3420df36452",
+        "packages/minimax/native.mjs": "f4cd190a3dd825b120952f30ae6d81ad7ddcafcc81ab220b5e678f2bbb5f3120",
+        "packages/minimax/native.test.mjs": "20ae7052ffc702b4d074fb4583b057eeffc6d3da6f487eb402dd0a8e12126760",
+        "packages/minimax/nonet.mjs": "ad8d996a4a0f95a4f3cb3612f1b32591061a09a0d2a18b5aec12b7d6495a141d",
+        "packages/minimax/opencode.mjs": "c9f7d75bb28465213dfb908fc3d721b7739db1c174a3924a6172f80d1d727fbc",
+        "packages/minimax/opencode2.mjs": "062365696c3d64a6526f6514093a315ecb4d14be738ab779ffaf2394c4ead900",
+        "packages/minimax/package.json": "fa2b97cfd8adf8ce1015fda7afcba64512b842413dfa06144955bc4932fbd2e3",
+        "packages/minimax/poll-retry.test.mjs": "77fa723ad0f4472d9f34072136db34c819436cb451db7cdbbaab3ccb7c85eb43",
+        "packages/minimax/refresh.test.mjs": "6dc9dc10f37cc209f3e6208e13b624eb5b9177843411832b45e09308a0bfa6cc",
+        "packages/minimax/region.test.mjs": "f61526b0357dc842db307d9b27e87556f6ff54b4b00f91c221f0095b97b30fe9",
+        "packages/minimax/request.test.mjs": "fbbd3a17cd8472499ad8dfdef1effe4cda235ab1c542f63c2383fa7216cb3f78",
+        "packages/minimax/sign.test.mjs": "1faa4ebb081cd49918afcf346ae4326b9303321638f5dd788441c4830179dd46",
+        "packages/minimax/signin.test.mjs": "b328fdaf889c06bbe158d7308271d94da922c9a164906acdac8c1471835e0df7",
+        "packages/minimax/stream.test.mjs": "111f609a20f15c4ab222f3529af1a2219fa6d519e0adc979c2bd8099ae66db8f",
+        "packages/minimax/testdata/generate-image-schema-955.json": "8c95f5700d7dbd610012ab74886dcea6e58a78c7f042b8eea73af4527ea051d1",
+        "packages/minimax/testdata/leaf.key": "594b283de15f994e25bde9928899675dca74518ec409af1cbb1d15dfe4a7e653",
+        "packages/minimax/testdata/leaf.pem": "222cb95d6edb741d9e724ea84e40ae6a5c1b0b1323b382003e3e54412d0a8271",
+        "packages/minimax/tools-auth.test.mjs": "0e1679bc3d6e586332b1c4fcf818a3b97a703da1b8350628ed84e7def7426075",
+        "packages/minimax/usage.test.mjs": "f20f4d58f0b3008c771ba165b06ce24861d6be0137166790f8ab6156fdbe06ca",
+        "packages/minimax/web-tools.mjs": "552428499b1d96ab71d4e62846280b13c781faac58a526329112439e87892a52",
+        "packages/minimax/web-tools.test.mjs": "35a0b6aa23fb073720553582ef122eda16d9494aa82fababac34f8e7cae7ccfe"
+      }
+    }
+  ],
+  "copiedFixtures": {
+    "src/tools_matrix.json": {
+      "donor": "packages/minimax/matrix-tools.json",
+      "sha256": "1650b31dcd168343c89a0455d3766d0fc10a4bb75e5a035d35a2ae539d366bfd"
+    },
+    "src/testdata/tools_generate_image_955.json": {
+      "donor": "packages/minimax/testdata/generate-image-schema-955.json",
+      "sha256": "8c95f5700d7dbd610012ab74886dcea6e58a78c7f042b8eea73af4527ea051d1"
+    }
+  },
+  "limits": [
+    "No live vendor or real-account tests",
+    "Linux native loader verification only until platform acceptance",
+    "Reactive 401 recovery owned by pending common host contract"
+  ]
+}

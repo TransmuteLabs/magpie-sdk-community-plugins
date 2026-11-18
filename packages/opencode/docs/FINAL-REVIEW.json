@@ -1,0 +1,115 @@
+{
+  "date": "2026-11-16",
+  "implementationOwner": "SOL",
+  "reviewOwner": "Astra; reserved, not performed by implementation author",
+  "status": "Bounded API1.12 common-host accounting/decision gates closed; independent Astra review pending",
+  "currentClosure": "LOCAL-CLOSURE-20261116.md",
+  "historicalBoundary": "The source, SDK and receipt fields below retain the earlier usbox checkpoint, including its then-open host gates. The currentClosure report supersedes those readiness claims without replacing historical evidence.",
+  "package": {"id": "opencode", "version": "0.8.0", "sdkMinimum": "1.12", "nativeABI": 1, "published": false},
+  "variants": {
+    "full": {"version": "0.8.0", "sdkMinimum": "1.12"},
+    "legacy --compat-api8": {"version": "0.8.0", "sdkMinimum": "1.12", "metadata": "Inherits actual full constructor capability"},
+    "provider": {"version": "0.2.0", "sdkMinimum": "1.12"},
+    "agent": {"version": "0.3.0", "sdkMinimum": "1.12"},
+    "historicalProviderJSON": "Archived API1.3 bytes unchanged; runtime Manifest raises actual capability and floor"
+  },
+  "packet": "usbox:/tmp/magpie-sol-two-policy-20261116",
+  "sourceBoundaries": {
+    "apiCheckpoint": {
+      "snapshot": "candidate04/packages/opencode",
+      "manifest": "api12-opencode-source.json",
+      "files": 154,
+      "manifestSHA256": "d7ca43ba1bbafd0f9495eea437ba98e6998eb7a9942735ec1cdc14af6cf4e913"
+    },
+    "donorCheckpoint": {
+      "snapshot": "candidate06/packages/opencode",
+      "manifest": "donor06-opencode-source.json",
+      "files": 157,
+      "manifestSHA256": "24d8aaf5dd4fc5c0556910e111b5cf60fec8cffeeaeabf912a5432207272e3f2",
+      "runtimeDifferenceFromAPICheckpoint": "None; production src, web and build scripts byte-identical; new donor_delta_test.go and docs/source-lock are separate changes"
+    },
+    "finalInventory": "final-opencode-source.json; external packet inventory includes this report, so its final SHA256 is returned separately in the handoff",
+    "finalChangeInventory": "final-opencode-changes.json; relative to preserved input/packages/opencode; AppleDouble archive metadata counted separately",
+    "finalReportBoundary": "This report is the only addition after donor checkpoint; it is not shipped in the runtime distribution"
+  },
+  "sdk": {
+    "source": "Exact original OBS candidate-01 archive privately extracted; never drifted shared candidate contents",
+    "manifestSHA256": "8724cf734d51d881f6d88561eceefeaecf9f722e1bc4e1a078fcb8f010cccdd4",
+    "archiveSHA256": "9015f443e9ea051f26c7399d6fa0292e4229d1d8f15e332d2b5fc9f4f85f4208",
+    "publicHelperSHA256": "be486205f9b4cc2e37dd003e20e0602dd27470788a1c3419ac045f3f1acd1c3d",
+    "filesVerified": 10987,
+    "hostOverlay": "Package-owned Go test only, no production host implementation patch"
+  },
+  "adoption": [
+    "Bounded complete original actual code/type/message/status/timing extraction before error/tool normalization",
+    "Provider-specific whole-execution proof for known Go/Zen preflight refusals, separate from shared classification; fresh SDK RefusedExecution",
+    "Unknown public FreeUsageLimitError scope stays terminal; no fabricated account bucket, reset or model-window semantics",
+    "Success accepts before reading paid output; all ambiguous, unknown, interrupted, accepted/output/native session/tool/cache paths stay fenced",
+    "Existing smart/order, host retry/sibling/schedule and native credential/cache/streaming/accounting owners retained",
+    "Every rebuilt constructor declares actual public API1.12; package release versions and original donor extractions remain unchanged"
+  ],
+  "donors": {
+    "review": "DONOR-REVIEW-20261116.json",
+    "officialReviewed": "c5e741e787594e8c18fa70ab3a4705db1c927793",
+    "officialVersion": "2.3.0",
+    "officialExtraction": "38bd73789a43bf043599d6196af96583228035d7",
+    "delta": "Full10-commit/68-file diff reviewed;31 selected source/watch/fixture/refusal-authority paths byte-identical",
+    "communityReviewed": "b35d4b35b2446bd929896ddeb58f3cb299e9e2d1",
+    "communityVersion": "0.1.27",
+    "communityTree": "526c7f5defd59aa68270dcbe40291e905af48b8c",
+    "communityExtraction": "57d1cc6a9f49389d495ea9be8d986c70de7767bf",
+    "decision": "No runtime port; native asynchronous media status, subagent recovery, shell paging, Claude catalog and UI retain native owners; extraction pins unchanged",
+    "behavioralHarnessAdaptation": "Latest subagent marker/outstanding and é/€/😀 plus BOM shell cases adapted to existing opaque synthetic transcript/local compaction and bounded UTF8 projection; native recovery/daemon equivalence unclaimed"
+  },
+  "checks": {
+    "regressionFirst": "REQUEST-POLICY-PLAN.md and compiling old-runtime unit/ordinary-host behavior reds precede runtime edits",
+    "oldRuntimeUnit": "red-fixed-01: completed429 has no original final refusal",
+    "oldRuntimeInstalledModule": "native-red-fixed-01: one dispatch and409 instead of eligible sibling; successful native compilation required",
+    "finalScopedRace": {"phase": "green-donor-06", "passTestsAndSubtests": 258, "fail": 0, "skip": 0},
+    "newDonorGuards": {"testsAndSubtests": 7, "fail": 0, "boundary": "Compatibility guards, no new production behavior and no claimed old-red"},
+    "finalVetBuildFormat": "Both modules go vet ./..., go build ./... and empty gofmt -l passed; Python AST checks passed",
+    "finalDefaultDistribution": "Full ordinary build/browser compilation and strict standalone manifest/provenance/UI distribution validation passed",
+    "donorMetadata": "donor-metadata-07: exact changed paths, full diff/authority hashes,31 unchanged source identities, valid docs JSON and runtime/source provenance continuity passed",
+    "ordinaryFront": {"phase": "native-final-04", "packageCases": 12, "pass": 10, "fail": 2, "combinedCases": 31, "combinedPass": 24, "combinedFail": 7},
+    "verified": ["eligible sibling in smart/order", "finite long-delay refusal", "request/content-terminal", "selected versus unrelated-model budget scope", "accepted/output/transport/uncertain/ambiguous no-replay fences", "failure stays attached to actual trace try", "native/tool/cache/usage regressions in bounded module scope"],
+    "sourceContinuity": "Actual-host endpoint fixture used checkpoint04 full distribution with only synthetic compiled endpoint entrypoint substituted; production handlers unchanged. Default stock distribution separately built/validated. No runtime changes after checkpoint04; final stock distribution not reinstalled through Front"
+  },
+  "artifacts": {
+    "directory": "donor-final-06/distribution-distribution-donor-final06-opencode",
+    "defaultNativeSHA256": "1b2a0fd82fda59e8bd9468fdbd6db22c91ef39eac54bb1721d590f8a61c41581",
+    "distributionInventory": "donor06-opencode-distribution.json",
+    "distributionInventorySHA256": "09ed08238a7d4bc26b6027b480255ccdc1e8cd92829af7edc3ca4054daf36283",
+    "apiCheckpointDefaultNativeSHA256": "0c90435b69a2c789a72ff247aec7e18a7586792055fc60905ed4ae74dffed9f6",
+    "ordinaryHostFixtureNativeSHA256": "6d19e384818406f241bd2848b30de6f19685569988d9b8763aba092b8b48539b",
+    "binaryBoundary": "OpenCode build does not use trimpath; different source/SDK paths change rebuilt native bytes. Exact production source continuity is verified, not binary identity or final stock endpoint execution"
+  },
+  "receiptSHA256": {
+    "red-fixed-01-receipt.json": "02362a64d1b4f99291a87567802f7cba5210b761d69737087f6fef4b343e2aca",
+    "native-red-fixed-01-receipt.json": "8a39264940564dbecee1a3e142c2a416e7a8226591fe2f7900b61cef8caacaf5",
+    "green-final-04-receipt.json": "e7811bf22eb1534863ad2206e42718116753f3ae077b9e50dfe54260ff5da7df",
+    "distribution-final04-receipt.json": "ae9d9467fc6a2872ffb156a94a38ba32e9853e25e11191fec0869e5672bee10d",
+    "native-final-04-receipt.json": "ec8d86c7f613a3f879c038810843d707bb571ef6c69ceb5af283d1d42b0874a9",
+    "green-donor-06-receipt.json": "4dd242e4521cbb8ceeb4442eec9569b01695f24513ebdab259f8e71bfe525243",
+    "donor-final-06/distribution-donor-final06-receipt.json": "a855e452d829a34291faf73800bc1ed97a97f9761dbdabb689961357d56cf4ef",
+    "donor-metadata-07-receipt.json": "2bfcd02e3a09608c6e7f0eb9f5f63a7ab16b37b31cb939ff6e0f5e14231d73b8"
+  },
+  "remainingGates": [
+    {"owner": "Parent host", "cases": ["opencode-budget", "opencode-model-budget", "commandcode-budget", "commandcode-model-budget"], "observed": "Root/model exhaustion sends exactly once and retains Recent, but no usage ledger row; no adapter-private workaround", "required": "Preserve terminal accounting in ordinary shared-policy host owner and rerun unchanged assertions against exact new parent source"},
+    {"owner": "Parent host", "boundary": "Combined packet also retains three CommandCode Jev terminal/budget reds; details in commandcode/docs/FINAL-REVIEW.json"},
+    {"owner": "Parent", "required": "Root registry/STATUS/readiness metadata and separately owned public helper permit/disable/diagnostic acceptance"},
+    {"owner": "Astra", "required": "Independent combined review; SOL does not claim review approval"}
+  ],
+  "changedFiles": {
+    "runtimeAndDeclarations": ["src/request_policy.go", "src/module.go", "src/zen_client.go", "src/agent.go", "src/window.go", "src/models.go", "src/cmd/manifest/main.go", "src/magpie-plugin.json"],
+    "regressions": ["src/request_policy_test.go", "src/module_test.go", "src/agent_test.go", "src/window_test.go", "src/full_package_test.go", "src/source_version_test.go", "src/gemini_test.go", "src/zen_test.go", "src/zen_tools_test.go", "src/donor_delta_test.go"],
+    "packaging": ["scripts/build.py", "tests/check_distribution.py"],
+    "documentation": ["README.md", "docs/REFERENCE.md", "docs/SOURCES.md", "docs/source-lock.json", "docs/REQUEST-POLICY.md", "docs/REQUEST-POLICY-VERIFICATION.json", "docs/DONOR-REVIEW-20261116.json", "docs/FINAL-REVIEW.json"],
+    "preservedHarness": "src/testdata/request-policy-native/main.go is package-owned synthetic endpoint entrypoint already present in preserved input; actual-host runner/tests live only in paired commandcode package",
+    "boundary": "Relative to preserved pre-runtime input; plan/test scaffolding already in input remains preserved; no source deletion"
+  },
+  "simplifications": "One initial refusal helper serves Go/Gemini/Zen before existing codecs; legacy API8 constructor inherits actual full metadata/capability instead of advertising an untrue lower floor. Existing owners and dependencies reused",
+  "excludedRecovery": "REQUEST-POLICY.md records unknown public scope, paid generic errors, native output/tool/cache/session, transport/ambiguous bodies, Google details/BudgetLimit applicability, auth/Console and non-execution reads with reasons",
+  "notVerified": ["live vendor/credentials", "installed vendor apps", "native asynchronous media/subagent recovery/shell daemon execution", "non-Linux runtime", "broad host suites", "SDK publication", "final metadata stock package reinstallation through Front", "separate public helper permit/disable/diagnostic fixes", "independent review"],
+  "execution": "Regular usbox uid1000 only, isolated HOME/XDG, pinned offline Go1.26.8 and existing descendant network guard. No Mac/adm testing/build/gofmt, dependencies, source deletion, host/sibling/root metadata writes, staging/commit/merge/push/branch/worktree or target-warden termination",
+  "nonProofSetupAttempts": "Early compile/setup failures, candidate05 AppleDouble snapshot decode and donor-metadata-06 missing /sbin are retained separately, not counted as behavior reds"
+}
