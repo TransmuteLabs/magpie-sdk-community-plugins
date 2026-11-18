@@ -1,5 +1,21 @@
 # CommandCode source provenance
 
+The November 18 reference comparison checks `command-code` `1.91.0`
+against `1.89.2`. Both npm archives match their published SHA-1 and
+SHA-512 integrity. The entry point `dist/index.mjs` is byte-identical.
+In `dist/cli.mjs`, the native request builder, stream consumer and
+thinking-effort check differ in bundled identifiers. The corresponding
+endpoint, continuation limit, usage defaults, ZDR header, token default
+and effort values match. The selected wire helpers, stream-error reader,
+stop-reason normalizer and usage accumulator are byte-identical.
+The intervening changelog entries cover CLI presentation and `/goal`.
+
+Native generation and System One use the same `1.91.0` header value.
+`referenceReview20261118` records archive and file digests, comparison
+scope and local HTTP checks. The `official-commandcode-harness` extraction
+pin below identifies the earlier `1.89.1` artifact used by the historical
+isolated behavior probe.
+
 The November 17 reference comparison checks community
 `324acd6007f2d513c5072fe2e9fe1db3524ae03d` and the published
 `command-code` `1.89.2` archive. The complete community package tree remains
@@ -10,7 +26,7 @@ not require a new provider codec or agent configuration format.
 This is bounded static evidence; REA's graph remains partial and the
 complete CLI was not executed.
 
-Both native generation and System One now use the existing shared
+At that checkpoint, native generation and System One adopted the shared
 `cliVersion` value `1.89.2`. The former separate System One `1.88.2`
 literal is removed. Ordinary local HTTP tests first failed with the old
 headers, then passed twenty race-enabled repetitions. The complete module
@@ -81,8 +97,7 @@ The npm latest tag resolved to that version; its immutable tarball matched
 the registry SHA-1, SHA-512 integrity and the SHA-256 recorded in the lock.
 This artifact has no Git revision, so provenance records an npm tarball
 identity rather than inventing a commit. Current header selection follows
-the separately verified `1.89.2` comparison above; the earlier source pin
-does not require retaining an obsolete version in outgoing requests.
+the separately verified `1.91.0` comparison above.
 The UNLICENSED harness archive and its original functions remain outside the
 plugin package and repository.
 

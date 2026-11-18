@@ -1,5 +1,44 @@
 {
   "schema": 1,
+  "referenceReview20261118": {
+    "checkedAt": "2026-11-18",
+    "officialPackage": "command-code",
+    "officialVersion": "1.91.0",
+    "comparedVersion": "1.89.2",
+    "registryTag": "latest",
+    "archiveSHA1": "be6c01a67fc5507bb115e8149ae08dde4c84b6a4",
+    "archiveSHA256": "a118a9e49d5976c7fc798f4fae981c0f590a25b758a685daba70cf5975a717a9",
+    "integrity": "sha512-1OBNmKzkLZp1T6zv1kV61U5XyDPAsL1Il9b3bFh2H66r0RKHY+EFpe9R8zC/E15Ple8lUhnRsuzlTOM+CcMpRQ==",
+    "files": {
+      "package.json": "60a6be1f4baaab1df34bade31e2167d6c2dadeb1eff701ee3ea4072c2549b143",
+      "dist/cli.mjs": "2b0778f6354fb964edc2a1d2c9dbe033b633467394ae0d979e6cee381b14a9a1",
+      "dist/index.mjs": "157feefa0140e78f060ef2c1f9c50d10de702196ea229dc73db6bbcc39a0bcbb",
+      "CHANGELOG.md": "eccc26fbf15e31cd334019f96687a0e62c84713d9111acab05aebb8a2d1d4052"
+    },
+    "byteIdentical": [
+      "dist/index.mjs",
+      "toWireTools",
+      "toWireToolOutput",
+      "toWireMessages",
+      "toWireSystem",
+      "readStreamErrorEvent",
+      "normalizeStopReason",
+      "addUsage3",
+      "reasoningProviderOptions",
+      "toWirePermissionMode"
+    ],
+    "bundledIdentifierChanges": ["createModelClient", "consumeStream", "isThinkingEffort"],
+    "transportConstantsCompared": ["endpoint", "continuation limit", "usage defaults", "ZDR header", "token default", "effort values"],
+    "wireOrConfigPortIdentified": false,
+    "headerVersionAlignment": "Native generation and System One share cliVersion 1.91.0",
+    "verification": {
+      "hostCommit": "39f63535195ad5bbe52863686e37f7b7aee1adba",
+      "tests": ["TestModuleGoPlanUsesNativeAndDoesNotReplayTruncation", "TestSystemOneUsesRecoveredWire"],
+      "packet": "usbox:/tmp/magpie-commandcode-191.n98tb2o9"
+    },
+    "artifactExecuted": false,
+    "extractionPinsChanged": false
+  },
   "referenceReview20261117": {
     "checkedAt": "2026-11-17",
     "communityCommit": "324acd6007f2d513c5072fe2e9fe1db3524ae03d",

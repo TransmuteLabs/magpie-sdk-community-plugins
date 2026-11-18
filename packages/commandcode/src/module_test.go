@@ -216,7 +216,7 @@ func TestModuleGoPlanUsesNativeAndDoesNotReplayTruncation(t *testing.T) {
 			if json.NewDecoder(r.Body).Decode(&body) != nil || body["params"] == nil {
 				t.Error("not a native generate request")
 			}
-			if r.Header.Get("x-command-code-version") != "1.89.2" || r.Header.Get("x-cmd-zdr") != "1" {
+			if r.Header.Get("x-command-code-version") != "1.91.0" || r.Header.Get("x-cmd-zdr") != "1" {
 				t.Errorf("native request does not use the reviewed CLI version and ZDR: %v", r.Header)
 			}
 			w.Header().Set("Content-Type", "application/x-ndjson")

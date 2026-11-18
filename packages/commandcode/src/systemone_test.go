@@ -95,7 +95,7 @@ func TestSystemOneUsesRecoveredWire(t *testing.T) {
 			if request.Method != "POST" || request.URL.Path != "/provider/v1/systemone" ||
 				request.Header.Get("Authorization") != "Bearer fixture-key" || request.Header.Get("X-Api-Key") != "" ||
 				request.Header.Get("Cookie") != "" || request.Header.Get("User-Agent") != "cli" ||
-				request.Header.Get("x-command-code-version") != "1.89.2" || request.Header.Get("x-cli-environment") != "production" ||
+				request.Header.Get("x-command-code-version") != "1.91.0" || request.Header.Get("x-cli-environment") != "production" ||
 				request.Header.Get("x-project-slug") != "shop" || request.Header.Get("x-taste-learning") != "false" ||
 				request.Header.Get("x-cmd-zdr") != "1" ||
 				!regexp.MustCompile(`^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$`).MatchString(request.Header.Get("x-session-id")) {

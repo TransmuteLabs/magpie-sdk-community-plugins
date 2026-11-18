@@ -16,7 +16,7 @@ import (
 const Version = "0.1.3"
 const ProviderID = "commandcode-native"
 const ModuleID = "protocol-commandcode"
-const cliVersion = "1.89.2"
+const cliVersion = "1.91.0"
 
 type Config struct {
 	APIURL           string `json:"apiURL,omitempty"`
