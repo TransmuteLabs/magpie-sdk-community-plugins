@@ -1,6 +1,6 @@
 {
   "name": "devin-inbound",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "description": "Devin native protocol, provider, and agent integration",
   "private": true
 }

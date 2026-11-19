@@ -5,16 +5,15 @@
 > original snapshots. See [relocation verification](migration/RELOCATION.md) for
 > the new workspace checks and [current entry point](../README.md).
 
-The standard `python3 scripts/build.py --output DISTRIBUTION` builds the complete **0.8.0**
+The standard `python3 scripts/build.py --output DISTRIBUTION` builds the complete **0.8.1**
 native module through `NewAgent`: inbound, outbound Chat/Messages, auth,
-models, usage/Facts/diagnostics, the `devin-native` agent and four finite
-bootstrap operations plus the default-off paid cache task in one package.
+models, usage/Facts/diagnostics, the `devin-native` agent, four finite
+bootstrap operations, managed bundle lookup and the default-off paid cache task.
 Install that one distribution;
 no companion plugin is required. `--agent` remains an explicit alias.
 `--paired-only` selects the **0.5.0** compatibility artifact without agent
 wiring/bootstrap; `--inbound-only` selects the **0.2.0** codec-only artifact.
-The full distribution requires **SDK API 1.9, native ABI 1**; the explicit
-paired artifact retains API1.7 for sparse execution facts and diagnostics.
+The full and paired distributions require **SDK API 1.12, native ABI 1**.
 Prior installed acceptance is pinned to committed host
 `d5b098d8183e88ab9fee1da0170d1c90b9590822`, including the public API9
 decision-model DTO/validator and selected-account task contract.
@@ -80,11 +79,11 @@ core loader.
 
 Experimental native Devin module for Magpie, serving both directions:
 native Devin ingress, canonical Chat and scoped Messages requests execute
-against the selected Devin account. Standard version **0.8.0** requires
-**SDK API 1.9, native ABI 1** and
+against the selected Devin account. Standard version **0.8.1** requires
+**SDK API 1.12, native ABI 1** and
 declares `inbound-codec`, `outbound-executor`, `account-auth`,
 `model-discovery`, `usage-reporter`, `agent-wiring`, `module-rpc` and
-`native-account-operations`.
+`native-account-operations` and `request-policy`.
 
 Native ingress requires the same module's executor through
 `ExecutorContract()` and `SameModuleExecutor`. The canonical projection is
@@ -237,9 +236,12 @@ full native Devin CLI or live account compatibility.
   errors. Canonical Chat refuses signed input and native response controls
   it cannot represent; native paired replies retain those raw fields.
 - The standard distribution supports the four finite bootstrap
-  operations and their cascade-bound assignment receipts. Arbitrary imported
-  assignment tokens and additional account-management RPCs remain refused.
-  It declares no session migrator or UI/tool surface.
+  operations and their cascade-bound assignment receipts.
+- `GetAccountManagedPluginBundle` handles Account, Org and User bundle lookup
+  through the same local-owner, selected-account contract. Magpie replaces
+  caller metadata with the selected account's credentials. The native client
+  receives the vendor's signed URL, headers and revision, or its absent-bundle
+  response. The native client owns the download.
 - The SDK's 16 MiB native body budget includes the five-byte Connect envelope.
   The direct codec permits 16 MiB of protobuf data. The installed path thus
   has the smaller boundary; the codec has not been weakened to hide it.

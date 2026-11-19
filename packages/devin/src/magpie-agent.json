@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "id": "devin-inbound",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "runtime": "native",
   "entry": "plugin.so",
   "contract": {
@@ -37,6 +37,7 @@
     {"id":"devin.account.user-status","effect":"read","inputSchema":{"type":"object"}},
     {"id":"devin.account.team-settings","effect":"read","inputSchema":{"type":"object"}},
     {"id":"devin.account.managed-plugins","effect":"read","inputSchema":{"type":"object"}},
+    {"id":"devin.account.managed-plugin-bundle","effect":"read","inputSchema":{"type":"object"}},
     {"id":"devin.account.model-assignment","effect":"write","inputSchema":{"type":"object"}},
     {"id":"devin.cache-keepalive","effect":"write","inputSchema":{"type":"object"}}
   ],
@@ -44,6 +45,7 @@
     {"id":"user-status","agent":"devin-native","provider":"devin","action":"devin.account.user-status"},
     {"id":"team-settings","agent":"devin-native","provider":"devin","action":"devin.account.team-settings"},
     {"id":"managed-plugins","agent":"devin-native","provider":"devin","action":"devin.account.managed-plugins"},
+    {"id":"managed-plugin-bundle","agent":"devin-native","provider":"devin","action":"devin.account.managed-plugin-bundle"},
     {"id":"model-assignment","agent":"devin-native","provider":"devin","action":"devin.account.model-assignment"}
   ],
   "agents": [{
@@ -71,6 +73,7 @@
     {"id": "devin.account.user-status", "path": "/exa.seat_management_pb.SeatManagementService/GetUserStatus"},
     {"id": "devin.account.team-settings", "path": "/exa.seat_management_pb.SeatManagementService/GetCliTeamSettings"},
     {"id": "devin.account.managed-plugins", "path": "/exa.api_server_pb.ApiServerService/GetAccountManagedPlugins"},
+    {"id": "devin.account.managed-plugin-bundle", "path": "/exa.api_server_pb.ApiServerService/GetAccountManagedPluginBundle"},
     {"id": "devin.account.model-assignment", "path": "/exa.api_server_pb.ApiServerService/AssignModel"}
   ]
 }

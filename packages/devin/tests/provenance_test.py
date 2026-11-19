@@ -271,7 +271,8 @@ class DistributionTests(unittest.TestCase):
 
     def test_default_distribution_contains_all_ready_surfaces(self):
         manifest, lock, entry = self.package()
-        self.assertEqual(manifest["version"], "0.8.0")
+        package = json.loads((PACKAGE / "package.json").read_text())
+        self.assertEqual(manifest["version"], package["version"])
         self.assertEqual(entry, "./cmd/native-agent")
         self.assertEqual(manifest["contract"]["capabilities"], [
             "inbound-codec", "outbound-executor", "account-auth", "model-discovery",
@@ -279,9 +280,12 @@ class DistributionTests(unittest.TestCase):
         ])
         self.assertEqual(manifest["agents"][0]["id"], "devin-native")
         self.assertEqual(manifest["providers"][0]["protocols"], ["chat", "anthropic"])
-        self.assertEqual(len(manifest["inbounds"]), 12)
-        self.assertEqual(len(manifest["accountOperations"]), 4)
-        self.assertEqual(len(manifest["actions"]), 5)
+        self.assertEqual(len(manifest["inbounds"]), 13)
+        self.assertEqual(len(manifest["accountOperations"]), 5)
+        self.assertEqual(len(manifest["actions"]), 6)
+        bundle = next(row for row in manifest["accountOperations"] if row["id"] == "managed-plugin-bundle")
+        self.assertEqual(bundle, {"id": "managed-plugin-bundle", "agent": "devin-native",
+                                  "provider": "devin", "action": "devin.account.managed-plugin-bundle"})
         self.assertEqual(lock["plugin"]["sdkMinimum"], "1.12")
         self.assertEqual(manifest["providers"][0]["accountTasks"],
                          [{"id": "cache-keepalive", "action": "devin.cache-keepalive"}])
@@ -315,9 +319,10 @@ class DistributionTests(unittest.TestCase):
                     self.assertNotIn("providers", manifest)
 
     def test_cli_defaults_full_with_explicit_compatibility_modes(self):
+        default_version = json.loads((PACKAGE / "package.json").read_text())["version"]
         for mode, version, entry in [
-            ("", "0.8.0", "./cmd/native-agent"),
-            ("--agent", "0.8.0", "./cmd/native-agent"),
+            ("", default_version, "./cmd/native-agent"),
+            ("--agent", default_version, "./cmd/native-agent"),
             ("--paired-only", "0.5.0", "./cmd/native"),
             ("--inbound-only", "0.2.0", "./cmd/native-inbound"),
         ]:

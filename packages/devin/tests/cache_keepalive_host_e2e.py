@@ -207,7 +207,9 @@ def run(host, distribution, artifacts, cold_start=False):
             result["installedModules"] = agent.AgentGateway.require_single_bundle(gateway)
             installed = json.loads(gateway.command("plugin", "sdk", "list", "--json"))[0]["manifest"]
             result["packageVersion"] = installed["version"]
-            require(installed["version"] == "0.8.0" and installed["contract"]["version"]["minor"] == 9 and
+            packaged = json.loads((distribution / "magpie-plugin.json").read_text())
+            contract = installed["contract"]["version"]
+            require(installed["version"] == packaged["version"] and contract["major"] == 1 and contract["minor"] >= 9 and
                     installed["providers"][0]["accountTasks"] ==
                     [{"id": "cache-keepalive", "action": "devin.cache-keepalive"}],
                     "default artifact lacks its full task contract")

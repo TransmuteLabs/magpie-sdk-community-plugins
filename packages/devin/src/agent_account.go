@@ -32,6 +32,8 @@ func (owner *providerOwner) accountOperation(ctx context.Context, call sdk.Call,
 		kind = codec.TeamSettings
 	case "devin.account.managed-plugins":
 		kind = codec.ManagedPlugins
+	case "devin.account.managed-plugin-bundle":
+		kind = codec.ManagedPluginBundle
 	case "devin.account.model-assignment":
 		kind = codec.ModelAssignment
 	default:

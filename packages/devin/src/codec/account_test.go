@@ -5,6 +5,7 @@ import (
 	"context"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/yetone/magpie/pkg/protocolext"
@@ -46,6 +47,117 @@ func TestAccountBootstrapDecodesFiniteOperationsWithoutLocalAuthority(t *testing
 				}
 			}
 		})
+	}
+}
+
+func TestManagedBundlePassesOnlyRequestedBundleAndScopeToSelectedAccount(t *testing.T) {
+	kind := AccountKind("managed-plugin-bundle")
+	adapter := AccountAdapter{Kind: kind}
+	headers := http.Header{"Content-Type": {"application/proto"}, "Connect-Protocol-Version": {"1"}}
+	metadata := fixtureText(1, string(join(fixtureText(3, "local-only"),
+		fixtureText(31, "local-fingerprint"))))
+	bundle := fixtureText(2, "owned-fixture-bundle")
+	for _, scope := range []uint64{1, 2, 3} {
+		business := join(bundle, fixtureNumber(3, scope))
+		request, err := adapter.Decode(t.Context(), headers, join(metadata, business))
+		if err != nil || request.Protocol != protocolext.AccountOperation ||
+			request.Executor != protocolext.SameModuleExecutor || request.AccountOperation != string(kind) ||
+			!bytes.Equal(request.Body, business) {
+			t.Fatalf("bundle scope %d did not decode as a selected-account read: %v", scope, err)
+		}
+		upstream, err := AccountPayload(kind, request.Body, "model", "selected-only")
+		if err != nil || bytes.Contains(upstream, []byte("local-only")) ||
+			bytes.Contains(upstream, []byte("local-fingerprint")) {
+			t.Fatalf("bundle scope %d did not rebuild account authority: %v", scope, err)
+		}
+		expectedMetadata, err := NativeMetadata("selected-only")
+		if err != nil || !bytes.Equal(upstream, join(addBytes(nil, 1, expectedMetadata), business)) {
+			t.Fatalf("bundle scope %d changed selection or wire data: %v", scope, err)
+		}
+	}
+	valid := join(bundle, fixtureNumber(3, 1))
+	for _, invalid := range [][]byte{
+		bundle,
+		fixtureNumber(3, 1),
+		join(bundle, fixtureNumber(3, 0)),
+		join(bundle, fixtureNumber(3, 4)),
+		join(valid, fixtureNumber(3, 2)),
+		join(valid, bundle),
+		join(bundle, fixtureText(3, "not-a-scope")),
+		join(fixtureText(2, "\xff"), fixtureNumber(3, 1)),
+		join(valid, fixtureText(4, "foreign-team")),
+	} {
+		if _, err := adapter.Decode(t.Context(), headers, join(metadata, invalid)); err == nil {
+			t.Error("invalid bundle inputs reached the account operation")
+		}
+		if _, err := AccountPayload(kind, invalid, "model", "selected-only"); err == nil {
+			t.Error("invalid bundle inputs reached vendor dispatch")
+		}
+	}
+	if _, err := adapter.Decode(t.Context(), headers, join(metadata, metadata, valid)); err == nil {
+		t.Error("duplicate request metadata accepted")
+	}
+	if _, err := adapter.Decode(t.Context(), headers, join(fixtureText(1, string(fixtureText(22, "foreign-team"))), valid)); err == nil {
+		t.Error("caller-selected team accepted")
+	}
+	if _, err := AccountPayload(kind, join(metadata, valid), "model", "selected-only"); err == nil {
+		t.Error("action allowed caller metadata on the vendor request")
+	}
+}
+
+func TestManagedBundleEnforcesRecoveredIDGrammar(t *testing.T) {
+	kind := AccountKind("managed-plugin-bundle")
+	adapter := AccountAdapter{Kind: kind}
+	headers := http.Header{"Content-Type": {"application/proto"}, "Connect-Protocol-Version": {"1"}}
+	for _, bundleID := range []string{"a", "Bundle-123._", strings.Repeat("a", 128)} {
+		body := join(fixtureText(2, bundleID), fixtureNumber(3, 1))
+		request, err := adapter.Decode(t.Context(), headers, body)
+		if err != nil || !bytes.Equal(request.Body, body) {
+			t.Fatalf("valid native bundle ID was refused: %v", err)
+		}
+	}
+	for _, bundleID := range []string{"", ".", "..", "section/item", "é", "with space", strings.Repeat("a", 129)} {
+		body := join(fixtureText(2, bundleID), fixtureNumber(3, 1))
+		if _, err := adapter.Decode(t.Context(), headers, body); err == nil {
+			t.Errorf("invalid bundle ID %q was admitted", bundleID)
+		}
+		if _, err := AccountPayload(kind, body, "model", "selected-only"); err == nil {
+			t.Errorf("invalid bundle ID %q reached vendor dispatch", bundleID)
+		}
+	}
+}
+
+func TestManagedBundleValidatesKnownResponseFieldsAndPreservesAbsence(t *testing.T) {
+	kind := AccountKind("managed-plugin-bundle")
+	header := fixtureText(4, string(join(fixtureText(1, "X-Fixture-Signature"), fixtureText(2, "fixture-proof"))))
+	for _, body := range [][]byte{
+		nil,
+		fixtureNumber(1, 0),
+		join(fixtureNumber(1, 1), fixtureText(2, "https://download.invalid/fixture"), fixtureText(3, "revision"), header),
+	} {
+		if err := ValidateAccountResponse(kind, body); err != nil {
+			t.Fatal("valid native bundle response was refused", err)
+		}
+		recorder := httptest.NewRecorder()
+		reply := (AccountAdapter{Kind: kind}).Reply(recorder)
+		reply.WriteHeader(http.StatusOK)
+		_, _ = reply.Write(body)
+		if err := reply.Finish(nil); err != nil || recorder.Code != 200 || !bytes.Equal(recorder.Body.Bytes(), body) {
+			t.Fatal("native bundle reply changed bytes or invented a result", err)
+		}
+	}
+	for _, invalid := range [][]byte{
+		fixtureNumber(1, 2),
+		join(fixtureNumber(1, 1), fixtureNumber(1, 0)),
+		fixtureNumber(2, 1),
+		fixtureText(3, "\xff"),
+		join(fixtureText(3, "revision"), fixtureText(3, "another")),
+		fixtureText(4, string(fixtureNumber(2, 2))),
+		fixtureText(4, string(join(fixtureText(1, "header"), fixtureText(1, "duplicate")))),
+	} {
+		if err := ValidateAccountResponse(kind, invalid); err == nil {
+			t.Error("invalid native bundle metadata was accepted")
+		}
 	}
 }
 

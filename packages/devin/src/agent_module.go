@@ -49,7 +49,8 @@ func NewAgent(options ModuleOptions) (sdk.Module, error) {
 	module.Manifest = manifest
 	module.Handlers[sdk.MethodAgentInspect] = owner.inspect
 	module.Handlers[sdk.MethodAgentPlan] = owner.plan
-	for _, kind := range []codec.AccountKind{codec.UserStatus, codec.TeamSettings, codec.ManagedPlugins, codec.ModelAssignment} {
+	for _, kind := range []codec.AccountKind{codec.UserStatus, codec.TeamSettings, codec.ManagedPlugins,
+		codec.ManagedPluginBundle, codec.ModelAssignment} {
 		module.Inbounds = append(module.Inbounds, codec.AccountAdapter{Kind: kind})
 	}
 	if options.Now == nil {

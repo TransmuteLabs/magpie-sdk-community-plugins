@@ -17,10 +17,11 @@ import (
 type AccountKind string
 
 const (
-	UserStatus      AccountKind = "user-status"
-	TeamSettings    AccountKind = "team-settings"
-	ManagedPlugins  AccountKind = "managed-plugins"
-	ModelAssignment AccountKind = "model-assignment"
+	UserStatus          AccountKind = "user-status"
+	TeamSettings        AccountKind = "team-settings"
+	ManagedPlugins      AccountKind = "managed-plugins"
+	ManagedPluginBundle AccountKind = "managed-plugin-bundle"
+	ModelAssignment     AccountKind = "model-assignment"
 )
 
 func (kind AccountKind) Path() string {
@@ -31,6 +32,8 @@ func (kind AccountKind) Path() string {
 		return "/exa.seat_management_pb.SeatManagementService/GetCliTeamSettings"
 	case ManagedPlugins:
 		return "/exa.api_server_pb.ApiServerService/GetAccountManagedPlugins"
+	case ManagedPluginBundle:
+		return "/exa.api_server_pb.ApiServerService/GetAccountManagedPluginBundle"
 	case ModelAssignment:
 		return "/exa.api_server_pb.ApiServerService/AssignModel"
 	}
@@ -51,7 +54,10 @@ func (adapter AccountAdapter) Decode(ctx context.Context, header http.Header, bo
 		return protocolext.Request{}, refusal(400, "unknown native account operation")
 	}
 	schema := map[int]int{1: 2}
-	if adapter.Kind == ModelAssignment {
+	switch adapter.Kind {
+	case ManagedPluginBundle:
+		schema = map[int]int{1: 2, 2: textField, 3: 0}
+	case ModelAssignment:
 		schema = map[int]int{1: 2, 2: textField, 3: textField, 5: 2, 6: textField}
 	}
 	fields, err := readMessage(body, schema)
@@ -68,7 +74,13 @@ func (adapter AccountAdapter) Decode(ctx context.Context, header http.Header, bo
 	}
 	decoded.Protocol, decoded.Executor = protocolext.AccountOperation, protocolext.SameModuleExecutor
 	decoded.AccountOperation = string(adapter.Kind)
-	if adapter.Kind == ModelAssignment {
+	switch adapter.Kind {
+	case ManagedPluginBundle:
+		decoded.Body, err = bundleSelection(fields)
+		if err != nil {
+			return protocolext.Request{}, refusal(400, "invalid native managed bundle selection")
+		}
+	case ModelAssignment:
 		if fields.text(2) == "" || fields.text(3) == "" {
 			return protocolext.Request{}, refusal(400, "native assignment needs its model router and cascade identity")
 		}
@@ -83,6 +95,20 @@ func (adapter AccountAdapter) Decode(ctx context.Context, header http.Header, bo
 		decoded.RequestID = "assignment-" + SignatureDigest(decoded.Body)
 	}
 	return decoded, nil
+}
+
+func bundleSelection(fields message) ([]byte, error) {
+	bundleID, scope := fields.text(2), fields.number(3)
+	if bundleID == "" || len(bundleID) > 128 || bundleID == "." || bundleID == ".." || scope < 1 || scope > 3 {
+		return nil, errors.New("invalid native managed bundle selection")
+	}
+	for _, char := range bundleID {
+		if !(char >= 'a' && char <= 'z' || char >= 'A' && char <= 'Z' || char >= '0' && char <= '9' ||
+			char == '-' || char == '.' || char == '_') {
+			return nil, errors.New("invalid native managed bundle selection")
+		}
+	}
+	return addNumber(addText(nil, 2, bundleID), 3, scope), nil
 }
 
 func validateAccountMetadata(payload []byte) error {
@@ -136,6 +162,17 @@ func AccountPayload(kind AccountKind, body []byte, model, key string) ([]byte, e
 	if err != nil || kind.Path() == "" {
 		return nil, errors.New("invalid native account operation authority")
 	}
+	if kind == ManagedPluginBundle {
+		fields, err := readMessage(body, map[int]int{2: textField, 3: 0})
+		if err != nil {
+			return nil, err
+		}
+		selection, err := bundleSelection(fields)
+		if err != nil {
+			return nil, err
+		}
+		return append(addBytes(nil, 1, metadata), selection...), nil
+	}
 	if kind != ModelAssignment {
 		if len(body) != 0 {
 			return nil, errors.New("native account read accepts no client authority")
@@ -171,6 +208,18 @@ func AccountPayload(kind AccountKind, body []byte, model, key string) ([]byte, e
 func ValidateAccountResponse(kind AccountKind, body []byte) error {
 	if len(body) > 1<<20 {
 		return errors.New("native account response exceeds its byte limit")
+	}
+	if kind == ManagedPluginBundle {
+		bundle, err := projectedMessage(body, map[int]int{1: 0, 2: textField, 3: textField, 4: 2 | repeated})
+		if err != nil || bundle.number(1) > 1 {
+			return errors.New("invalid native managed bundle response")
+		}
+		for _, header := range bundle[4] {
+			if _, err := projectedMessage(header.b, map[int]int{1: textField, 2: textField}); err != nil {
+				return errors.New("invalid native managed bundle header")
+			}
+		}
+		return nil
 	}
 	fields, err := readMessage(body, nil)
 	if err != nil {

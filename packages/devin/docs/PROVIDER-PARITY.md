@@ -1,6 +1,6 @@
 # Current Devin provider comparison
 
-The default native `devin-inbound` 0.8.0 package is self-contained. It already
+The default native `devin-inbound` 0.8.1 package is self-contained. It already
 owns account auth, catalog, quota, Chat/Messages execution, paired native
 ingress and the Devin agent/bootstrap surface. No community plugin, Bun,
 Node module or separately installed Devin CLI supplies its provider hooks.
@@ -38,7 +38,7 @@ The [donor matrix](DONOR-MATRIX.md) retains the detailed codec boundaries.
 | Maintained CLIProxy dimensional usage | Sparse field28 Token Usage reaches canonical/SDK/ledger paths without displacing field7 snapshots or inventing missing counts. The [exact comparison and limits](CLIPROXY-PROVIDER-CHECK.md) preserves the donor evidence; shared refusal policy is documented separately in [REQUEST-POLICY.md](REQUEST-POLICY.md). |
 | Canonical/native requests and compression: `build`, `buildMessages`, `frame` (1149), `gzip-request.test.mjs` | Existing native and canonical encoders retain selected authority and ordinary supported message/tool/image/sampling fields. [Connect encoder](../src/codec/outbound_response.go) gzips payloads greater than 8KiB. The installed test checks flag, header, selected model/key and decompressed content for Chat, Messages and native requests. |
 | Paid background work: `scheduleKeepalive`, `keepalivePing`, keepalive tests | [Cache policy](CACHE-KEEPALIVE.md) retains explicit default-off consent, host-authorized fresh-account scheduling and bounded conversation state. A successful tick with absent or partial cache measurements now stops; it cannot authorize another paid tick. Complete measured hits/misses keep their existing policy. Donor retained-token timers, alias-as-consent and initial502 retry are deliberately excluded. |
-| Agent/native bootstrap | Native package also owns the finite account/bootstrap operations and `devin-native` wiring; the donor OpenCode adapter does not supply them. Original-client startup and install lifecycle remain separate verification gates. |
+| Agent/native bootstrap | Native package owns the finite account/bootstrap operations, `GetAccountManagedPluginBundle` and `devin-native` wiring. Original-client startup with an assigned cloud bundle remains a live verification gate. |
 | Scoped 0.1.44 donor changes | Recognizable image bytes determine inline MIME. Empty unmarked user residue is omitted after deferred tool-image association; meaningful text/images remain ordered, and unrepresentable empty cache boundaries refuse explicitly. Signed thoughts retain scoped origin checks. Automatic unsigned retries and length-based context-error guesses are not imported; [SOURCES.md](SOURCES.md) records the exact donor paths and focused tests. |
 
 ## Exact-semantics differences retained

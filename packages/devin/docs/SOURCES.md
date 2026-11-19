@@ -4,6 +4,26 @@ The machine-readable source of truth is `source-lock.json`, schema 1.
 It pins immutable commits and artifact SHA256s, not branch names or latest
 releases. Sources are read-only evidence, not packages installed at runtime.
 
+The November 19 comparison uses committed `Agents/devinapp`
+`e977587dd6a76ed2125ea7e09ac4771035100d35` (reconstructed CLI `3000.11.228`).
+`client/account_upload_wire.rs` and `client/plugins.rs`, present since
+`3a4db5e2fa6170c97ef170616a295b43b532b31e`, define the lookup used by
+`plugin_source.rs` for AccountUpload retrieval, preview and revision checks.
+Version 0.8.1 serves that separate read through the selected account. Bundle
+IDs follow the segment grammar in `plugin-host/src/discovery.rs`. The wire
+regressions cover the three scopes, replacement of caller metadata,
+malformed fields, and exact success/absence responses. The native client
+handles the download. The reconstructed and shipped clients still need live
+verification with an assigned cloud bundle.
+
+Since `4d399385deadca25115b37b430a5c7cccb2c46c4`, the recovered
+`provider-proxy` adds Connect framing, protobuf decoding and a transport state
+model. GetChatMessage uses the same Connect media type, version and frame flags.
+The specification still leaves the request/response fields of
+`RecordTrajectorySegmentEvents` unresolved. Official community commit
+`836f2e4e4cd899318c422d67cc1b2b30baaf1e06` has the same Devin 0.1.45
+package tree `1c23cc5c881c36b027f8cef2feb70f7a49ada5e4` as `324acd6007`.
+
 The local `Agents/devinapp` comparison at `dfd5a590a3d4c3a89e79fe90b3348015d8e6f1e1`
 ties the response field numbers to the `3000.11.228` binary in
 `reference/docs/provider-protocol.md`. The paired decoder already uses the
@@ -280,8 +300,8 @@ host identities and pins exact committed descriptor hashes.
 
 | Distribution | Version / minimum SDK | Implemented surface |
 | --- | --- | --- |
-| Default / `--agent`, source `magpie-agent.json` | 0.8.0 / 1.9 | One complete native bundle: paired ingress/outbound/auth/models/usage/Facts/diagnostics, agent/bootstrap and default-off paid account task |
-| `--paired-only`, source `magpie-plugin.json` | 0.5.0 / 1.7 | Explicit compatibility artifact without agent/bootstrap; paired ingress, Chat/Messages, auth/models/usage/Facts/diagnostics |
+| Default / `--agent`, source `magpie-agent.json` | 0.8.1 / 1.12 | Paired ingress/outbound/auth/models/usage/Facts/diagnostics, agent/bootstrap, managed bundle lookup and default-off paid account task |
+| `--paired-only`, source `magpie-plugin.json` | 0.5.0 / 1.12 | Paired ingress, Chat/Messages, auth/models/usage/Facts/diagnostics and request policy |
 | `--inbound-only` | 0.2.0 / 1.1 | Canonical Chat/model converter; no provider or account sign-in |
 
 All variants use native ABI 1 and are alternative installs of the same

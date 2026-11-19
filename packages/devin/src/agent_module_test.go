@@ -247,7 +247,10 @@ func TestAgentBootstrapRequiresSelectedAccountDispatch(t *testing.T) {
 	for _, inbound := range module.Inbounds[8:] {
 		headers := http.Header{"Content-Type": {"application/proto"}, "Connect-Protocol-Version": {"1"}}
 		body := nativeText(1, string(nativeText(3, "local-not-vendor")))
-		if inbound.Path() == codec.ModelAssignment.Path() {
+		switch inbound.Path() {
+		case codec.ManagedPluginBundle.Path():
+			body = append(body, nativeFields(nativeText(2, "owned-fixture-bundle"), nativeNumber(3, 1))...)
+		case codec.ModelAssignment.Path():
 			body = append(body, nativeFields(nativeText(2, "model"), nativeText(3, "session"))...)
 		}
 		request, err := inbound.Decode(context.Background(), headers, body)

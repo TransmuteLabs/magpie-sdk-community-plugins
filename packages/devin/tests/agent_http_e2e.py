@@ -18,6 +18,12 @@ import paired_http_e2e as paired
 from conformance import fields, text_field, number_field
 from http_e2e import DenyProxy, Provider, server_thread, require, digest, SERVICE, CALLER_KEY
 
+MANAGED_BUNDLE_RPC = SERVICE + "GetAccountManagedPluginBundle"
+BUNDLE_ID = "owned-fixture-bundle"
+BUNDLE_REPLY = (number_field(1, 1) + text_field(2, "https://download.invalid/owned-bundle")
+                + text_field(3, "owned-bundle-revision")
+                + text_field(4, text_field(1, "X-Fixture-Proof") + text_field(2, "owned-bundle-proof")))
+
 
 class OwnedVendorHandler(paired.VendorHandler):
     def do_POST(self):
@@ -25,6 +31,7 @@ class OwnedVendorHandler(paired.VendorHandler):
             "/exa.seat_management_pb.SeatManagementService/GetUserStatus": "status",
             "/exa.seat_management_pb.SeatManagementService/GetCliTeamSettings": "team",
             SERVICE + "GetAccountManagedPlugins": "plugins",
+            MANAGED_BUNDLE_RPC: "bundle",
             SERVICE + "AssignModel": "assignment",
         }
         if self.path not in (SERVICE + "GetChatMessage", SERVICE + "GetCliModelConfigs", *account_paths):
@@ -57,6 +64,14 @@ class OwnedVendorHandler(paired.VendorHandler):
                 native = number_field(1, 1)
             elif kind == "plugins":
                 native = text_field(1, '{"plugins":[]}')
+            elif kind == "bundle":
+                request = fields(body)
+                scope = request.get(3)
+                if (request.keys() != {1, 2, 3} or request[2] != [BUNDLE_ID.encode()] or
+                        scope not in ([1], [2], [3]) or b"owned-local-fingerprint" in body):
+                    self.reply("application/json", b'{"code":"invalid_argument"}', 400)
+                    return
+                native = BUNDLE_REPLY if scope != [2] else number_field(1, 0)
             else:
                 if fields(body).get(2) != [paired.MODEL.encode()]:
                     self.reply("application/json", b'{"code":"invalid_argument"}', 400)
@@ -227,6 +242,27 @@ def run(host, distribution, artifacts):
             (artifacts / "bootstrap-observations.json").write_text(json.dumps(bootstrap, indent=2))
             require(status == 200 and fields(body) and vendor.count() == before,
                     "recovered native bootstrap did not use selected account dispatch")
+        bundle_metadata = text_field(1, text_field(3, "magpie-devin-native")
+                                     + text_field(31, "owned-local-fingerprint"))
+        bundle_request = bundle_metadata + text_field(2, BUNDLE_ID)
+        with vendor.lock:
+            bundle_calls_before = vendor.calls.count(MANAGED_BUNDLE_RPC)
+        for scope in (1, 2, 3):
+            status, _, body = gateway.request(MANAGED_BUNDLE_RPC, bundle_request + number_field(3, scope),
+                                              key=None, headers=account_headers)
+            require(status == 200 and body == (number_field(1, 0) if scope == 2 else BUNDLE_REPLY),
+                    "native managed bundle lookup changed its selected account response")
+        malformed_lookups = (bundle_request + number_field(3, 4),
+                             bundle_request + number_field(3, 1) + number_field(3, 2),
+                             bundle_metadata + text_field(2, "../bundle") + number_field(3, 1))
+        for malformed in malformed_lookups:
+            status, _, _ = gateway.request(MANAGED_BUNDLE_RPC, malformed,
+                                           key=None, headers=account_headers)
+            require(status == 400, "invalid native managed bundle selection was admitted")
+        with vendor.lock:
+            require(vendor.calls.count(MANAGED_BUNDLE_RPC) == bundle_calls_before + 3,
+                    "native managed bundle lookup replayed or dispatched invalid inputs")
+        checks.append("managed bundle metadata uses selected account, preserves three scopes and absent bundles")
         assignment_request = text_field(1, text_field(3, "magpie-devin-native"))
         assignment_request += text_field(2, paired.MODEL) + text_field(3, "owned-assignment-session")
         with vendor.lock:
