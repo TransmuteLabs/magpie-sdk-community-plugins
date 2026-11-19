@@ -168,7 +168,7 @@ jobs:
           python3 scripts/release_build.py opencode --version "$VERSION" --sdk sdk-source \
             --sdk-source-manifest "$RUNNER_TEMP/opencode-sdk.json" \
             --published "$RUNNER_TEMP/opencode-publications.json" --output "$candidate"
-          lipo -verify_arch arm64 "$candidate/built/opencode/lib/opencode.dylib"
+          lipo "$candidate/built/opencode/lib/opencode.dylib" -verify_arch arm64
           python3 scripts/release.py opencode --input "$candidate/built" \
             --output "$RUNNER_TEMP/opencode-release" --platform darwin_arm64
 
