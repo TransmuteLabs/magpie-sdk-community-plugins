@@ -100,6 +100,42 @@ def release_candidates(before=None, selection=None):
     return candidates
 
 
+def unchanged_release_inputs(before):
+    if re.fullmatch(r"[0-9a-f]{40}", before) is None:
+        raise ValueError("Expected the full revision before the change")
+    if before == "0" * 40:
+        return []
+    git = ["git", "-C", str(ROOT)]
+    problems = []
+    for name, spec in packages().items():
+        path = f"packages/{name}"
+        metadata = f"{path}/package.json"
+        if not subprocess.check_output([*git, "ls-tree", "--name-only", before, "--", metadata]):
+            continue
+        previous = package_version(json.loads(subprocess.check_output([*git, "show", f"{before}:{metadata}"])), spec["id"])
+        current = package_version(read_json(ROOT / metadata), spec["id"])
+        if tuple(map(int, current.split("."))) > tuple(map(int, previous.split("."))):
+            continue
+        if current != previous:
+            raise ValueError(f"Package {name} version decreased from {previous} to {current}")
+        inputs = [metadata, f"{path}/src", f"{path}/web", f"{path}/docs",
+                  f"{path}/scripts", f"{path}/LICENSE", f"{path}/THIRD_PARTY_NOTICES"]
+        if name in {"claude-desktop", "commandcode"}:
+            inputs.append(f"{path}/README.md")
+        changed = subprocess.check_output([
+            *git, "diff", "--no-renames", "--name-only", "-z", before, "HEAD", "--",
+            *inputs,
+        ]).decode().split("\0")
+        shipped = [
+            item for item in changed if item
+            and not item.endswith(("_test.go", "_test.py", ".test.mjs", ".test.cjs"))
+            and not (item.endswith(".py") and Path(item).name.startswith("test_"))
+        ]
+        if shipped:
+            problems.append(f"{name}@{current}: {', '.join(shipped)}")
+    return problems
+
+
 def unpublished(candidates, inventory):
     tags = {release["tag_name"] for release in read_json(inventory)["releases"]}
     pending = []
@@ -157,6 +193,8 @@ def main():
     plan.add_argument("--inventory", type=Path)
     inventory = commands.add_parser("inventory")
     inventory.add_argument("output", type=Path)
+    bumped = commands.add_parser("bumped")
+    bumped.add_argument("before")
     build = commands.add_parser("build")
     build.add_argument("package", choices=list(packages()))
     build.add_argument("--version", required=True)
@@ -166,6 +204,12 @@ def main():
     build.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     try:
+        if args.command == "bumped":
+            problems = unchanged_release_inputs(args.before)
+            if problems:
+                raise ValueError("Package inputs changed without a version bump:\n" + "\n".join(problems))
+            print("Every changed release input has a new package version")
+            return
         if args.command == "inventory":
             write_inventory(args.output)
             return

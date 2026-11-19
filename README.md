@@ -63,9 +63,12 @@ as in the community plugin repository. That file also describes the package's
 purpose. The SDK manifest declares the capabilities and compatibility the host
 can verify. GitHub Actions compares package versions before and after a push
 to `main`. Only a new, unpublished version enters the macOS arm64 build.
-Changes to code or description ship with the next package version. To release
-an existing unpublished version, run **Release plugin versions for macOS** and
-select the package.
+**Check plugin versions** catches changes to package build inputs without a
+version bump on pull requests and pushes to `main`. It checks package metadata,
+source, interface assets, the package's documentation and build scripts.
+Dedicated test files are exempt. Checks start after the first commit that adds
+the package's version metadata. To release an existing unpublished version, run
+**Release plugin versions for macOS** and select the package.
 
 Keep the package version, native manifest and source provenance in agreement.
 The build verifies these fields and uses the Magpie commit pinned in

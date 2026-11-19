@@ -1,0 +1,23 @@
+name: Check plugin versions
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  bumped:
+    runs-on: macos-15
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Check changed package inputs
+        env:
+          BEFORE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: python3 -I scripts/release_ci.py bumped "$BEFORE"

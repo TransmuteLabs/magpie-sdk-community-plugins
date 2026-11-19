@@ -80,6 +80,49 @@ class ReleaseCITests(unittest.TestCase):
             self.write_version(name, "3.2.1")
         self.commit(self.root, "packages")
         self.assertEqual(release_ci.release_candidates(before=before), [])
+        self.assertEqual(release_ci.unchanged_release_inputs(before), [])
+
+    def test_version_guard_catches_changed_and_removed_build_inputs(self):
+        source = self.root / "packages/zcode/src"
+        source.mkdir()
+        (source / "module.go").write_text("package zcode\n")
+        before = self.commit(self.root, "packages")
+        (source / "module.go").unlink()
+        (source / "module_test.go").write_text("package zcode\n")
+        self.commit(self.root, "packages")
+        self.assertEqual(release_ci.unchanged_release_inputs(before), [
+            "zcode@3.2.1: packages/zcode/src/module.go",
+        ])
+        self.write_version("zcode", "3.2.2")
+        self.commit(self.root, "packages")
+        self.assertEqual(release_ci.unchanged_release_inputs(before), [])
+
+    def test_version_guard_includes_packaging_helpers_and_notices(self):
+        before = self.commit(self.root, "packages")
+        package = self.root / "packages/opencode"
+        (package / "scripts").mkdir()
+        (package / "scripts/provenance.py").write_text("schema = 1\n")
+        (package / "THIRD_PARTY_NOTICES").write_text("Notice\n")
+        self.commit(self.root, "packages")
+        self.assertEqual(release_ci.unchanged_release_inputs(before), [
+            "opencode@3.2.1: packages/opencode/THIRD_PARTY_NOTICES, packages/opencode/scripts/provenance.py",
+        ])
+
+    def test_checks_and_other_package_versions_do_not_mask_shipped_changes(self):
+        before = self.commit(self.root, "packages")
+        source = self.root / "packages/zcode/src"
+        source.mkdir()
+        (source / "module_test.go").write_text("package zcode\n")
+        (source / "ingress_test.py").write_text("pass\n")
+        (source / "test_ingress.py").write_text("pass\n")
+        self.write_version("minimax", "3.2.2")
+        self.commit(self.root, "packages")
+        self.assertEqual(release_ci.unchanged_release_inputs(before), [])
+        self.write_version("opencode", "3.2.1", description="shipped")
+        self.commit(self.root, "packages")
+        self.assertEqual(release_ci.unchanged_release_inputs(before), [
+            "opencode@3.2.1: packages/opencode/package.json",
+        ])
 
     def test_two_bumps_and_explicit_retry_are_independent(self):
         before = self.commit(self.root, "packages")
