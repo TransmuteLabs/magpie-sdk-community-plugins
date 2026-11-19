@@ -8,23 +8,16 @@ import (
 
 type zenTerminal struct {
 	protocol string
-	gemini   *geminiTerminal
 	line     []byte
 	data     []byte
 	done     bool
 }
 
 func (terminal *zenTerminal) complete() bool {
-	if terminal.protocol == "gemini" {
-		return terminal.gemini.complete()
-	}
 	return terminal.done
 }
 
 func (terminal *zenTerminal) write(body []byte) error {
-	if terminal.protocol == "gemini" {
-		return terminal.gemini.write(body)
-	}
 	for _, value := range body {
 		if value != '\n' {
 			if len(terminal.line)+len(terminal.data) >= maxReplyBytes {

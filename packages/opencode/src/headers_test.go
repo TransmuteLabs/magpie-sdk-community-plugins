@@ -118,3 +118,22 @@ func TestChatTerminalIgnoresTextAndHandlesLongStreams(t *testing.T) {
 		t.Fatal("a comment changed the terminal data event")
 	}
 }
+
+func TestChatTerminalBoundsMultilineEvent(t *testing.T) {
+	for _, oversized := range []string{strings.Repeat("x", 33), strings.Repeat("x", 65)} {
+		var state chatTerminal
+		state.write([]byte("data: first\ndata: " + oversized + "\n"))
+		state.write([]byte(strings.Repeat("data: line\n", 4096)))
+		if !state.eventLong || len(state.data) > 32 || state.done {
+			t.Fatalf("oversized event retained %d bytes, eventLong=%v, done=%v", len(state.data), state.eventLong, state.done)
+		}
+		state.write([]byte("data: [DONE]\n\n"))
+		if state.done {
+			t.Fatal("marker within an oversized event completed the stream")
+		}
+		state.write([]byte("data: [DONE]\n\n"))
+		if !state.done {
+			t.Fatal("a new terminal event was lost after an oversized event")
+		}
+	}
+}

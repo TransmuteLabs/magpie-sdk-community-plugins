@@ -60,12 +60,12 @@ func (owner *module) executeZen(ctx context.Context, call sdk.Call, stream *sdk.
 	endpoint := ""
 	switch request.Protocol {
 	case "chat", "responses", "messages":
-		base, suffix := "/inference/openai/v1", "/chat/completions"
+		base, suffix := zenOpenAIBase, "/chat/completions"
 		if request.Protocol == "responses" {
 			suffix = "/responses"
 		}
 		if request.Protocol == "messages" {
-			base, suffix = "/inference/anthropic/v1", "/messages"
+			base, suffix = zenAnthropicBase, "/messages"
 		}
 		if options.Query == "" && (options.Path == "" || options.Path == suffix || options.Path == "/v1"+suffix) {
 			endpoint = base + suffix
@@ -75,12 +75,12 @@ func (owner *module) executeZen(ctx context.Context, call sdk.Call, stream *sdk.
 		switch path {
 		case "", "/models/" + request.Model + ":generateContent":
 			if options.Query == "" {
-				endpoint = "/inference/google/v1beta/models/" + url.PathEscape(request.Model) + ":generateContent"
+				endpoint = zenGeminiBase + "/models/" + url.PathEscape(request.Model) + ":generateContent"
 			}
 		case "/models/" + request.Model + ":streamGenerateContent":
 			if options.Query == "alt=sse" {
 				requestedStream = true
-				endpoint = "/inference/google/v1beta/models/" + url.PathEscape(request.Model) + ":streamGenerateContent?alt=sse"
+				endpoint = zenGeminiBase + "/models/" + url.PathEscape(request.Model) + ":streamGenerateContent?alt=sse"
 			}
 		}
 	}
@@ -180,9 +180,13 @@ func (owner *module) executeZen(ctx context.Context, call sdk.Call, stream *sdk.
 	} else if proved {
 		return refused, nil
 	}
-	streaming := response.StatusCode >= 200 && response.StatusCode < 300 &&
-		strings.EqualFold(strings.TrimSpace(strings.SplitN(response.Header.Get("Content-Type"), ";", 2)[0]), "text/event-stream")
-	if tools != nil && response.StatusCode >= 200 && response.StatusCode < 300 {
+	success := response.StatusCode >= 200 && response.StatusCode < 300
+	contentType, _, _ := strings.Cut(response.Header.Get("Content-Type"), ";")
+	streaming := success && strings.EqualFold(strings.TrimSpace(contentType), "text/event-stream")
+	if success && requestedStream && !streaming {
+		return nil, &sdk.Error{Code: "truncated", Message: "Zen streaming returned a non-SSE response", Outcome: "uncertain"}
+	}
+	if tools != nil && success {
 		response.Header.Del("Content-Length")
 		response.Header.Del("Content-Encoding")
 		if streaming && !requestedStream {
@@ -197,7 +201,7 @@ func (owner *module) executeZen(ctx context.Context, call sdk.Call, stream *sdk.
 			if err := stream.Emit(ctx, "headers", sdk.HeadersEvent{Status: response.StatusCode, Headers: response.Header}); err != nil {
 				return nil, err
 			}
-			if err := emitZenToolData(ctx, stream, body); err != nil {
+			if err := emitResponseData(ctx, stream, body); err != nil {
 				return nil, err
 			}
 			return sdk.ExecuteResult{Status: response.StatusCode, Outcome: "completed"}, nil
@@ -206,12 +210,15 @@ func (owner *module) executeZen(ctx context.Context, call sdk.Call, stream *sdk.
 	if err := stream.Emit(ctx, "headers", sdk.HeadersEvent{Status: response.StatusCode, Headers: response.Header}); err != nil {
 		return nil, err
 	}
-	if tools != nil && response.StatusCode >= 200 && response.StatusCode < 300 {
-		if requestedStream && !streaming {
-			return nil, &sdk.Error{Code: "truncated", Message: "Zen stream ended without its native terminal event", Outcome: "uncertain"}
+	if streaming && request.Protocol == "gemini" {
+		if err := gemini.relay(ctx, response.Body, stream); err != nil {
+			return nil, err
 		}
+		return sdk.ExecuteResult{Status: response.StatusCode, Outcome: "completed"}, nil
+	}
+	if tools != nil && success {
 		if err := relayZenTools(ctx, response.Body, tools, string(request.Protocol), streaming, func(body []byte) error {
-			return emitZenToolData(ctx, stream, body)
+			return emitResponseData(ctx, stream, body)
 		}); err != nil {
 			if errors.Is(err, errZenToolsTruncated) {
 				return nil, &sdk.Error{Code: "truncated", Message: err.Error(), Outcome: "uncertain"}
@@ -220,7 +227,7 @@ func (owner *module) executeZen(ctx context.Context, call sdk.Call, stream *sdk.
 		}
 		return sdk.ExecuteResult{Status: response.StatusCode, Outcome: "completed"}, nil
 	}
-	terminal := zenTerminal{protocol: string(request.Protocol), gemini: &gemini}
+	terminal := zenTerminal{protocol: string(request.Protocol)}
 	buffer := make([]byte, sdk.MaxChunkBytes)
 	for {
 		count, readErr := response.Body.Read(buffer)
@@ -244,7 +251,7 @@ func (owner *module) executeZen(ctx context.Context, call sdk.Call, stream *sdk.
 			return nil, failure(readErr, "uncertain")
 		}
 	}
-	if streaming && !terminal.complete() || requestedStream && response.StatusCode >= 200 && response.StatusCode < 300 && !streaming {
+	if streaming && !terminal.complete() {
 		return nil, &sdk.Error{Code: "truncated", Message: "Zen stream ended without its native terminal event", Outcome: "uncertain"}
 	}
 	return sdk.ExecuteResult{Status: response.StatusCode, Outcome: "completed"}, nil

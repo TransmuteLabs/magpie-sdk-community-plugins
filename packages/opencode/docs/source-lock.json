@@ -1,5 +1,28 @@
 {
   "schema": 1,
+  "officialCatalogFollowUp20261119": {
+    "checkedAt": "2026-11-19",
+    "ref": "origin/dev",
+    "commit": "d33b5783338b8b350aafc09f7dc2701eeba52a9a",
+    "previousReviewedCommit": "79bd2c6f11fd5ad011dbe5a1c31343c46e1e5294",
+    "version": "2.3.0",
+    "commitsSinceReview": 33,
+    "changedPathsSinceReview": 305,
+    "changedLiteralWatchedPaths": ["packages/core/src/model-resolver.ts"],
+    "retirementCommit": "a86ac3f1b9d5fb7de846c29d6e0dc2136c503f0d",
+    "catalogSchemaCommit": "a61f5ea83460c197229e67b9c07c49ea87615385",
+    "paths": [
+      "services/site/src/docs/content/console/api/models.mdx",
+      "services/site/src/docs/content/console/models.mdx",
+      "services/site/src/docs/content/console/go.mdx",
+      "packages/core/src/models-dev/snapshot.txt",
+      "packages/core/src/model-resolver.ts",
+      "packages/ai/src/route/transport/http.ts"
+    ],
+    "decision": "Zen applies the published GLM 5, 5.1 and 5.2 retirement to bootstrap and live lists. Rich inference-list records require native protocol URLs and checked limits. Go shares the selected-account catalog between discovery and execute and admits only implemented native Chat and Gemini routes. ID-only entries use pinned metadata and failed refreshes preserve their fallback. OpenCode's media and decision timeouts remain harness-owned.",
+    "runtimePort": true,
+    "freshClientExecuted": false
+  },
   "officialPermissionFollowUp20261118": {
     "checkedAt": "2026-11-18",
     "ref": "origin/dev",

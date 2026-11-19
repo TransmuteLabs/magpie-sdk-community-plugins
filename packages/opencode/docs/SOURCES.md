@@ -1,5 +1,23 @@
 # OpenCode module source provenance
 
+The November 19 source review covers `d33b5783338b8b350aafc09f7dc2701eeba52a9a`
+at CLI version `2.3.0`, 33 commits and 305 changed paths since `79bd2c6f`.
+Of the 17 extraction paths, `packages/core/src/model-resolver.ts` changed
+to pass configured timeouts and TLS to media and decision models. OpenCode
+continues to own that behavior. The new model-list contract in
+`services/site/src/docs/content/console/api/models.mdx` documents the
+metadata used for Zen discovery. Zen removes GLM 5, 5.1 and 5.2 from
+bootstrap and live lists, including stale responses. Models such as
+Gemini 4 Neon and Tidepool Alpha Free can appear when the live list
+provides a supported native endpoint and complete limits.
+Go reads its selected-account inference list and admits Chat and Gemini
+entries whose exact native routes match
+`packages/core/src/models-dev/snapshot.txt` and the endpoint contract.
+Messages and Responses Go entries stay out of the module's catalog. The
+packaged Go fallback retains its original donor and model metadata.
+`officialCatalogFollowUp20261119` records the exact source commits.
+The documented rich response shape is exercised with loopback fixtures.
+
 The November 18 follow-up advances the local OpenCode checkout from
 `521ceac004e59fbbfca0929596107cd8430f2b26` to
 `79bd2c6f11fd5ad011dbe5a1c31343c46e1e5294`. The three commits keep CLI

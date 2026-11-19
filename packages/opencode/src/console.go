@@ -72,7 +72,7 @@ type consoleCache struct {
 
 func newConsoleCache() *consoleCache {
 	return &consoleCache{gate: make(chan struct{}, 1), entries: map[string]*consoleEntry{},
-		receipts: map[string]watchReceipt{}, catalog: zenLists{values: map[string]zenListing{}}}
+		receipts: map[string]watchReceipt{}, catalog: zenLists{values: map[string]modelListing{}}}
 }
 
 func (cache *consoleCache) lock(ctx context.Context) error {

@@ -256,18 +256,50 @@ func ClearAuth(headers http.Header) {
 }
 
 func (client *Client) Chat(ctx context.Context, credentials Credentials, headers http.Header, body []byte) (*http.Response, error) {
-	return client.generate(ctx, credentials, headers, body, "/inference/go/openai/v1/chat/completions", false)
+	return client.generate(ctx, credentials, headers, body, goOpenAIBase+"/chat/completions", false)
 }
 
 func (client *Client) GenerateContent(ctx context.Context, credentials Credentials, headers http.Header, body []byte, model string, streaming bool) (*http.Response, error) {
 	if !modelSupports(model, "gemini") {
 		return nil, errors.New("OpenCode model does not use the native Gemini endpoint")
 	}
-	endpoint := "/inference/go/google/v1beta/models/" + url.PathEscape(model) + ":generateContent"
+	return client.generateGemini(ctx, credentials, headers, body, model, streaming)
+}
+
+func (client *Client) generateGemini(ctx context.Context, credentials Credentials, headers http.Header, body []byte, model string, streaming bool) (*http.Response, error) {
+	endpoint := goGeminiBase + "/models/" + url.PathEscape(model) + ":generateContent"
 	if streaming {
-		endpoint = "/inference/go/google/v1beta/models/" + url.PathEscape(model) + ":streamGenerateContent?alt=sse"
+		endpoint = goGeminiBase + "/models/" + url.PathEscape(model) + ":streamGenerateContent?alt=sse"
 	}
 	return client.generate(ctx, credentials, headers, body, endpoint, true)
+}
+
+func (client *Client) modelList(ctx context.Context, path, access, org string) []byte {
+	ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
+	defer cancel()
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, client.Endpoints.Inference+path, nil)
+	if err != nil {
+		return nil
+	}
+	request.Header.Set("Authorization", "Bearer "+access)
+	request.Header.Set("User-Agent", "opencode/latest/"+client.Version+"/cli")
+	request.Header.Set("x-opencode-client", "cli")
+	if org != "" {
+		request.Header.Set("x-opencode-org-id", org)
+	}
+	response, err := client.HTTP.Do(request)
+	if err != nil {
+		return nil
+	}
+	defer response.Body.Close()
+	if response.StatusCode != http.StatusOK {
+		return nil
+	}
+	body, err := readBounded(response.Body, maxReplyBytes)
+	if err != nil {
+		return nil
+	}
+	return body
 }
 
 func (client *Client) generate(ctx context.Context, credentials Credentials, headers http.Header, body []byte, endpoint string, gemini bool) (*http.Response, error) {

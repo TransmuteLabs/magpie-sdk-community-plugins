@@ -1,6 +1,34 @@
 package opencode
 
-import "bytes"
+import (
+	"bufio"
+	"bytes"
+)
+
+func startsChatEvents(reader *bufio.Reader) bool {
+	for offset := 0; offset < reader.Size(); offset++ {
+		head, err := reader.Peek(offset + 1)
+		if err != nil {
+			return false
+		}
+		var prefix string
+		switch head[offset] {
+		case ' ', '\t', '\r', '\n':
+			continue
+		case ':':
+			return true
+		case 'd':
+			prefix = "data:"
+		case 'e':
+			prefix = "event:"
+		default:
+			return false
+		}
+		head, err = reader.Peek(offset + len(prefix))
+		return err == nil && string(head[offset:]) == prefix
+	}
+	return false
+}
 
 // chatTerminal observes only OpenAI chat's terminal SSE data event. It never
 // buffers a conversation and a "[DONE]" inside model text is not completion.
@@ -33,16 +61,20 @@ func (terminal *chatTerminal) write(body []byte) {
 			if bytes.HasPrefix(line, []byte("data:")) {
 				terminal.eventLong = true
 			}
-		} else if value, data := bytes.CutPrefix(line, []byte("data:")); data {
+		} else if value, data := bytes.CutPrefix(line, []byte("data:")); data && !terminal.eventLong {
 			value = bytes.TrimPrefix(value, []byte(" "))
+			length := len(terminal.data) + len(value)
 			if terminal.hasData {
-				terminal.data = append(terminal.data, '\n')
+				length++
 			}
-			terminal.hasData = true
-			if len(terminal.data)+len(value) > 32 {
+			if length > 32 {
 				terminal.eventLong = true
 			} else {
+				if terminal.hasData {
+					terminal.data = append(terminal.data, '\n')
+				}
 				terminal.data = append(terminal.data, value...)
+				terminal.hasData = true
 			}
 		}
 		terminal.line, terminal.long = terminal.line[:0], false

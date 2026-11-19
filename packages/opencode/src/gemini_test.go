@@ -1,11 +1,13 @@
 package opencode
 
 import (
+	"bytes"
 	"encoding/json"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
+	"strconv"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -123,7 +125,7 @@ func TestGeminiTerminalRequiresEveryCandidateAndPreservesNativeEndings(t *testin
 			}
 			var parseErr error
 			for _, value := range []byte(test.events) {
-				if parseErr = terminal.write([]byte{value}); parseErr != nil {
+				if parseErr = terminal.write([]byte{value}, nil); parseErr != nil {
 					break
 				}
 			}
@@ -136,8 +138,8 @@ func TestGeminiTerminalRequiresEveryCandidateAndPreservesNativeEndings(t *testin
 	if err := terminal.configure(map[string]json.RawMessage{"contents": raw([]any{map[string]string{"role": "user"}})}); err != nil {
 		t.Fatal(err)
 	}
-	if err := terminal.write([]byte("data: " + strings.Repeat("x", maxReplyBytes))); err == nil ||
-		len(terminal.line)+len(terminal.data) > maxReplyBytes {
+	if err := terminal.write([]byte("data: "+strings.Repeat("x", maxReplyBytes)), nil); err == nil ||
+		len(terminal.frame) > maxReplyBytes {
 		t.Fatal("native Gemini stream event is not bounded")
 	}
 }
@@ -197,6 +199,112 @@ func TestPublicSDKGeminiNativeStreamsAndSelectedAccounts(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestPublicSDKGeminiChecksStreamAfterFinishReason(t *testing.T) {
+	const stop = "data: {\"candidates\":[{\"index\":0,\"finishReason\":\"STOP\"}]}\n\n"
+	const usage = "data: {\"usageMetadata\":{\"totalTokenCount\":5}}\n\n"
+	for _, provider := range []string{ProviderGo, ProviderZen} {
+		t.Run(provider, func(t *testing.T) {
+			for _, fixture := range []struct {
+				name  string
+				tail  string
+				split int
+				short bool
+				valid bool
+			}{
+				{name: "late-usage", tail: usage, valid: true},
+				{name: "partial-line", tail: `data: {"usageMetadata":`},
+				{name: "partial-event", tail: strings.TrimSuffix(usage, "\n")},
+				{name: "transport-error", short: true},
+				{name: "late-error", tail: "data: {\"error\":{\"code\":503,\"message\":\"service unavailable\",\"status\":\"UNAVAILABLE\"}}\n\n"},
+				{name: "same-read-error", tail: "data: {\"error\":{\"code\":503}}\n\n", split: -1},
+				{name: "split-within-error", tail: "data: {\"error\":{\"code\":503}}\n\n", split: 7},
+			} {
+				t.Run(fixture.name, func(t *testing.T) {
+					model := "gemini-4-argon"
+					if provider == ProviderZen {
+						model = "gemini-3.1-pro"
+					}
+					var calls atomic.Int32
+					server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+						if request.URL.Path == "/inference/v1/models" {
+							io.WriteString(writer, `{"data":[{"id":"`+model+`"}]}`)
+							return
+						}
+						calls.Add(1)
+						writer.Header().Set("Content-Type", "text/event-stream")
+						if fixture.short {
+							writer.Header().Set("Content-Length", strconv.Itoa(len(stop)+1))
+						}
+						io.WriteString(writer, stop+fixture.tail)
+					}))
+					t.Cleanup(server.Close)
+					firstBytes := len(stop) + fixture.split
+					if fixture.split < 0 {
+						firstBytes = len(stop) + len(fixture.tail)
+					}
+					options := ModuleOptions{
+						Endpoints: Endpoints{Console: server.URL, Inference: server.URL},
+						HTTPFactory: func(string) (Doer, func(), error) {
+							return geminiSplitClient{server.Client(), firstBytes}, nil, nil
+						},
+					}
+					scope := sdk.Scope{Provider: provider, Generation: 1}
+					var module sdk.Module
+					var auth json.RawMessage
+					if provider == ProviderGo {
+						account := credential(time.Now(), "a", "org-a")
+						scope.Account, auth = account.AccountID(provider), raw(account)
+						module = NewModule(options)
+					} else {
+						account := ZenCredentials{Kind: "key", Key: "fixture-zen-key"}
+						scope, auth = zenScope(provider, account), raw(account)
+						module = NewWindowModule(options)
+					}
+					harness := serveHarness(t, module, raw(moduleConfig{ProjectID: "global"}))
+					frame, actual := harness.invoke(sdk.MethodProviderExecute, scope, sdk.ExecuteRequest{
+						Protocol: "gemini", Model: model, Body: json.RawMessage(`{"contents":[{"parts":[{"text":"hello"}]}]}`),
+						Options: raw(sdk.ExecuteOptions{Path: "/v1beta/models/" + model + ":streamGenerateContent", Query: "alt=sse"}),
+					}, auth)
+					if calls.Load() != 1 || !harness.accepted[frame.ID] {
+						t.Fatalf("Gemini dispatch count=%d, error=%v", calls.Load(), frame.Error)
+					}
+					if fixture.valid {
+						if frame.Error != nil || string(actual) != stop+fixture.tail {
+							t.Fatalf("Gemini lost final usage: %q, %v", actual, frame.Error)
+						}
+					} else if frame.Error == nil || frame.Error.Outcome != "uncertain" {
+						t.Fatalf("Gemini accepted a failed stream: result=%s, error=%v", frame.Result, frame.Error)
+					}
+					if !fixture.valid && string(actual) != stop {
+						t.Fatalf("Gemini failed event changed the valid prefix: %q", actual)
+					}
+				})
+			}
+		})
+	}
+}
+
+type geminiSplitClient struct {
+	*http.Client
+	firstBytes int
+}
+
+func (client geminiSplitClient) Do(request *http.Request) (*http.Response, error) {
+	response, err := client.Client.Do(request)
+	if err == nil && strings.HasSuffix(request.URL.Path, ":streamGenerateContent") {
+		first := make([]byte, client.firstBytes)
+		if _, err := io.ReadFull(response.Body, first); err != nil {
+			response.Body.Close()
+			return nil, err
+		}
+		response.Body = struct {
+			io.Reader
+			io.Closer
+		}{io.MultiReader(bytes.NewReader(first), response.Body), response.Body}
+	}
+	return response, err
 }
 
 func TestPublicSDKRejectsUnsupportedGeminiSemanticsBeforeDispatch(t *testing.T) {

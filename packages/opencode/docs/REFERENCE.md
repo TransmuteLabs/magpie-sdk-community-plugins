@@ -115,7 +115,7 @@ as a separate public envelope and are not inserted into this chat catalog.
 | Contract | Module responsibility |
 | --- | --- |
 | `account-auth` | Go/Zen device OAuth, selected OAuth refresh, explicit Zen key/public authentication and local logout |
-| `model-discovery` | Four pinned Go models; native Zen catalog and per-account remote availability |
+| `model-discovery` | Go and Zen native catalogs with selected-account availability and packaged fallbacks |
 | `outbound-executor` | Go Chat/Gemini and Zen Chat/Responses/Messages/Gemini, accepted before inference dispatch |
 | `usage-reporter` | Go's rolling, weekly and monthly percentage windows; no fabricated Zen quota |
 | `network.proxy` | Resolve the effective parent proxy for each vendor request |
@@ -163,9 +163,20 @@ authority. The address clears when the flow ends, is canceled or the page closes
 
 ## Models and native protocols
 
-The Go catalog is the donor's reviewed `opencode-go-models-2026-10-31.json`
-snapshot. It is a packaged compatibility baseline, not a claim about current
-vendor availability. Go model discovery makes no network request.
+Go loads `/inference/go/v1/models` for the selected OAuth account. Its
+Chat and Gemini routes use the same snapshot to decide which models can
+execute. The snapshot belongs to the account, organization, and credential
+generation. A successful empty list disables inference for that selection
+until discovery returns models again. Failed refreshes retain the last
+successful list. A cold worker can fetch the list before executing a
+dynamic model. Go discovery admits the native Chat and Gemini endpoints
+with verified context and output limits. It leaves Messages and Responses
+models out until their Go transports are supported.
+
+Before a successful discovery, the following four models provide a
+packaged fallback from the reviewed `opencode-go-models-2026-10-31.json`
+snapshot. When a live list contains only model IDs, it supplies availability
+for these verified entries.
 
 | Model | Protocol | Input modalities |
 | --- | --- | --- |
@@ -183,11 +194,24 @@ organization headers are removed. Attribution headers are replaced across
 all header-name casings. The HTTP transport owns gzip negotiation.
 
 Chat requires its terminal `[DONE]` event and closes a held stream once it
-arrives. Native Gemini SSE requires terminal reasons for every requested
-candidate, or a prompt block, followed by EOF. Malformed/truncated streams
-are uncertain. An individual Gemini event is bounded to 1 MiB and candidate
-observation to 1,024; these are module resource limits, not vendor limits.
+arrives. For OpenCode Go, an explicit Chat streaming request recognizes
+SSE sent under a different MIME type and forwards the original bytes with
+the SSE media type. Both Go and Zen Gemini SSE require terminal reasons for every
+requested candidate, or a prompt block, followed by EOF at an event boundary.
+The relay validates each event before forwarding it and preserves valid
+preceding events regardless of HTTP read sizes. It keeps usage events after
+the last finish reason. In-stream
+error envelopes, malformed events and truncated streams return `uncertain`,
+including after a finish reason. An individual Gemini event is bounded to
+1 MiB and the module tracks at most 1,024 candidates.
 Non-success HTTP statuses preserve their response status/body.
+
+Zen accepts both the old ID-only inference list and the richer models.dev
+records. Live metadata requires the official native URL for a supported
+conversational protocol and positive context and output limits. A reported
+input cap can reduce the published context. A rich public entry needs
+explicit zero input and output prices. GLM 5, 5.1, 5.2 and GLM-5.3-Flash
+Free are excluded from the Zen bootstrap and every subsequent listing.
 
 Configure an explicit `projectId` (an OpenCode project hash or `global`), or
 supply an explicit project header. No home directory or Git configuration is

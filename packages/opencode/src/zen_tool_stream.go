@@ -100,7 +100,7 @@ func (frame zenToolFrame) rewrite(value map[string]any) []byte {
 	return []byte(strings.Join(lines, "\n") + "\n\n")
 }
 
-func emitZenToolData(ctx context.Context, stream *sdk.Stream, body []byte) error {
+func emitResponseData(ctx context.Context, stream *sdk.Stream, body []byte) error {
 	for len(body) != 0 {
 		count := min(len(body), sdk.MaxChunkBytes)
 		if err := stream.Emit(ctx, "data", body[:count]); err != nil {

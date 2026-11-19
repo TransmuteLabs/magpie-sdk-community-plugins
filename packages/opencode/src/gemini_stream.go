@@ -2,12 +2,17 @@ package opencode
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
+	"io"
+
+	sdk "github.com/yetone/magpie/pkg/extension"
 )
 
 type geminiTerminal struct {
-	line     []byte
+	frame    []byte
+	lineFrom int
 	data     []byte
 	hasData  bool
 	expected int
@@ -37,22 +42,28 @@ func (terminal *geminiTerminal) configure(body map[string]json.RawMessage) error
 	return nil
 }
 
-func (terminal *geminiTerminal) write(body []byte) error {
+func (terminal *geminiTerminal) write(body []byte, emit func([]byte) error) error {
 	for _, value := range body {
+		if len(terminal.frame) >= maxReplyBytes {
+			return errors.New("Gemini stream event exceeds its byte limit")
+		}
+		terminal.frame = append(terminal.frame, value)
 		if value != '\n' {
-			if len(terminal.line)+len(terminal.data) >= maxReplyBytes {
-				return errors.New("Gemini stream event exceeds its byte limit")
-			}
-			terminal.line = append(terminal.line, value)
 			continue
 		}
-		line := bytes.TrimSuffix(terminal.line, []byte("\r"))
+		line := bytes.TrimSuffix(terminal.frame[terminal.lineFrom:len(terminal.frame)-1], []byte("\r"))
 		if len(line) == 0 {
 			if terminal.hasData {
 				if err := terminal.event(); err != nil {
 					return err
 				}
 			}
+			if emit != nil {
+				if err := emit(terminal.frame); err != nil {
+					return err
+				}
+			}
+			terminal.frame = terminal.frame[:0]
 			terminal.data, terminal.hasData = terminal.data[:0], false
 		} else if data, found := bytes.CutPrefix(line, []byte("data:")); found {
 			if terminal.hasData {
@@ -61,13 +72,14 @@ func (terminal *geminiTerminal) write(body []byte) error {
 			terminal.hasData = true
 			terminal.data = append(terminal.data, bytes.TrimPrefix(data, []byte(" "))...)
 		}
-		terminal.line = terminal.line[:0]
+		terminal.lineFrom = len(terminal.frame)
 	}
 	return nil
 }
 
 func (terminal *geminiTerminal) event() error {
-	var event struct {
+	var event *struct {
+		Error      *json.RawMessage `json:"error"`
 		Candidates []struct {
 			Index        int    `json:"index"`
 			FinishReason string `json:"finishReason"`
@@ -76,8 +88,11 @@ func (terminal *geminiTerminal) event() error {
 			BlockReason string `json:"blockReason"`
 		} `json:"promptFeedback"`
 	}
-	if json.Unmarshal(terminal.data, &event) != nil {
+	if json.Unmarshal(terminal.data, &event) != nil || event == nil {
 		return errors.New("invalid Gemini stream event")
+	}
+	if event.Error != nil {
+		return errors.New("Gemini stream returned an error")
 	}
 	if event.PromptFeedback.BlockReason != "" && event.PromptFeedback.BlockReason != "BLOCK_REASON_UNSPECIFIED" {
 		terminal.blocked = true
@@ -94,5 +109,34 @@ func (terminal *geminiTerminal) event() error {
 }
 
 func (terminal *geminiTerminal) complete() bool {
-	return terminal.blocked || len(terminal.finished) == terminal.expected
+	return len(terminal.frame) == 0 &&
+		(terminal.blocked || len(terminal.finished) == terminal.expected)
+}
+
+func (terminal *geminiTerminal) relay(ctx context.Context, reader io.Reader, stream *sdk.Stream) error {
+	buffer := make([]byte, sdk.MaxChunkBytes)
+	var emitErr error
+	emit := func(frame []byte) error {
+		emitErr = emitResponseData(ctx, stream, frame)
+		return emitErr
+	}
+	for {
+		count, readErr := reader.Read(buffer)
+		if err := terminal.write(buffer[:count], emit); err != nil {
+			if emitErr != nil {
+				return emitErr
+			}
+			return failure(err, "uncertain")
+		}
+		if readErr == io.EOF {
+			break
+		}
+		if readErr != nil {
+			return failure(readErr, "uncertain")
+		}
+	}
+	if !terminal.complete() {
+		return &sdk.Error{Code: "truncated", Message: "Gemini stream ended without its terminal event", Outcome: "uncertain"}
+	}
+	return nil
 }

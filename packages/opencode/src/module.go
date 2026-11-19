@@ -1,6 +1,7 @@
 package opencode
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"encoding/json"
@@ -31,9 +32,10 @@ type moduleConfig struct {
 }
 
 type instance struct {
-	headers *Headers
-	config  moduleConfig
-	console *consoleCache
+	headers   *Headers
+	config    moduleConfig
+	console   *consoleCache
+	goCatalog goCatalog
 }
 
 type module struct {
@@ -451,7 +453,7 @@ func (owner *module) models(ctx context.Context, call sdk.Call, stream *sdk.Stre
 	if err := providerScope(call); err != nil {
 		return nil, err
 	}
-	return sdk.ModelsResult{Models: Models()}, nil
+	return owner.goModels(ctx, call, stream)
 }
 
 func (owner *module) execute(ctx context.Context, call sdk.Call, stream *sdk.Stream) (any, error) {
@@ -487,10 +489,11 @@ func (owner *module) execute(ctx context.Context, call sdk.Call, stream *sdk.Str
 			return nil, notStarted(err)
 		}
 	}
-	if !modelSupports(request.Model, request.Protocol) || request.Operation != "" || call.Scope.Operation == "" ||
+	if !validInferenceModelID(request.Model) || request.Protocol != "chat" && request.Protocol != "gemini" ||
+		request.Operation != "" || call.Scope.Operation == "" ||
 		options.Method != "" && options.Method != http.MethodPost ||
 		options.EscapedPath != "" && options.EscapedPath != options.Path {
-		return nil, &sdk.Error{Code: "unsupported", Message: "OpenCode execution requires a packaged model and its declared conversational protocol", Outcome: "not-started"}
+		return nil, &sdk.Error{Code: "unsupported", Message: "OpenCode execution requires a Go model and its native conversational protocol", Outcome: "not-started"}
 	}
 	geminiStream := false
 	switch request.Protocol {
@@ -525,10 +528,14 @@ func (owner *module) execute(ctx context.Context, call sdk.Call, stream *sdk.Str
 		}
 	}
 	var gemini geminiTerminal
+	var chatStream bool
 	if request.Protocol == "gemini" {
 		if err := gemini.configure(body); err != nil {
 			return nil, &sdk.Error{Code: "invalid_params", Message: "Invalid OpenCode Gemini generation body", Outcome: "not-started"}
 		}
+	} else if streamFlag, ok := body["stream"]; ok {
+		// Only an explicit JSON true requests chat streaming.
+		chatStream = bytes.Equal(bytes.TrimSpace(streamFlag), []byte("true"))
 	}
 	state, err := currentInstance(ctx)
 	if err != nil {
@@ -545,13 +552,23 @@ func (owner *module) execute(ctx context.Context, call sdk.Call, stream *sdk.Str
 	if err := state.headers.Stamp(headers, call.Scope.Account, options.CallerID, call.Scope.Session, project, ClientVersion, owner.options.Now()); err != nil {
 		return nil, &sdk.Error{Code: "invalid_params", Message: "Configure an explicit projectId before OpenCode chat execution", Outcome: "not-started"}
 	}
+	supported, err := owner.canExecuteGo(ctx, call, stream, state, credentials, request.Model, request.Protocol)
+	if err != nil {
+		return nil, err
+	}
+	if !supported {
+		return nil, &sdk.Error{Code: "unsupported", Message: "Go model is absent or uses another native protocol", Outcome: "not-started"}
+	}
 	var response *http.Response
 	if request.Protocol == "gemini" {
-		response, err = owner.client(stream).GenerateContent(ctx, credentials, headers, request.Body, request.Model, geminiStream)
+		response, err = owner.client(stream).generateGemini(ctx, credentials, headers, request.Body, request.Model, geminiStream)
 	} else {
 		response, err = owner.client(stream).Chat(ctx, credentials, headers, request.Body)
 	}
 	if err != nil {
+		if errors.Is(err, ErrRefreshRequired) {
+			return nil, failure(err, "not-started")
+		}
 		if emitErr := stream.Emit(ctx, "accepted", sdk.AcceptedEvent{OperationID: call.Scope.Operation}); emitErr != nil {
 			return nil, emitErr
 		}
@@ -563,30 +580,42 @@ func (owner *module) execute(ctx context.Context, call sdk.Call, stream *sdk.Str
 	} else if proved {
 		return refused, nil
 	}
-	streaming := response.StatusCode >= 200 && response.StatusCode < 300 &&
-		strings.HasPrefix(response.Header.Get("Content-Type"), "text/event-stream")
+	success := response.StatusCode >= 200 && response.StatusCode < 300
+	contentType, _, _ := strings.Cut(response.Header.Get("Content-Type"), ";")
+	streaming := success && strings.EqualFold(strings.TrimSpace(contentType), "text/event-stream")
+	var reader io.Reader = response.Body
+	if success && !streaming && chatStream {
+		buffered := bufio.NewReaderSize(reader, 4096)
+		streaming = startsChatEvents(buffered)
+		reader = buffered
+	}
+	if success && !streaming && (chatStream || geminiStream) {
+		return nil, &sdk.Error{Code: "truncated", Message: "OpenCode streaming returned a non-SSE response", Outcome: "uncertain"}
+	}
+	if streaming && strings.TrimSpace(contentType) != "text/event-stream" {
+		response.Header.Set("Content-Type", "text/event-stream")
+	}
 	if err := stream.Emit(ctx, "headers", sdk.HeadersEvent{Status: response.StatusCode, Headers: response.Header}); err != nil {
 		return nil, err
 	}
+	if streaming && request.Protocol == "gemini" {
+		if err := gemini.relay(ctx, reader, stream); err != nil {
+			return nil, err
+		}
+		return sdk.ExecuteResult{Status: response.StatusCode, Outcome: "completed"}, nil
+	}
 	var terminal chatTerminal
-	reader := response.Body
 	buffer := make([]byte, sdk.MaxChunkBytes)
 	for {
 		n, readErr := reader.Read(buffer)
 		if n != 0 {
 			if streaming {
-				if request.Protocol == "gemini" {
-					if err := gemini.write(buffer[:n]); err != nil {
-						return nil, failure(err, "uncertain")
-					}
-				} else {
-					terminal.write(buffer[:n])
-				}
+				terminal.write(buffer[:n])
 			}
 			if err := stream.Emit(ctx, "data", buffer[:n]); err != nil {
 				return nil, err
 			}
-			if streaming && request.Protocol == "chat" && terminal.done {
+			if streaming && terminal.done {
 				break
 			}
 		}
@@ -597,11 +626,8 @@ func (owner *module) execute(ctx context.Context, call sdk.Call, stream *sdk.Str
 			return nil, failure(readErr, "uncertain")
 		}
 	}
-	if streaming && (request.Protocol == "chat" && !terminal.done || request.Protocol == "gemini" && !gemini.complete()) {
+	if streaming && !terminal.done {
 		return nil, &sdk.Error{Code: "truncated", Message: "OpenCode stream ended without its terminal marker", Outcome: "uncertain"}
-	}
-	if geminiStream && response.StatusCode >= 200 && response.StatusCode < 300 && !streaming {
-		return nil, &sdk.Error{Code: "truncated", Message: "OpenCode Gemini streaming returned a non-SSE response", Outcome: "uncertain"}
 	}
 	return sdk.ExecuteResult{Status: response.StatusCode, Outcome: "completed"}, nil
 }

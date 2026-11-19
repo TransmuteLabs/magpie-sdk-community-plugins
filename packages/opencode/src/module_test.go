@@ -327,6 +327,120 @@ func TestPublicSDKDeviceFlowModelsUsageAndScopedChat(t *testing.T) {
 
 func bytesContains(value []byte, part string) bool { return strings.Contains(string(value), part) }
 
+func TestPublicSDKGoChatRequiresSSEForStreamingSuccess(t *testing.T) {
+	const jsonReply = `{"message":"fixture response"}`
+	for _, test := range []struct {
+		name        string
+		stream      string
+		status      int
+		contentType string
+		reply       string
+		truncated   bool
+	}{
+		{"streaming success", `,"stream":true`, http.StatusOK, "application/json", jsonReply, true},
+		{"SSE media type lookalike", `,"stream":true`, http.StatusOK, "text/event-streaming", jsonReply, true},
+		{"SSE under JSON label", `,"stream":true`, http.StatusOK, "application/json", "data: [DONE]\n\n", false},
+		{"SSE without media type", `,"stream":true`, http.StatusOK, "", "\r\n: heartbeat\r\n\r\ndata: [DONE]\r\n\r\n", false},
+		{"SSE event prefix", `,"stream":true`, http.StatusOK, "application/octet-stream", "event: message\ndata: [DONE]\n\n", false},
+		{"SSE with parameters", `,"stream":true`, http.StatusOK, "Text/Event-Stream; charset=utf-8", "data: [DONE]\n\n", false},
+		{"explicit nonstream", `,"stream":false`, http.StatusOK, "application/json", jsonReply, false},
+		{"default", "", http.StatusOK, "application/json", jsonReply, false},
+		{"streaming upstream error", `,"stream":true`, http.StatusBadGateway, "application/json", jsonReply, false},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			var requests atomic.Int32
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				requests.Add(1)
+				w.Header().Set("Content-Type", test.contentType)
+				w.WriteHeader(test.status)
+				io.WriteString(w, test.reply)
+			}))
+			t.Cleanup(server.Close)
+			h := newHarness(t, ModuleOptions{Endpoints: Endpoints{Console: server.URL + "/console", Inference: server.URL},
+				HTTPFactory: func(string) (Doer, func(), error) { return server.Client(), nil, nil }})
+			account := credential(time.Now(), "user", "org")
+			scope := sdk.Scope{Provider: ProviderGo, Account: account.AccountID(ProviderGo), Generation: 1}
+			request := sdk.ExecuteRequest{Protocol: "chat", Model: "deepseek-v4.1-flash",
+				Options: []byte(`{"method":"POST","path":"/v1/chat/completions"}`),
+				Body:    []byte(`{"model":"deepseek-v4.1-flash","messages":[]` + test.stream + `}`)}
+			frame, body := h.invoke(sdk.MethodProviderExecute, scope, request, raw(account))
+			if !h.accepted[frame.ID] || requests.Load() != 1 {
+				t.Fatalf("expected one accepted inference: calls=%d accepted=%v", requests.Load(), h.accepted[frame.ID])
+			}
+			if test.truncated {
+				if frame.Error == nil || frame.Error.Code != "truncated" || frame.Error.Outcome != "uncertain" ||
+					len(h.headers) != 0 || len(body) != 0 {
+					t.Fatalf("non-SSE streaming reply: headers=%+v body=%q error=%+v", h.headers, body, frame.Error)
+				}
+				return
+			}
+			var result sdk.ExecuteResult
+			if frame.Error != nil || json.Unmarshal(frame.Result, &result) != nil ||
+				result.Outcome != "completed" || result.Status != test.status ||
+				len(h.headers) != 1 || h.headers[0].Status != test.status || string(body) != test.reply {
+				t.Fatalf("ordinary HTTP response changed: headers=%+v body=%q result=%+v error=%+v", h.headers, body, result, frame.Error)
+			}
+			if test.stream == `,"stream":true` && test.status == http.StatusOK &&
+				!strings.HasPrefix(h.headers[0].Headers.Get("Content-Type"), "text/event-stream") {
+				t.Fatal("valid stream reached the host without its SSE media type")
+			}
+		})
+	}
+}
+
+func TestPublicSDKNonSSEStreamingResponseClosesWithoutEOF(t *testing.T) {
+	for _, name := range []string{"Go Chat", "Go Gemini", "Zen Free"} {
+		t.Run(name, func(t *testing.T) {
+			var requests atomic.Int32
+			var closeOnce sync.Once
+			closed := make(chan struct{})
+			server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+				requests.Add(1)
+				defer closeOnce.Do(func() { close(closed) })
+				writer.Header().Set("Content-Type", "application/json")
+				io.WriteString(writer, "{")
+				writer.(http.Flusher).Flush()
+				<-request.Context().Done()
+			}))
+			t.Cleanup(server.Close)
+			options := ModuleOptions{Endpoints: Endpoints{Console: server.URL, Inference: server.URL},
+				HTTPFactory: func(string) (Doer, func(), error) { return server.Client(), nil, nil }}
+			account := credential(time.Now(), "user", "org")
+			scope := sdk.Scope{Provider: ProviderGo, Account: account.AccountID(ProviderGo), Generation: 1}
+			auth := raw(account)
+			request := sdk.ExecuteRequest{Protocol: "chat", Model: "deepseek-v4.1-flash",
+				Body: []byte(`{"model":"deepseek-v4.1-flash","messages":[],"stream":true}`)}
+			var harness *sdkHarness
+			switch name {
+			case "Go Gemini":
+				request = sdk.ExecuteRequest{Protocol: "gemini", Model: "gemini-4-argon",
+					Body:    []byte(`{"contents":[{"role":"user","parts":[{"text":"hello"}]}]}`),
+					Options: []byte(`{"method":"POST","path":"/v1beta/models/gemini-4-argon:streamGenerateContent","query":"alt=sse"}`)}
+			case "Zen Free":
+				identity := ZenCredentials{Kind: "public", Key: "public"}
+				scope, auth = zenScope(ProviderZenPublic, identity), raw(identity)
+				request.Model = "fixture-free"
+				request.Body = []byte(`{"model":"fixture-free","messages":[],"stream":true}`)
+				harness = serveHarness(t, policyFixtureModule(options, "chat", request.Model), raw(moduleConfig{ProjectID: "global"}))
+			}
+			if harness == nil {
+				harness = newHarness(t, options)
+			}
+			frame, body := harness.invoke(sdk.MethodProviderExecute, scope, request, auth)
+			if !harness.accepted[frame.ID] || requests.Load() != 1 ||
+				frame.Error == nil || frame.Error.Code != "truncated" || frame.Error.Outcome != "uncertain" ||
+				len(harness.headers) != 0 || len(body) != 0 {
+				t.Fatalf("unexpected response: calls=%d headers=%+v body=%q error=%+v", requests.Load(), harness.headers, body, frame.Error)
+			}
+			select {
+			case <-closed:
+			case <-time.After(time.Second):
+				t.Fatal("upstream response was not closed")
+			}
+		})
+	}
+}
+
 func TestPublicSDKTruncatedStreamIsUncertainWithoutReplay(t *testing.T) {
 	now := time.Now()
 	var complete atomic.Bool

@@ -23,7 +23,7 @@ func policyFixtureModule(options ModuleOptions, protocol, model string) sdk.Modu
 		if err == nil {
 			identity := ZenCredentials{Kind: "public", Key: "public"}
 			state := ready.State.(*instance)
-			state.console.catalog.values[ProviderZenPublic+":"+identity.AccountID(ProviderZenPublic)+":1"] = zenListing{
+			state.console.catalog.values[ProviderZenPublic+":"+identity.AccountID(ProviderZenPublic)+":1"] = modelListing{
 				models: []sdk.Model{{ID: model, Protocols: []protocolext.Protocol{protocolext.Protocol(protocol)}, Free: true}},
 				at:     time.Now(),
 			}

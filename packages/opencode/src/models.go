@@ -37,15 +37,6 @@ func Models() []sdk.Model {
 }
 
 func modelSupports(id, protocol string) bool {
-	for _, model := range Models() {
-		if model.ID == id {
-			for _, value := range model.Protocols {
-				if string(value) == protocol {
-					return true
-				}
-			}
-			return false
-		}
-	}
-	return false
+	_, supported := supportsCatalogModel(Models(), id, protocol)
+	return supported
 }

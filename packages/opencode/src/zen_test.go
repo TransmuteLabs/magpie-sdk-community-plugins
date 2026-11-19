@@ -262,7 +262,7 @@ func TestZenNativeTerminalsRejectErrorsAndTruncation(t *testing.T) {
 }
 
 func TestZenCatalogFollowsPublishedRetirement(t *testing.T) {
-	const retired = "glm-5.3-flash-free"
+	retired := []string{"glm-5.3-flash-free", "glm-5", "glm-5.1", "glm-5.2"}
 	const neighboringFree = "deepseek-v4.1-flash-free"
 	const neighboringPaid = "glm-5.3-flash"
 	for _, descriptor := range WindowManifest().Providers {
@@ -271,16 +271,129 @@ func TestZenCatalogFollowsPublishedRetirement(t *testing.T) {
 		}
 		t.Run(descriptor.ID, func(t *testing.T) {
 			public := descriptor.ID == ProviderZenPublic
-			discovered := zenBuildModels([]string{retired, neighboringFree, neighboringPaid}, public)
+			listed := append(slices.Clone(retired), neighboringFree, neighboringPaid)
+			discovered := zenBuildModels(listed, public)
 			for source, models := range map[string][]sdk.Model{"manifest": descriptor.Models, "discovery": discovered} {
 				contains := func(id string) bool {
 					return slices.ContainsFunc(models, func(model sdk.Model) bool { return model.ID == id })
 				}
-				if contains(retired) || !contains(neighboringFree) || contains(neighboringPaid) == public {
+				if slices.ContainsFunc(retired, contains) || !contains(neighboringFree) || contains(neighboringPaid) == public {
 					t.Errorf("%s has unexpected eligibility for the retired model or its neighbors", source)
 				}
 			}
 		})
+	}
+}
+
+func TestZenLiveMetadataMatchesDiscoveryAndExecution(t *testing.T) {
+	const live = `{"object":"list","data":[
+		{"id":"gemini-4-neon","object":"model","name":"Gemini 4 Neon","type":"chat",
+			"limit":{"context":1000000,"input":900000,"output":64000},
+			"modalities":{"input":["text","image/png"],"output":["text"]},
+			"capabilities":{"tools":{"supported":true},"reasoning":{"supported":true,"effort":["low","high"]}},
+			"cost":{"text":{"input":{"price":3},"output":{"price":15}}},
+			"api":{"generate-content":{"base_url":"https://opencode.ai/inference/google/v1beta"}}},
+		{"id":"tidepool-alpha-free","object":"model","name":"Tidepool Alpha Free","type":"chat",
+			"limit":{"context":96000,"output":8000},
+			"cost":{"text":{"input":{"price":0},"output":{"price":0}}},
+			"api":{"chat-completions":{"base_url":"https://opencode.ai/inference/openai/v1"}}},
+		{"id":"paid-looking-free","type":"chat","limit":{"context":96000,"output":8000},
+			"cost":{"text":{"input":{"price":1},"output":{"price":1}}},
+			"api":{"chat-completions":{"base_url":"https://opencode.ai/inference/openai/v1"}}},
+		{"id":"alien-free","type":"chat","limit":{"context":96000,"output":8000},
+			"cost":{"text":{"input":{"price":0},"output":{"price":0}}},
+			"api":{"chat-completions":{"base_url":"https://opencode.ai/inference/custom/conn_bad"}}},
+		{"id":"bad-limits-free","type":"chat","limit":{"context":96000,"output":-1},
+			"cost":{"text":{"input":{"price":0},"output":{"price":0}}},
+			"api":{"chat-completions":{"base_url":"https://opencode.ai/inference/openai/v1"}}},
+		{"id":"wrong-protocol-free","type":"chat","limit":{"context":96000,"output":8000},
+			"api":{"systemone":{"base_url":"https://opencode.ai/inference/systemone/v1"}}},
+		{"id":"glm-5.2","type":"chat","limit":{"context":96000,"output":8000},
+			"cost":{"text":{"input":{"price":0},"output":{"price":0}}},
+			"api":{"chat-completions":{"base_url":"https://opencode.ai/inference/openai/v1"}}},
+		{"id":"legacy-free","object":"model"}
+	]}`
+	var dispatches atomic.Int32
+	server := newZenFixture(t, http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		if request.URL.Path == "/inference/v1/models" {
+			io.WriteString(writer, live)
+			return
+		}
+		dispatches.Add(1)
+		switch request.URL.Path {
+		case "/inference/google/v1beta/models/gemini-4-neon:generateContent":
+			if request.Header.Get("X-Goog-Api-Key") != "fixture-personal" {
+				t.Error("paid Gemini used the wrong authority")
+			}
+			io.WriteString(writer, `{"candidates":[{"finishReason":"STOP"}]}`)
+		case "/inference/openai/v1/chat/completions":
+			if request.Header.Get("Authorization") != "Bearer public" {
+				t.Error("free Chat used the wrong authority")
+			}
+			io.WriteString(writer, `{"choices":[]}`)
+		default:
+			t.Errorf("unexpected native request: %s", request.URL.Path)
+		}
+	}))
+	defer server.Close()
+	options := ModuleOptions{
+		Endpoints:   Endpoints{Console: server.URL, Inference: server.URL},
+		HTTPFactory: func(string) (Doer, func(), error) { return server.Client(), nil, nil },
+	}
+	harness := serveHarness(t, NewWindowModule(options), raw(moduleConfig{ProjectID: "global"}))
+	personal := ZenCredentials{Kind: "key", Key: "fixture-personal"}
+	public := ZenCredentials{Kind: "public", Key: "public"}
+	for _, test := range []struct {
+		provider string
+		identity ZenCredentials
+		want     []string
+	}{
+		{ProviderZen, personal, []string{"gemini-4-neon", "legacy-free", "paid-looking-free", "tidepool-alpha-free"}},
+		{ProviderZenPublic, public, []string{"legacy-free", "tidepool-alpha-free"}},
+	} {
+		frame, _ := harness.invoke(sdk.MethodProviderModels, zenScope(test.provider, test.identity), sdk.ModelsRequest{}, raw(test.identity))
+		var result sdk.ModelsResult
+		if frame.Error != nil || json.Unmarshal(frame.Result, &result) != nil {
+			t.Fatalf("discovery failed: %+v", frame.Error)
+		}
+		var listed []string
+		for _, model := range result.Models {
+			listed = append(listed, model.ID)
+			switch model.ID {
+			case "gemini-4-neon":
+				if model.Name != "Gemini 4 Neon" || model.ContextWindow != 900000 || model.MaxOutput != 64000 ||
+					!model.Tools || !model.Vision || !model.Reasoning || model.Free ||
+					!slices.Equal(model.Protocols, []protocolext.Protocol{"gemini"}) {
+					t.Errorf("Gemini lost native protocol or live metadata: %+v", model)
+				}
+			case "tidepool-alpha-free":
+				if model.ContextWindow != 96000 || model.MaxOutput != 8000 || !model.Free ||
+					!slices.Equal(model.Protocols, []protocolext.Protocol{"chat"}) {
+					t.Errorf("Chat lost native protocol or live metadata: %+v", model)
+				}
+			}
+		}
+		if !slices.Equal(listed, test.want) {
+			t.Errorf("%s models = %q, want %q", test.provider, listed, test.want)
+		}
+	}
+	gemini := sdk.ExecuteRequest{Protocol: "gemini", Model: "gemini-4-neon", Body: json.RawMessage(`{"contents":[{}]}`)}
+	chat := sdk.ExecuteRequest{Protocol: "chat", Model: "tidepool-alpha-free", Body: json.RawMessage(`{"model":"tidepool-alpha-free","messages":[]}`)}
+	for _, test := range []struct {
+		provider string
+		identity ZenCredentials
+		request  sdk.ExecuteRequest
+	}{
+		{ProviderZen, personal, gemini}, {ProviderZenPublic, public, chat},
+	} {
+		frame, _ := harness.invoke(sdk.MethodProviderExecute, zenScope(test.provider, test.identity), test.request, raw(test.identity))
+		if frame.Error != nil || !harness.accepted[frame.ID] {
+			t.Errorf("discovered native model did not execute: %+v", frame.Error)
+		}
+	}
+	frame, _ := harness.invoke(sdk.MethodProviderExecute, zenScope(ProviderZenPublic, public), gemini, raw(public))
+	if frame.Error == nil || frame.Error.Outcome != "not-started" || dispatches.Load() != 2 {
+		t.Fatal("public execution used a model outside its discovered authorization", frame.Error, dispatches.Load())
 	}
 }
 
@@ -434,8 +547,8 @@ func TestZenPublicRefusalNeverSwitchesIdentityOrRetries(t *testing.T) {
 func TestZenRetirementAliasesAndPolicyEvolution(t *testing.T) {
 	for _, body := range []string{`{"deprecated":true}`, `{"status":"retired"}`, `{"lifecycle":"disabled"}`,
 		`{"deprecated_at":"2026-10-15"}`, `{"retirement_date":"2026-10-15"}`} {
-		var model zenModel
-		if json.Unmarshal([]byte(body), &model) != nil || !zenRetired(model) {
+		var model inferenceModel
+		if json.Unmarshal([]byte(body), &model) != nil || !model.retired() {
 			t.Fatal("donor retirement signal was ignored", body)
 		}
 	}
