@@ -247,6 +247,52 @@ func TestMediaVideoDataReferenceAndInlineUploadAliases(test *testing.T) {
 	}
 }
 
+func TestMediaVideoTextH3SendsConcreteRatio(test *testing.T) {
+	for _, entry := range []struct {
+		name   string
+		model  string
+		fields map[string]any
+		ratio  string
+	}{
+		{"h3-default", "MiniMax-H3", nil, "16:9"},
+		{"max-auto", "MiniMax-H3-Max", map[string]any{"ratio": "auto"}, "16:9"},
+		{"h3-adaptive", "MiniMax-H3", map[string]any{"ratio": "adaptive"}, "16:9"},
+		{"explicit-portrait", "MiniMax-H3", map[string]any{"ratio": "9:16"}, "9:16"},
+		{"size-derived", "MiniMax-H3", map[string]any{"size": "1080x1920"}, "9:16"},
+		{"auto-size-derived", "MiniMax-H3-Max", map[string]any{"ratio": "auto", "size": "1080x1920"}, "9:16"},
+		{"auto-size-outside-enum", "MiniMax-H3-Max", map[string]any{"ratio": "auto", "size": "1024x1792"}, "16:9"},
+		{"default-size-outside-enum", "MiniMax-H3", map[string]any{"size": "1024x1792"}, "16:9"},
+		{"adaptive-size", "MiniMax-H3", map[string]any{"size": "adaptive"}, "16:9"},
+		{"keyframe-default", "MiniMax-H3", map[string]any{"input_reference": "https://example.com/frame.png"}, ""},
+		{"keyframe-adaptive", "MiniMax-H3-Max", map[string]any{"input_reference": "https://example.com/frame.png", "ratio": "adaptive"}, "adaptive"},
+		{"hailuo-default", "MiniMax-Hailuo-2.3", nil, ""},
+	} {
+		test.Run(entry.name, func(test *testing.T) {
+			fixture, engine, accepted := mediaFixture(test, "submit_video_generation")
+			schema := matrixDefinitions()["submit_video_generation"].Schema
+			fixture.catalog = toolsCatalog(toolsEntry("submit_video_generation", string(raw(schema))))
+			fixture.respond = func(_ context.Context, _ string, arguments map[string]any) (any, error) {
+				if ratio := text(arguments["ratio"]); ratio != entry.ratio {
+					test.Errorf("submitted ratio = %q, want %q", ratio, entry.ratio)
+				}
+				return toolsSuccess(map[string]any{"task_id": "fixture"}), nil
+			}
+			fields := map[string]any{"prompt": "fixture"}
+			for name, value := range entry.fields {
+				fields[name] = value
+			}
+			request := mediaRequest(sdk.OperationVideoCreate, entry.model, fields)
+			response, err := engine.execute(test.Context(), request)
+			if err != nil {
+				test.Fatal(err)
+			}
+			if mediaResponse(test, response)["id"] != entry.model+"::fixture" || *accepted != 1 {
+				test.Fatal("video request was not submitted once")
+			}
+		})
+	}
+}
+
 func TestMediaVideoQueryAndContentDecodeAndStripTransportHeaders(test *testing.T) {
 	fixture, engine, _ := mediaFixture(test, "query_video_generation", "get_asset_url")
 	fixture.respond = func(_ context.Context, name string, arguments map[string]any) (any, error) {

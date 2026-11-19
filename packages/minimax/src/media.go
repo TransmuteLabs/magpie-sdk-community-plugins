@@ -275,9 +275,13 @@ func (engine mediaEngine) createVideo(ctx context.Context, model string, fields 
 		return ByteResponse{}, err
 	}
 	arguments := map[string]any{"model": model, "prompt": prompt, "duration": duration, "resolution": mediaResolution(text(fields["size"]), model)}
+	textH3 := (model == "MiniMax-H3" || model == "MiniMax-H3-Max") && start == nil && end == nil && len(references) == 0
 	ratio := text(fields["ratio"])
-	if ratio == "" {
+	if ratio == "" || textH3 && (ratio == "auto" || ratio == "adaptive") {
 		ratio = mediaAspect(text(fields["size"]))
+		if textH3 && !contains([]string{"21:9", "16:9", "4:3", "1:1", "3:4", "9:16"}, ratio) {
+			ratio = "16:9"
+		}
 	}
 	if ratio != "" && ratio != "auto" {
 		arguments["ratio"] = ratio

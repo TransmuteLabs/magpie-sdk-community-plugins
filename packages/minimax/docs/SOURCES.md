@@ -20,6 +20,14 @@ and fixtures. `latestCommittedDonorReview` records this additional check;
 the extraction pin and package version remain unchanged. No runtime port
 or additional vendor/client acceptance is inferred from this no-op.
 
+On November 19, the `packages/minimax` tree at
+`140c513b81b0a3302e5a18c8c22f028b10ffd92c` still matched the extraction pin.
+The `submit_video_generation` schema in `matrix-tools.json` specifies a
+concrete aspect ratio for H3-family text-to-video, defaulting to `16:9`.
+The native media route now applies that default when neither the request
+nor its size supplies a concrete ratio. Keyframe and reference modes
+retain their existing ratio handling.
+
 | Donor | Native owner | Watch points |
 | --- | --- | --- |
 | `index.mjs`, `sign*.test.mjs`, `poll-retry.test.mjs`, `refresh.test.mjs` | `src/auth.go`, `src/client.go` | PKCE, both device formats, rotating tokens, signing query order, site redirects |

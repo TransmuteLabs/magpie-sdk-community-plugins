@@ -17,6 +17,13 @@
     "sdkMinimum": "1.12",
     "nativeABI": 1
   },
+  "mediaRatioReview": {
+    "checkedAt": "2026-11-19",
+    "communityCommit": "140c513b81b0a3302e5a18c8c22f028b10ffd92c",
+    "packageTree": "098cf5e689d6df7e675b7b5ef81c9e4780fa4bc7",
+    "path": "packages/minimax/matrix-tools.json",
+    "contract": "submit_video_generation requires a concrete ratio for H3-family text-to-video, defaulting to 16:9"
+  },
   "sources": [
     {
       "id": "community-minimax",
