@@ -183,7 +183,7 @@ jobs:
   publish:
     needs: build
     if: needs.build.outputs.publish == 'true'
-    runs-on: ubuntu-latest
+    runs-on: macos-15
     timeout-minutes: 5
     permissions:
       contents: write
@@ -205,7 +205,7 @@ jobs:
           checksum=$(cat release/checksums.txt)
           digest=${checksum%% *}
           [[ "$digest" =~ ^[0-9a-f]{64}$ && "$checksum" == "$digest  $asset" ]]
-          (cd release && sha256sum --check --strict checksums.txt)
+          (cd release && shasum -a 256 -c --strict checksums.txt)
 
           releases=$(gh api --paginate --slurp "repos/$GITHUB_REPOSITORY/releases?per_page=100")
           jq -e --arg tag "$TAG" 'all(.[][]; .tag_name != $tag)' <<< "$releases" > /dev/null
