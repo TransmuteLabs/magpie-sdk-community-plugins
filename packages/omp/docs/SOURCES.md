@@ -276,3 +276,13 @@ behavior or native macOS/Windows acceptance.
 
 When a donor revision, module version or SDK minimum changes, update the lock,
 this record and the affected behavioral fixtures together.
+
+
+### Codex inter-agent rollback
+
+Codex commit `6d9f0199ed0cfdd184754e593e0625917ad0ca28` counts a native
+agent message, an inter-agent communication record, or an assistant message
+containing a serialized inter-agent instruction as a rollback boundary.
+The same rule applies inside replacement history. The importer tracks these
+boundaries while projecting the captured records. Hidden native payloads stay
+out of the OMP journal. Ordinary assistant JSON keeps its existing role.

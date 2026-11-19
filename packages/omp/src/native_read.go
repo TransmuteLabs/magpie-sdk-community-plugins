@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 )
@@ -231,6 +232,8 @@ const codexSummaryPrefix = "Another language model started to solve this problem
 func readCodexNative(ctx context.Context, body []byte) ([]Item, error) {
 	var result []Item
 	failures := map[string]bool{}
+	var turnID string
+	turnStart := 0
 	var parseErr error
 	if err := eachLine(ctx, body, func(line []byte) {
 		if parseErr != nil {
@@ -262,6 +265,7 @@ func readCodexNative(ctx context.Context, body []byte) ([]Item, error) {
 		if envelope.Type == "event_msg" {
 			var event struct {
 				Type     string          `json:"type"`
+				TurnID   string          `json:"turn_id"`
 				NumTurns json.RawMessage `json:"num_turns"`
 				Item     struct {
 					Type   string `json:"type"`
@@ -273,12 +277,26 @@ func readCodexNative(ctx context.Context, body []byte) ([]Item, error) {
 				parseErr = errors.New("invalid Codex event payload")
 				return
 			}
-			if (event.Type == "task_complete" || event.Type == "turn_aborted") &&
-				len(result) != 0 && result[len(result)-1].Kind == "assistant" {
-				result[len(result)-1].assistantStop = "stop"
-				if event.Type == "turn_aborted" {
-					result[len(result)-1].assistantStop = "aborted"
+			if event.Type == "task_started" || event.Type == "turn_started" {
+				turnID, turnStart = event.TurnID, len(result)
+				return
+			}
+			if event.Type == "task_complete" || event.Type == "turn_complete" || event.Type == "turn_aborted" {
+				if turnID != "" && event.TurnID != "" && event.TurnID != turnID {
+					return
 				}
+				last := len(result) - 1
+				for last >= turnStart && result[last].Kind == codexAgentBoundary {
+					last--
+				}
+				if last >= turnStart && result[last].Kind == "assistant" {
+					result[last].assistantStop = "stop"
+					if event.Type == "turn_aborted" {
+						result[last].assistantStop = "aborted"
+					}
+				}
+				turnID, turnStart = "", len(result)
+				return
 			}
 			if event.Type == "thread_rolled_back" {
 				var count *uint32
@@ -287,6 +305,7 @@ func readCodexNative(ctx context.Context, body []byte) ([]Item, error) {
 					return
 				}
 				result = codexRollback(result, *count)
+				turnStart = min(turnStart, len(result))
 				retained := map[string]bool{}
 				for _, item := range result {
 					if item.Kind == "call" {
@@ -306,6 +325,14 @@ func readCodexNative(ctx context.Context, body []byte) ([]Item, error) {
 			}
 			return
 		}
+		if envelope.Type == "inter_agent_communication" {
+			if !codexAgentCommunication(envelope.Payload) {
+				parseErr = errors.New("invalid Codex inter-agent communication")
+				return
+			}
+			result = append(result, Item{Kind: codexAgentBoundary})
+			return
+		}
 		if envelope.Type != "response_item" && envelope.Type != "compacted" {
 			return
 		}
@@ -314,7 +341,22 @@ func readCodexNative(ctx context.Context, body []byte) ([]Item, error) {
 			parseErr = errors.New("invalid Codex payload")
 			return
 		}
-		appendItem := func(item codexSourceItem) {
+		appendItem := func(item codexSourceItem, raw json.RawMessage) {
+			if item.Type == "agent_message" {
+				if !codexNativeAgentMessage(raw) {
+					parseErr = errors.New("invalid Codex agent message")
+					return
+				}
+				result = append(result, Item{Kind: codexAgentBoundary})
+				return
+			}
+			if item.Type == "message" && item.Role == "assistant" && len(item.Content) == 1 {
+				block := item.Content[0]
+				if (block.Type == "input_text" || block.Type == "output_text") && strings.HasPrefix(strings.TrimSpace(block.Text), "{") && codexAgentCommunication([]byte(block.Text)) {
+					result = append(result, Item{Kind: codexAgentBoundary})
+					return
+				}
+			}
 			items, err := codexNativeItems(item, at)
 			if err != nil {
 				parseErr = err
@@ -323,7 +365,7 @@ func readCodexNative(ctx context.Context, body []byte) ([]Item, error) {
 			result = append(result, items...)
 		}
 		if envelope.Type == "response_item" {
-			appendItem(payload)
+			appendItem(payload, envelope.Payload)
 			return
 		}
 		if payload.ReplacementMetadata != nil {
@@ -347,8 +389,9 @@ func readCodexNative(ctx context.Context, body []byte) ([]Item, error) {
 					parseErr = errors.New("invalid Codex replacement history")
 					return
 				}
-				appendItem(item)
+				appendItem(item, raw)
 			}
+			turnStart = len(result)
 		} else if payload.Message != "" {
 			var retained []Item
 			for _, item := range result {
@@ -357,6 +400,7 @@ func readCodexNative(ctx context.Context, body []byte) ([]Item, error) {
 				}
 			}
 			result = append(retained, Item{Kind: "user", Content: []Content{{Type: "text", Text: codexSummaryPrefix + "\n" + payload.Message}}, Time: at})
+			turnStart = len(result)
 		}
 	}); err != nil {
 		return nil, err
@@ -366,7 +410,7 @@ func readCodexNative(ctx context.Context, body []byte) ([]Item, error) {
 			result[index].IsError = failures[result[index].ID]
 		}
 	}
-	return result, parseErr
+	return slices.DeleteFunc(result, func(item Item) bool { return item.Kind == codexAgentBoundary }), parseErr
 }
 
 func codexRollback(items []Item, count uint32) []Item {
@@ -375,7 +419,7 @@ func codexRollback(items []Item, count uint32) []Item {
 	}
 	boundary := len(items)
 	for index := len(items) - 1; index >= 0; index-- {
-		if items[index].Kind != "user" {
+		if items[index].Kind != "user" && items[index].Kind != codexAgentBoundary {
 			continue
 		}
 		summary := false

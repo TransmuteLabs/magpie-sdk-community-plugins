@@ -1,6 +1,14 @@
 {
   "schema": 1,
   "plugin": {"id": "omp-sessions", "version": "0.1.0", "sdkMinimum": "1.10", "nativeABI": 1},
+  "codexRollbackFollowUp": {
+    "source": "openai-codex",
+    "previousReviewedCommit": "59ac39addbbcd3499319c805a916846ca8ac5fef",
+    "comparedCommit": "6d9f0199ed0cfdd184754e593e0625917ad0ca28",
+    "paths": ["codex-rs/core/src/context_manager/history.rs", "codex-rs/core/src/session/rollout_reconstruction.rs", "codex-rs/protocol/src/protocol.rs", "codex-rs/protocol/src/agent_path.rs", "codex-rs/protocol/src/models.rs", "codex-rs/history/src/rollout_payload.rs"],
+    "behavior": "Count native and serialized inter-agent instructions when rolling back captured Codex history, including compacted replacement items.",
+    "test": "src/codex_agent_rollback_test.go"
+  },
   "customMessageFollowUp": {
     "checkedAt": "2026-11-18",
     "source": "omp",

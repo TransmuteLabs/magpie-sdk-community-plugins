@@ -205,8 +205,11 @@ Codex input follows response items and compaction replacement/summary replay;
 UI event duplicates and encrypted vendor reasoning are not copied.
 Opaque tool outputs remain text, shell calls retain native history, and tools
 without a native counterpart remain labelled context.
-Codex rollback drops complete user turns and their tools/images while
-retaining non-turn compaction context. Malformed rollback counts and
+Codex rollback counts both user turns and recognized private agent boundaries.
+It drops the reverted turns with their tools and images and retains earlier
+compaction context. Private agent messages stay out of the OMP journal.
+Completion and abort events apply within their originating turn.
+Malformed rollback counts and
 misaligned replacement-history metadata are refused. A sparse rollout that
 names `history_base` requires the checked API1.10 carrier; importing only its
 child suffix remains explicitly refused.
