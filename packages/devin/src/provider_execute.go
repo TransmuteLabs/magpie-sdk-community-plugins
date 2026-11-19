@@ -7,6 +7,7 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 
 	codec "github.com/TransmuteLabs/magpie-sdk-plugin-protocol-devin/codec"
@@ -15,11 +16,12 @@ import (
 )
 
 type eventWriter struct {
-	ctx    context.Context
-	stream *sdk.Stream
-	header http.Header
-	status int
-	err    error
+	ctx       context.Context
+	stream    *sdk.Stream
+	header    http.Header
+	status    int
+	err       error
+	sentModel string
 }
 
 func (writer *eventWriter) Header() http.Header { return writer.header }
@@ -28,7 +30,9 @@ func (writer *eventWriter) WriteHeader(status int) {
 		return
 	}
 	writer.status = status
-	writer.err = writer.stream.Emit(writer.ctx, "headers", sdk.HeadersEvent{Status: status, Headers: writer.header.Clone()})
+	writer.err = writer.stream.Emit(writer.ctx, "headers", sdk.HeadersEvent{
+		Status: status, Headers: writer.header.Clone(), SentModel: writer.sentModel,
+	})
 }
 func (writer *eventWriter) Write(body []byte) (int, error) {
 	if writer.status == 0 {
@@ -179,6 +183,7 @@ func (owner *providerOwner) execute(ctx context.Context, call sdk.Call, stream *
 	client.HoldRefusals = true
 	accepted := false
 	dispatched := false
+	var sentModel string
 	publishAccepted := func(ctx context.Context) error {
 		if accepted {
 			return nil
@@ -191,6 +196,9 @@ func (owner *providerOwner) execute(ctx context.Context, call sdk.Call, stream *
 	}
 	accept := func(ctx context.Context) error {
 		dispatched = true
+		if !strings.Contains(sentModel, credentials.Key) {
+			writer.sentModel = sentModel
+		}
 		phase = "dispatch"
 		retryable := false
 		emitDiagnostic(ctx, stream, sdk.Diagnostic{Level: "info", Code: "devin.execute.accepted",
@@ -223,6 +231,9 @@ func (owner *providerOwner) execute(ctx context.Context, call sdk.Call, stream *
 	}
 	refused := func(err error) (sdk.ExecuteResult, bool) {
 		result, final := observeExecutionFailure(ctx, stream, err, request.Model, credentials.Key, !accepted && writer.status == 0)
+		if final {
+			result.SentModel = writer.sentModel
+		}
 		if !final && dispatched {
 			_ = publishAccepted(ctx)
 		}
@@ -263,6 +274,7 @@ func (owner *providerOwner) execute(ctx context.Context, call sdk.Call, stream *
 				return nil, err
 			}
 		}
+		sentModel = nativeModel
 		summary, err = owner.executeNative(ctx, call, stream, client, credentials, request, options, bridge, payload, nativeModel, writer, accept, note)
 		if err != nil {
 			if result, final := refused(err); final {
@@ -299,6 +311,7 @@ func (owner *providerOwner) execute(ctx context.Context, call sdk.Call, stream *
 		}
 		collector := originCollector{}
 		geminiReply := codec.GeminiReply{}
+		sentModel = encoded.SentModel
 		summary, err = client.Messages(ctx, credentials, encoded, accept, func(delta codec.NativeDelta) error {
 			if codec.IsGeminiModel(request.Model) && bytes.Contains(delta.Raw, []byte(credentials.Key)) {
 				return errors.New("native Gemini reply contains account credentials")
@@ -366,6 +379,7 @@ func (owner *providerOwner) execute(ctx context.Context, call sdk.Call, stream *
 		}
 		geminiReply := codec.GeminiReply{}
 		collector := originCollector{}
+		sentModel = encoded.SentModel
 		summary, err = client.Complete(ctx, credentials, encoded, accept, func(delta codec.NativeDelta) error {
 			if codec.IsGeminiModel(request.Model) && bytes.Contains(delta.Raw, []byte(credentials.Key)) {
 				return errors.New("native Gemini reply contains account credentials")

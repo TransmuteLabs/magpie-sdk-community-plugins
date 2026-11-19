@@ -354,15 +354,28 @@ func TestProviderDomainResolvedFamilyKeepsGeminiSelectedModelOrigin(t *testing.T
 		t.Fatal(frame)
 	}
 	first := map[string]any{"model": family, "messages": []any{map[string]string{"role": "user", "content": "cat calc.py"}}}
-	frame, _ = geminiExecute(t, peer, "chat", "family-caller", first)
+	frame, events := geminiExecute(t, peer, "chat", "family-caller", first)
 	if frame.Error != nil {
 		t.Fatal("family could not issue the genuine Gemini receipt", frame.Error)
 	}
 	next := geminiContinuation("chat")
 	next["model"] = family
-	frame, _ = geminiExecute(t, peer, "chat", "family-caller", next)
+	frame, nextEvents := geminiExecute(t, peer, "chat", "family-caller", next)
 	if frame.Error != nil {
 		t.Fatal("resolved UID replaced selected-model receipt authority", frame.Error)
+	}
+	for _, callEvents := range [][]sdk.Frame{events, nextEvents} {
+		var headers sdk.HeadersEvent
+		for _, event := range callEvents {
+			if event.Event == "headers" {
+				if err := json.Unmarshal(event.Data, &headers); err != nil {
+					t.Fatal(err)
+				}
+			}
+		}
+		if headers.SentModel != donorGeminiModel {
+			t.Fatalf("Devin sent UID metadata = %q, want %q", headers.SentModel, donorGeminiModel)
+		}
 	}
 	for index := 0; index < 2; index++ {
 		select {

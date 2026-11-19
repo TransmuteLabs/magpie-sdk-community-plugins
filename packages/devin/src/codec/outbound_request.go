@@ -18,10 +18,11 @@ import (
 const NativeClientVersion = "3000.11.3"
 
 type EncodedChat struct {
-	Payload []byte
-	Stream  bool
-	Model   string
-	Effort  string
+	Payload   []byte
+	Stream    bool
+	Model     string
+	Effort    string
+	SentModel string
 }
 
 type outboundMessage struct {

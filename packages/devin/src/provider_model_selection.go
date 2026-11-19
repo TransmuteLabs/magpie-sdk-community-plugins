@@ -69,6 +69,7 @@ func (owner *providerOwner) resolveEncodedModel(ctx context.Context, client *out
 		if err != nil {
 			return codec.EncodedChat{}, moduleFailure(err, "not-started")
 		}
+		encoded.SentModel = model
 	}
 	return encoded, nil
 }
