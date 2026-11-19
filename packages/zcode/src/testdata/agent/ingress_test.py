@@ -2,6 +2,7 @@ import http.client
 import importlib.util
 import json
 import multiprocessing
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -72,18 +73,33 @@ class IngressTests(unittest.TestCase):
             try:
                 self.assertTrue(parent.poll(10))
                 origin = parent.recv()
+                expected_peers = set()
+                caller = ingress.process_identity(os.getpid())
                 for method in ("GET", "POST"):
-                    with self.assertRaises(http.client.RemoteDisconnected):
-                        request(origin, method, "/")
+                    connection = http.client.HTTPConnection(origin.removeprefix("http://"), timeout=10)
+                    try:
+                        connection.connect()
+                        expected_peers.add(connection.sock.getsockname())
+                        connection.request(method, "/", body=b"{}" if method == "POST" else None)
+                        with self.assertRaises(http.client.RemoteDisconnected):
+                            connection.getresponse()
+                    finally:
+                        connection.close()
                 parent.send("stop")
                 self.assertTrue(parent.poll(10))
                 self.assertEqual(parent.recv(), [])
                 process.join(10)
                 self.assertEqual(process.exitcode, 0)
                 records = [json.loads(line) for line in (Path(root) / "ingress.jsonl").read_text().splitlines()]
-                self.assertEqual(len(records), 2)
                 self.assertTrue(all(record["kind"] == "outside-fixture" for record in records))
                 self.assertTrue(all(not record["owner"]["owned"] for record in records))
+                own_rejections = [
+                    tuple(record["remote"]) for record in records
+                    if any(all(owner[key] == value for key, value in caller.items())
+                           for owner in record["owner"]["processes"])
+                ]
+                self.assertEqual(len(expected_peers), 2)
+                self.assertCountEqual(own_rejections, expected_peers)
             finally:
                 if process.is_alive():
                     process.terminate()

@@ -101,6 +101,22 @@ func startHeldError() error {
 		Message: "ZCode Start requests are held on this outbound route to avoid repeated concurrency or firewall refusals", Outcome: "not-started"}
 }
 
+type startQueueTimeout string
+
+func (timeout startQueueTimeout) Error() string {
+	return "ZCode Start " + string(timeout) + " queue timed out before dispatch"
+}
+
+func (timeout startQueueTimeout) result(workflowAccepted bool) sdk.ExecuteResult {
+	const retryAfter = "5"
+	if workflowAccepted {
+		// The accepted receipt still fences replay of the enclosing gift workflow.
+		return sdk.ExecuteResult{Status: http.StatusTooManyRequests, Outcome: "completed",
+			Headers: http.Header{"Retry-After": {retryAfter}}}
+	}
+	return sdk.HandoffExecution("start-messages", "zcode-start-queue-timeout", timeout.Error(), new(int64(5000)))
+}
+
 func (guard *startGuard) queueWait() time.Duration {
 	if guard.wait > 0 {
 		return guard.wait
@@ -135,9 +151,9 @@ func (guard *startGuard) waitLane(ctx context.Context, key, route string, front 
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
-	timeout := &sdk.Error{Code: "rate_limit_error", Message: "ZCode Start queue timed out before dispatch", Outcome: "not-started"}
+	timeout := startQueueTimeout("account")
 	if key == startAddressKey(route) {
-		timeout.Message = "ZCode Start outbound route queue timed out before dispatch"
+		timeout = startQueueTimeout("outbound route")
 	}
 	if !time.Now().Before(until) {
 		return nil, timeout

@@ -20,14 +20,27 @@ import (
 func TestQuotaReadHoldsPrincipalJournalUntilVendorObservationCompletes(t *testing.T) {
 	reading, release := make(chan struct{}), make(chan struct{})
 	var once sync.Once
+	var quotas, balances atomic.Int32
 	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-		if request.URL.Path == "/api/v1/oauth/profile" {
+		switch request.Method + " " + request.URL.EscapedPath() {
+		case "GET /api/v1/oauth/profile":
 			profile(writer, request, "fixture-user")
-			return
+		case "GET /quota/zai":
+			if quotas.Add(1) != 1 {
+				t.Error("duplicate quota observation")
+				writer.WriteHeader(http.StatusConflict)
+				return
+			}
+			close(reading)
+			<-release
+			io.WriteString(writer, `{"code":0,"data":{"limits":[{"type":"TOKENS_LIMIT","unit":3,"number":5,"percentage":20}]}}`)
+		case "GET /api/v1/zcode-plan/billing/balance":
+			balances.Add(1)
+			io.WriteString(writer, `{"code":0,"data":{"plans":[],"balances":[]}}`)
+		default:
+			t.Errorf("unexpected quota fixture %s %s", request.Method, request.URL.EscapedPath())
+			writer.WriteHeader(http.StatusNotFound)
 		}
-		close(reading)
-		<-release
-		io.WriteString(writer, `{"code":0,"data":{"limits":[{"type":"TOKENS_LIMIT","unit":3,"number":5,"percentage":20}]}}`)
 	}))
 	defer server.Close()
 	defer once.Do(func() { close(release) })
@@ -62,6 +75,9 @@ func TestQuotaReadHoldsPrincipalJournalUntilVendorObservationCompletes(t *testin
 	case frame := <-done:
 		if frame.Error != nil {
 			t.Fatalf("serialized quota read failed: %+v", frame.Error)
+		}
+		if quotas.Load() != 1 || balances.Load() != 1 {
+			t.Fatalf("got %d quota and %d balance requests, want one each", quotas.Load(), balances.Load())
 		}
 	case <-time.After(3 * time.Second):
 		t.Fatal("quota reader did not release its principal journal")

@@ -51,7 +51,7 @@ func Manifest() sdk.Manifest {
 		Schema: sdk.ManifestSchema, ID: ProviderID, Version: Version, Runtime: "native", Entry: entry,
 		Contract: sdk.Contract{
 			Version:      sdk.APIVersion{Major: 1, Minor: 12},
-			Capabilities: []sdk.Capability{sdk.AccountAuth, sdk.ModelDiscovery, sdk.OutboundExecutor, sdk.UsageReporter, sdk.OperationControl, sdk.ModuleRPC, sdk.ToolProvider, sdk.SessionMigration, sdk.RequestPolicy},
+			Capabilities: []sdk.Capability{sdk.AccountAuth, sdk.ModelDiscovery, sdk.OutboundExecutor, sdk.UsageReporter, sdk.OperationControl, sdk.ModuleRPC, sdk.ToolProvider, sdk.SessionMigration, sdk.RequestPolicy, sdk.RequestHandoff},
 		},
 		Compatibility: &sdk.Compatibility{HostAPI: "^1.12", NativeABI: 1, Platforms: []string{runtime.GOOS + "/" + runtime.GOARCH}},
 		Providers:     []sdk.ProviderDescriptor{{ID: ProviderID, Name: "ZCode native", Protocols: []codec.Protocol{codec.Messages}, Models: append(Models(), aliasModels()...)}},
@@ -435,6 +435,10 @@ func (owner *module) execute(ctx context.Context, call sdk.Call, stream *sdk.Str
 	if err != nil {
 		if ctx.Err() != nil {
 			return nil, ctx.Err()
+		}
+		var timeout startQueueTimeout
+		if errors.As(err, &timeout) {
+			return timeout.result(workflowAccepted), nil
 		}
 		var failure *sdk.Error
 		if errors.As(err, &failure) {

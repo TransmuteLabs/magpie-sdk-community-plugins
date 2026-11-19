@@ -165,11 +165,12 @@ func TestDonor0168FreeFirstUsesPaidWhenStartAccountOrRouteFull(t *testing.T) {
 func TestDonor0168ForcedTrialAndManualStartNeverBypassToPaid(t *testing.T) {
 	for _, test := range []struct {
 		manual bool
-		full   bool
+		queue  string
 	}{
-		{false, false}, {false, true}, {true, false}, {true, true},
+		{false, ""}, {false, "account"}, {false, "outbound route"},
+		{true, ""}, {true, "account"}, {true, "outbound route"},
 	} {
-		t.Run(fmt.Sprintf("manual-%t-full-%t", test.manual, test.full), func(t *testing.T) {
+		t.Run(fmt.Sprintf("manual-%t-queue-%s", test.manual, test.queue), func(t *testing.T) {
 			fixture, server := newGiftFixture(t, `{"type":"message","content":[]}`, 200)
 			account := giftAccount()
 			model := "GLM-5.3-Trial"
@@ -189,8 +190,13 @@ func TestDonor0168ForcedTrialAndManualStartNeverBypassToPaid(t *testing.T) {
 					state.startGuard.wait = 25 * time.Millisecond
 					owner := &module{options: options}
 					route := controller.Principal(owner.zcodeOrigin(), "")
-					for index := 0; test.full && index < 6; index++ {
-						release, err := state.startGuard.acquire(ctx, fmt.Sprintf("holder-%d", index), route)
+					holders := map[string]int{"account": 3, "outbound route": 6}[test.queue]
+					for index := range holders {
+						key := fmt.Sprintf("holder-%d", index)
+						if test.queue == "account" {
+							key = controller.Principal(owner.zcodeOrigin(), account.UserID)
+						}
+						release, err := state.startGuard.acquire(ctx, key, route)
 						if err != nil {
 							return nil, err
 						}
@@ -201,22 +207,78 @@ func TestDonor0168ForcedTrialAndManualStartNeverBypassToPaid(t *testing.T) {
 				return component
 			}
 			harness := newHarnessModule(t, endpointOptions(server), moduleConfig{}, factory)
-			frame, _ := harness.call(sdk.MethodProviderExecute, scope(account), giftRequest(model), raw(account))
-			if !test.full {
+			frame, body := harness.call(sdk.MethodProviderExecute, scope(account), giftRequest(model), raw(account))
+			if test.queue == "" {
 				if frame.Error != nil || fixture.start.Load() != 1 || fixture.paid.Load() != 0 || !harness.accepted.Load() {
 					t.Fatalf("valid forced Start fixture did not send with room: error=%+v paid=%d start=%d accepted=%t",
 						frame.Error, fixture.paid.Load(), fixture.start.Load(), harness.accepted.Load())
 				}
 				return
 			}
-			if frame.Error == nil || frame.Error.Code != "rate_limit_error" ||
-				!strings.Contains(frame.Error.Message, "outbound route queue") ||
-				frame.Error.Outcome != "not-started" || harness.accepted.Load() ||
-				fixture.paid.Load() != 0 || fixture.start.Load() != 0 {
-				t.Fatalf("forced Start escaped full route before acceptance: error=%+v paid=%d start=%d accepted=%t",
-					frame.Error, fixture.paid.Load(), fixture.start.Load(), harness.accepted.Load())
+			var result sdk.ExecuteResult
+			if err := json.Unmarshal(frame.Result, &result); frame.Error != nil || err != nil ||
+				result.Status != http.StatusTooManyRequests || result.Outcome != "not-started" || result.Refusal == nil {
+				t.Fatalf("Start queue did not return a typed 429: result=%+v frame error=%+v decode error=%v", result, frame.Error, err)
+			}
+			refusal := result.Refusal
+			if refusal.Step != "start-messages" || refusal.Evidence != "rejected-before-effect" ||
+				refusal.Facts.Status != http.StatusTooManyRequests || !refusal.Facts.Complete ||
+				refusal.Facts.Operation != sdk.MethodProviderExecute || refusal.Facts.Phase != "admission" ||
+				refusal.Facts.RetryAfterMS == nil || *refusal.Facts.RetryAfterMS != 5000 ||
+				!strings.Contains(refusal.Facts.Message, "Start "+test.queue+" queue") ||
+				len(refusal.Rules) != 0 || len(refusal.Windows) != 0 {
+				t.Fatalf("Start queue lost local refusal facts or retry timing: %+v", refusal)
+			}
+			if harness.accepted.Load() || fixture.paid.Load() != 0 || fixture.start.Load() != 0 ||
+				len(harness.headers) != 0 || len(harness.recoveries) != 0 || len(body) != 0 {
+				t.Fatalf("Start queue timeout dispatched, accepted, emitted output, or requested recovery: result=%+v", result)
 			}
 		})
+	}
+}
+
+func TestDonor0168AcceptedGiftQueueTimeoutKeepsReplayFence(t *testing.T) {
+	fixture, server := newGiftFixture(t, `{"type":"message","content":[]}`, http.StatusOK)
+	account := giftAccount()
+	options := endpointOptions(server)
+	guard := make(chan *startGuard, 1)
+	factory := func(options ModuleOptions) sdk.Module {
+		component := NewControlModule(options)
+		previous := component.Handlers[sdk.MethodProviderExecute]
+		component.Handlers[sdk.MethodProviderExecute] = func(ctx context.Context, call sdk.Call, stream *sdk.Stream) (any, error) {
+			state, err := currentInstance(ctx)
+			if err != nil {
+				return nil, err
+			}
+			state.startGuard.wait = 25 * time.Millisecond
+			guard <- state.startGuard
+			return previous(ctx, call, stream)
+		}
+		return component
+	}
+	harness := newHarnessModule(t, options, moduleConfig{}, factory)
+	startProxies := 0
+	harness.beforeProxy = func(request sdk.NetworkProxyRequest) {
+		if request.URL != options.Endpoints.Start {
+			return
+		}
+		startProxies++
+		if startProxies == 2 {
+			// Saturate egress after free-first checked availability, before Start dispatch.
+			owner := &module{options: options}
+			startAddressHolders(t, <-guard, controller.Principal(owner.zcodeOrigin(), ""), 6)
+		}
+	}
+	frame, _ := harness.call(sdk.MethodProviderExecute, scope(account), giftRequest("GLM-5.3"), raw(account))
+	if startProxies != 2 || !harness.accepted.Load() || fixture.start.Load() != 0 || fixture.paid.Load() != 0 || len(harness.recoveries) != 0 {
+		t.Fatalf("accepted gift did not time out before dispatch: proxies=%d accepted=%t start=%d paid=%d recoveries=%d error=%+v",
+			startProxies, harness.accepted.Load(), fixture.start.Load(), fixture.paid.Load(), len(harness.recoveries), frame.Error)
+	}
+	var result sdk.ExecuteResult
+	if err := json.Unmarshal(frame.Result, &result); frame.Error != nil || err != nil ||
+		result.Outcome != "completed" || result.Refusal != nil ||
+		result.Status != http.StatusTooManyRequests || result.Headers.Get("Retry-After") != "5" {
+		t.Fatalf("accepted gift lost its queue result or admitted replay: result=%+v frame error=%+v decode error=%v", result, frame.Error, err)
 	}
 }
 

@@ -31,7 +31,8 @@ func TestLostTicketCanReconcileOnlyVendorAuthenticatedTaskThenSettleOnce(t *test
 			settlements.Add(1)
 			io.WriteString(writer, `{"ticket_id":"ticket-one","task_id":"fixture-session","state":"settled"}`)
 		default:
-			t.Error("unexpected reconciliation target")
+			t.Errorf("unexpected reconciliation target %s %s", request.Method, request.URL.EscapedPath())
+			writer.WriteHeader(http.StatusNotFound)
 		}
 	}))
 	defer server.Close()

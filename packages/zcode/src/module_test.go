@@ -41,6 +41,7 @@ type harness struct {
 	rejectDiagnostics bool
 	accepted          atomic.Bool
 	proxies           int
+	beforeProxy       func(sdk.NetworkProxyRequest)
 	writeMu           sync.Mutex
 	state             map[string]sdk.StateValue
 	casCalls          int
@@ -131,6 +132,13 @@ func (value *harness) call(method string, scope sdk.Scope, params any, auth json
 				reply = decision
 			case sdk.MethodNetworkProxy:
 				value.proxies++
+				if value.beforeProxy != nil {
+					var request sdk.NetworkProxyRequest
+					if err := json.Unmarshal(frame.Params, &request); err != nil {
+						value.t.Fatal(err)
+					}
+					value.beforeProxy(request)
+				}
 				reply = sdk.NetworkProxyResult{}
 			case sdk.MethodDiagnosticEmit:
 				var diagnostic sdk.Diagnostic

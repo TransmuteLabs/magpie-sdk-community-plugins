@@ -33,8 +33,9 @@ outside the installable directory.
 
 The provider-only **0.7.3** composition remains explicit: add `--headless`
 and use a separate output directory. Both current compositions require
-SDK **1.12** for public request policy; historical API 1.4/1.9 receipts describe
-their original snapshots. Installation is a separate operation.
+SDK **1.12** with `request-handoff` for local queue exhaustion. Historical
+API 1.4/1.9 receipts describe their original snapshots. Installation is a
+separate operation.
 
 The host owns ordinary Messages transport retry admission, bounded waits and
 sibling selection. The adapter supplies actual bounded response facts and
