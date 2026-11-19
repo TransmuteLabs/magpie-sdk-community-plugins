@@ -1,6 +1,21 @@
 # OpenCode
 
-One complete native Magpie plugin: OpenCode Go/Zen providers, agent wiring, device sign-in UI and consented local session history. The current unpublished working artifact is **opencode0.8.0**, SDK minimum **1.12**, native ABI1, including shared request policy. It needs no companion plugin, runtime Bun or npm install.
+OpenCode Go and Zen providers, agent wiring, device sign-in UI and consented local session history ship in one native plugin. **OpenCode 0.8.0** requires SDK **1.12** and native ABI **1**. Its browser interface is bundled.
+
+## Install and update
+
+The private GitHub release `opencode-v0.8.0` includes the macOS arm64 ZIP
+and its SHA-256 checksum. Use the GitHub CLI sign-in that has access to
+the repository.
+
+```sh
+magpie plugin sdk add 'github:TransmuteLabs/magpie-sdk-community-plugins#opencode'
+magpie plugin sdk update opencode
+```
+
+The unpinned source follows stable OpenCode releases from the same repository.
+
+## Development
 
 The [request-policy contract](docs/REQUEST-POLICY.md) records exact rejection
 proof and intentionally unrecovered flows. Every rebuilt compatibility
