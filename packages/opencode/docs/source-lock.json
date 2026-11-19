@@ -1,5 +1,49 @@
 {
   "schema": 1,
+  "officialProviderFollowUp20261119": {
+    "checkedAt": "2026-11-19",
+    "ref": "origin/dev",
+    "commit": "011f9043e8a90dc9a1ac42fb1181486dd4d13b71",
+    "previousReviewedCommit": "d33b5783338b8b350aafc09f7dc2701eeba52a9a",
+    "version": "2.3.0",
+    "commitsSinceReview": 25,
+    "changedPathsSinceReview": 260,
+    "changedLiteralWatchedPaths": [],
+    "refusalCommits": [
+      "bca1def93b2bca6b4bbd21ae8584d51571ab5fb0",
+      "a8dbca1065cf3b5e35e4edc1e821335ca0ca5356"
+    ],
+    "paths": [
+      "packages/ai/src/provider-error.ts",
+      "packages/ai/test/provider-error.test.ts",
+      "packages/core/src/plugin/provider/opencode-watches.ts"
+    ],
+    "communityZenFree": {
+      "commit": "836f2e4e4cd899318c422d67cc1b2b30baaf1e06",
+      "tree": "84f1e08de8e6b72ea3ecfe1ccc324476280ab287",
+      "version": "0.1.28",
+      "path": "packages/zen-free"
+    },
+    "upstreamMagpie": {
+      "commit": "99cc8fa5d555a8ff5dd8ebfb970b4ade73bb936b",
+      "paths": [
+        "internal/provider/opencode_client.go",
+        "internal/provider/opencode_endpoints.go",
+        "internal/provider/zen_bun.go",
+        "internal/agent/opencode_discover.go",
+        "internal/agent/opencode_models.js",
+        "internal/agent/agents.go"
+      ]
+    },
+    "tests": ["src/request_policy_test.go"],
+    "decision": "Use request-scoped content refusal for the exact HTTP envelopes and preserve acceptance for the Responses stream error. Keep native unattended watch delivery with OpenCode.",
+    "remainingDifferences": [
+      "Zen Free uses the module's Go HTTP transport; upstream's Bun fetch is a private built-in hook.",
+      "The agent plan keeps a model snapshot across launches until the next host sync. Automatic discovery and distinct input limits are upstream built-in behavior."
+    ],
+    "runtimePort": true,
+    "freshClientExecuted": false
+  },
   "officialCatalogFollowUp20261119": {
     "checkedAt": "2026-11-19",
     "ref": "origin/dev",
@@ -190,7 +234,7 @@
   },
   "plugin": {
     "id": "opencode",
-    "version": "0.8.0",
+    "version": "0.8.1",
     "sdkMinimum": "1.12",
     "nativeABI": 1
   },
@@ -225,7 +269,7 @@
   "compatibilityArtifacts": [
     {
       "id": "opencode",
-      "version": "0.8.0",
+      "version": "0.8.1",
       "sdkMinimum": "1.12",
       "nativeABI": 1,
       "variant": "api8",
@@ -1127,7 +1171,7 @@
   ],
   "limits": [
     "Documentation and build provenance only; never a runtime authorization or auto-update source",
-    "Ordinary no-flag build is one unpublished full package0.8.0/SDK1.12, containing Go/Zen/agent/UI and actual storage/history; legacy --compat-api8 is also0.8.0/SDK1.12; optional browser history has separate negotiation; prior release identities remain immutable; this is not full vendor parity or completed host acceptance",
+    "Ordinary no-flag build is one full package 0.8.1/SDK1.12, containing Go/Zen/agent/UI and actual storage/history. The legacy --compat-api8 variant also requires SDK1.12. Optional browser history has separate negotiation. Live vendor and host acceptance are separate checks.",
     "Rebuilt provider-only0.2.0 and headless agent0.3.0 require SDK1.12 and remain explicit test variants, not additional packages to install; old receipts and archived manifests retain their original floors",
     "Go/agent/window fixtures are synthetic; historical host f423 launch/Library failures and hidden-root strict reload refusal are retained separately from ordinary lifecycle acceptance",
     "Zen identities/native wire, public tool shaping, forced streaming/JSON collapse and optional explicit environment facts are implemented; no environment facts are invented; full YAML and automatic watch delivery remain incomplete",

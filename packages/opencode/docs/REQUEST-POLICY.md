@@ -1,10 +1,10 @@
 # Shared request policy
 
-This is an unpublished working adoption of public SDK API1.12/native ABI1.
-The full package remains OpenCode0.8.0. Every constructor that now executes
+The full OpenCode 0.8.1 package uses public SDK API1.12 and native ABI1.
+Every constructor that executes
 request-policy code declares that capability and floor: full, the legacy
-`--compat-api8` flag, provider0.2.0 and agent0.3.0. Those existing version
-strings are not new releases. The archived provider JSON keeps its historical
+`--compat-api8` flag, provider0.2.0 and agent0.3.0. The provider and agent
+versions identify compatibility and test artifacts. The archived provider JSON keeps its historical
 API1.3 bytes; `Manifest()` raises the actual runtime floor. `--compat-api8` no
 longer claims an API1.8 runtime and inherits the full constructor's metadata
 capability. Historical receipts remain historical.
@@ -22,9 +22,15 @@ The provider proof is narrower than host classification: a complete initial
 HTTP error-only envelope, the appropriate selected provider, and its recovered
 preflight error type/status. Only Go429 `GoUsageLimitError`, personal Zen402
 `CreditLimitExceeded`, public Zen403 `FreeTierError` and public Zen429
-`FreeUsageLimitError` are admitted. Unknown extra fields, codes and effect
-metadata defeat proof. Fresh `RefusedExecution` facts/rules/evidence let the
-host classify; no classification result is treated as evidence.
+`FreeUsageLimitError` are admitted as quota or free-client refusals. HTTP
+400 `invalid_request_error` with `cyber_policy` and the documented Gemini
+403 terms-of-use error are request-scoped `content-refusal`. The native
+Gemini envelope must have numeric `error.code: 403`, status
+`PERMISSION_DENIED` and the complete terms-of-use sentence. The Zen
+`server_error` envelope must have that sentence immediately after
+`Upstream request failed: [403] `. Unknown extra fields, codes and effect
+metadata defeat proof. `RefusedExecution` sends the matched facts, rule and
+evidence to host policy.
 
 Go quota and personal credit are scoped to the selected account within that
 provider. Public `FreeTierError` is terminal request scope. Public
@@ -43,6 +49,12 @@ prefix is restored exactly for the existing opaque path; its original closer
 and read failure remain authoritative. This is a limited change to the prior
 pre-dispatch acceptance boundary, justified by explicit initial rejection
 inspection and the dispatched journal. It does not make silence or EOF proof.
+
+Zen Responses streams report exact `type: "error"` and `code: "cyber_policy"`
+fields as `content_refusal` with a fixed message and an `uncertain` outcome.
+Duplicate keys and case variants of `type` or `code` defeat classification. This
+includes public Responses streams shaped for a non-streaming caller. The
+accepted fence remains in force, and previously emitted data stays in place.
 
 Native session headers, tool rewriting, public forced streaming/collapse,
 Go/Zen credentials, cache usage and successful forwarding are unchanged.

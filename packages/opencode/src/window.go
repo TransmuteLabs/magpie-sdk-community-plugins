@@ -9,7 +9,7 @@ import (
 	"github.com/yetone/magpie/pkg/protocolext"
 )
 
-const windowVersion = "0.8.0"
+const windowVersion = "0.8.1"
 
 func WindowManifest() sdk.Manifest {
 	manifest := AgentManifest()

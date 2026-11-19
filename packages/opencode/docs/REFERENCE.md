@@ -2,10 +2,9 @@
 
 # magpie-sdk-plugin-provider-opencode
 
-Current unpublished builds require API1.12 in every variant. The current
-[request-policy contract](REQUEST-POLICY.md) supersedes the API1.9/API1.8 floors
-and pre-dispatch acceptance description below. These detailed parity notes
-remain pre-adoption evidence; see `REQUEST-POLICY-VERIFICATION.json` for new checks.
+The [request-policy contract](REQUEST-POLICY.md) describes the current
+acceptance and refusal behavior. `REQUEST-POLICY-VERIFICATION.json` records
+the original adoption. [SOURCES.md](SOURCES.md) records the current source review.
 
 One native OpenCode package for Magpie. The ordinary build includes Go and
 Zen OAuth/service-key/public providers, native Chat/Responses/Messages/Gemini,
@@ -13,13 +12,12 @@ Console HTTP actions, the checked agent/profile, its authentication UI and
 the actual SQLite/WAL history reader. It uses public SDK imports and the exact
 already-host-locked Go SQLite runtime.
 
-The full package needs **SDK API 1.9, native ABI 1 and `hostAPI: ^1.9`**.
-API1.9 supplies effective agent context/output/effort metadata and the prior
-model snapshot used to update generated config without overwriting user edits.
-The historical provider-only compatibility artifact needs API1.3. That API
-owns the transaction that serializes refresh-token exchange and durable
-credential publication across host processes. An older host must reject this
-package before loading it.
+The full package needs **SDK API 1.12, native ABI 1 and `hostAPI: ^1.12`**.
+The SDK supplies request recovery policy, effective agent context/output/effort
+metadata, and the prior model snapshot used to update generated config without
+overwriting user edits. The provider-only compatibility artifact also uses
+the SDK transaction that serializes refresh-token exchange and durable
+credential publication across host processes.
 
 There is one ordinary package with module ID `opencode`. It bundles provider, native
 agent controller and compiled browser assets in a single package. It does
@@ -27,17 +25,17 @@ not install a community/OpenCode auth plugin or run a Bun backend.
 
 | Distribution | Version | Minimum SDK | Contents |
 | --- | --- | --- | --- |
-| Ordinary full package | 0.8.0 | 1.9 | Default no-flag build: effective agent metadata, Go + Zen OAuth/key/public, auth UI, Console HTTP and SQLite/WAL history |
-| Full API8 compatibility artifact | 0.8.0 | 1.8 | Explicit `--compat-api8`; complete contents, without API9 metadata delivery |
-| Provider compatibility artifact | 0.2.0 | 1.3 | Historical Go OAuth, four models, chat/Gemini, quota |
-| Agent compatibility artifact | 0.3.0 | 1.5 | Historical provider plus declared profile, config planner and launch metadata |
+| Ordinary full package | 0.8.1 | 1.12 | Default no-flag build with effective agent metadata, Go + Zen OAuth/key/public, auth UI, Console HTTP and SQLite/WAL history |
+| Full compatibility artifact | 0.8.1 | 1.12 | Explicit legacy `--compat-api8` flag with the full package contents and SDK floor |
+| Provider compatibility artifact | 0.2.0 | 1.12 | Historical Go OAuth, four models, Chat/Gemini, quota |
+| Agent compatibility artifact | 0.3.0 | 1.12 | Historical provider plus declared profile, config planner and launch metadata |
 
-The 0.8.0 window adds rendered history against the real optional
+The window supports rendered history through the optional
 SDK UI1.10 `session-history-v1` feature. It requires a selected root and a
 trusted parent confirmation for the independent root/read gates, and renders
 only issued session/media selections. Account sign-in grants no history
-rights. An older host shows an explicit unsupported state; API1.9 remains
-the native runtime minimum. The existing installed Bun is a build tool for
+rights. The interface shows an explicit unsupported state when the host
+does not offer the optional history feature. Bun is a build tool for
 the classic browser bundle, with no Bun backend or runtime dependency.
 [HISTORY_UI.md](HISTORY_UI.md) records the exact contract and proof boundary.
 

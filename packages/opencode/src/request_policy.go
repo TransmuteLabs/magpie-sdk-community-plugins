@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 	"strings"
@@ -13,6 +14,13 @@ import (
 	sdk "github.com/yetone/magpie/pkg/extension"
 )
 
+const (
+	geminiPolicyText    = "Request rejected in accordance with our terms of use and policies."
+	geminiWrappedPolicy = "Upstream request failed: [403] " + geminiPolicyText
+)
+
+var errOpenCodeContentRefusal = errors.New("OpenCode upstream rejected the request under its content policy")
+
 func opencodeFailureRules() []sdk.RequestFailureRule {
 	return []sdk.RequestFailureRule{
 		{ID: "opencode.go-limit", Status: []int{429}, Type: "GoUsageLimitError", Class: "quota", Scope: "account"},
@@ -20,6 +28,22 @@ func opencodeFailureRules() []sdk.RequestFailureRule {
 		{ID: "opencode.free-limit", Status: []int{429}, Type: "FreeUsageLimitError", Class: "quota", Scope: "unknown"},
 		{ID: "opencode.free-client", Status: []int{403}, Type: "FreeTierError", Class: "request-refusal", Scope: "request"},
 	}
+}
+
+func opencodeContentRule(facts sdk.RequestFailureFacts) sdk.RequestFailureRule {
+	var id, contains string
+	switch {
+	case facts.Status == http.StatusBadRequest && facts.Type == "invalid_request_error" && facts.Code == "cyber_policy":
+		id = "opencode.cyber-policy"
+	case facts.Status == http.StatusForbidden &&
+		(facts.Type == "PERMISSION_DENIED" && facts.Code == "403" && facts.Message == geminiPolicyText ||
+			facts.Type == "server_error" && facts.Code == "" && facts.Message == geminiWrappedPolicy):
+		id, contains = "opencode.gemini-terms", facts.Message
+	default:
+		return sdk.RequestFailureRule{}
+	}
+	return sdk.RequestFailureRule{ID: id, Status: []int{facts.Status}, Type: facts.Type, Code: facts.Code, Contains: contains,
+		Class: "content-refusal", Scope: "request"}
 }
 
 func uniquePolicyJSON(body []byte) bool {
@@ -96,7 +120,7 @@ func responseFailure(status int, headers http.Header, body []byte, secret string
 		}
 	}
 	for name := range fields {
-		if name != "code" && name != "type" && name != "message" && name != "param" {
+		if name != "code" && name != "type" && name != "message" && name != "param" && name != "status" {
 			return facts, false
 		}
 	}
@@ -129,6 +153,16 @@ func responseFailure(status int, headers http.Header, body []byte, secret string
 			return facts, false
 		}
 	}
+	if vendorStatus, found := fields["status"]; found {
+		if fields["type"] != nil || fields["param"] != nil ||
+			!bytes.Equal(bytes.TrimSpace(vendorStatus), []byte(`"PERMISSION_DENIED"`)) ||
+			!bytes.Equal(bytes.TrimSpace(fields["code"]), []byte("403")) ||
+			status != http.StatusForbidden || facts.Message != geminiPolicyText ||
+			secret != "" && strings.Contains("PERMISSION_DENIED", secret) {
+			return facts, false
+		}
+		facts.Type = "PERMISSION_DENIED"
+	}
 	facts.Headers = make(map[string]string)
 	for _, name := range []string{"Retry-After", "X-Ratelimit-Reset", "X-Ratelimit-Reset-Requests", "X-Ratelimit-Reset-Tokens"} {
 		values := headers.Values(name)
@@ -159,6 +193,11 @@ func executionRefusal(ctx context.Context, stream *sdk.Stream, scope sdk.Scope, 
 		io.Closer
 	}{io.MultiReader(bytes.NewReader(body), response.Body), response.Body}
 	facts, complete := responseFailure(response.StatusCode, response.Header, body, secret)
+	if content := opencodeContentRule(facts); complete && content.ID != "" {
+		return sdk.RefusedExecution(sdk.RequestRecoveryRequest{
+			Step: "opencode.execute", Facts: facts, Rules: []sdk.RequestFailureRule{content}, Evidence: "rejected-before-effect",
+		}, nil), true, nil
+	}
 	known := scope.Provider == ProviderGo && facts.Type == "GoUsageLimitError" && facts.Status == 429 ||
 		scope.Provider == ProviderZen && facts.Type == "CreditLimitExceeded" && facts.Status == 402 ||
 		scope.Provider == ProviderZenPublic && (facts.Type == "FreeTierError" && facts.Status == 403 ||

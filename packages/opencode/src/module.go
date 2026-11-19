@@ -181,6 +181,9 @@ func failure(err error, outcome string) error {
 	if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
 		return err
 	}
+	if errors.Is(err, errOpenCodeContentRefusal) {
+		return &sdk.Error{Code: "content_refusal", Message: errOpenCodeContentRefusal.Error(), Outcome: outcome}
+	}
 	if errors.Is(err, ErrRefreshRequired) {
 		return &sdk.Error{Code: "auth_refresh_required", Message: "OpenCode selected account requires renewal before dispatch", Outcome: outcome}
 	}

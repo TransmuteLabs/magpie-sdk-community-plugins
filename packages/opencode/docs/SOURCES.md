@@ -1,5 +1,27 @@
 # OpenCode module source provenance
 
+OpenCode **0.8.1** uses public SDK API **1.12** and native ABI **1**.
+The source review advances OpenCode `2.3.0` from `d33b578333` to
+`011f9043e8a90dc9a1ac42fb1181486dd4d13b71`. The 25 commits change
+260 paths and leave the 17 extraction paths unchanged. The module applies
+the exact HTTP refusals added in `bca1def93b` and `a8dbca1065` through
+[host request policy](REQUEST-POLICY.md) and reports a matching Responses
+stream refusal while preserving the accepted fence. The unattended Console
+watch is an OpenCode session-wakeup policy and stays with the harness.
+
+Community `836f2e4e4cd899318c422d67cc1b2b30baaf1e06` retains the exact
+Zen Free `0.1.28` tree `84f1e08de8e6b72ea3ecfe1ccc324476280ab287`.
+Magpie upstream `99cc8fa5d` was checked for OpenCode routes, free-model
+payloads and agent wiring. Go Chat and Gemini already use their native
+endpoints and keep the caller's body. The Zen module uses the public SDK's
+proxy resolver and its own Go HTTP transport. The upstream built-in's Bun
+fetch for Zen Free is a private host transport hook. Automatic model
+discovery on OpenCode startup and separate agent `limit.input` are
+upstream built-in behavior. The module's current config plan writes the
+model snapshot on connect/sync and receives context/output from the SDK.
+These differences and the exact source refs are in
+`officialProviderFollowUp20261119` in `source-lock.json`.
+
 The November 19 source review covers `d33b5783338b8b350aafc09f7dc2701eeba52a9a`
 at CLI version `2.3.0`, 33 commits and 305 changed paths since `79bd2c6f`.
 Of the 17 extraction paths, `packages/core/src/model-resolver.ts` changed
@@ -86,7 +108,7 @@ bounded source-and-evidence closure is approved, with terminal receipt SHA-256
 `04ee243cc376da83426e04f953272104a6b2bf1690ba5005fe2195b89d0a0ec6`;
 the linked port record identifies the exact reviewed seal and report.
 This is not fresh native-harness or aggregate acceptance.
-Original 0.1.27 extraction records and package version 0.8.0 remain unchanged.
+This port's original 0.1.27 extraction and 0.8.0 package records remain historical.
 The current minimum 1.12 is an API revision, not the public SDK release;
 the public SDK release follows app `VERSION`, with the same Go module/tag.
 Wire 1.12, codec 0.5 and native ABI 1 remain separate identifiers.

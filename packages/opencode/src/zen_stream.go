@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"strings"
+	"unicode/utf8"
 )
 
 type zenTerminal struct {
@@ -52,6 +54,7 @@ func (terminal *zenTerminal) event() error {
 	}
 	var event struct {
 		Type     string          `json:"type"`
+		Code     json.RawMessage `json:"code"`
 		Error    json.RawMessage `json:"error"`
 		Response struct {
 			Status string `json:"status"`
@@ -59,6 +62,10 @@ func (terminal *zenTerminal) event() error {
 	}
 	if json.Unmarshal(terminal.data, &event) != nil {
 		return errors.New("invalid Zen SSE event")
+	}
+	if terminal.protocol == "responses" && event.Type == "error" && bytes.Equal(event.Code, []byte(`"cyber_policy"`)) &&
+		isZenStreamContentRefusal(terminal.data) {
+		return errOpenCodeContentRefusal
 	}
 	if len(event.Error) != 0 && !bytes.Equal(event.Error, []byte("null")) || event.Type == "error" ||
 		event.Type == "response.failed" || event.Type == "response.incomplete" {
@@ -71,4 +78,21 @@ func (terminal *zenTerminal) event() error {
 		terminal.done = terminal.done || event.Type == "message_stop"
 	}
 	return nil
+}
+
+func isZenStreamContentRefusal(data []byte) bool {
+	if len(data) > 64<<10 || !utf8.Valid(data) || !uniquePolicyJSON(data) {
+		return false
+	}
+	var event map[string]json.RawMessage
+	if json.Unmarshal(data, &event) != nil || !bytes.Equal(event["type"], []byte(`"error"`)) ||
+		!bytes.Equal(event["code"], []byte(`"cyber_policy"`)) {
+		return false
+	}
+	for name := range event {
+		if name != "type" && strings.EqualFold(name, "type") || name != "code" && strings.EqualFold(name, "code") {
+			return false
+		}
+	}
+	return true
 }

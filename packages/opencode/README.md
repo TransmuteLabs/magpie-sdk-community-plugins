@@ -1,12 +1,12 @@
 # OpenCode
 
-OpenCode Go and Zen providers, agent wiring, device sign-in UI and consented local session history ship in one native plugin. **OpenCode 0.8.0** requires SDK **1.12** and native ABI **1**. Its browser interface is bundled.
+OpenCode Go and Zen providers, agent wiring, device sign-in UI and consented local session history ship in one native plugin. **OpenCode 0.8.1** requires SDK **1.12** and native ABI **1**. Its browser interface is bundled.
 
 ## Install and update
 
-The private GitHub release `opencode-v0.8.0` includes the macOS arm64 ZIP
-and its SHA-256 checksum. Use the GitHub CLI sign-in that has access to
-the repository.
+The published `opencode-v0.8.0` release includes the macOS arm64 ZIP and its
+SHA-256 checksum. Use the GitHub CLI sign-in that has access to the private
+repository.
 
 ```sh
 magpie plugin sdk add 'github:TransmuteLabs/magpie-sdk-community-plugins#opencode'
@@ -19,8 +19,8 @@ The unpinned source follows stable OpenCode releases from the same repository.
 
 The [request-policy contract](docs/REQUEST-POLICY.md) records exact rejection
 proof and intentionally unrecovered flows. Every rebuilt compatibility
-constructor also requires API1.12; the legacy `--compat-api8` flag no longer
-advertises an API1.8 runtime. Existing package versions are unchanged.
+constructor also requires API1.12. The legacy `--compat-api8` flag builds with
+the same API floor and version as the full package.
 
 The normal verification target is regular **usbox** with a fresh HOME/XDG,
 pinned offline caches and the network guard. The explicitly authorized

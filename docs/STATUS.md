@@ -8,10 +8,10 @@ Community-плагины и исходники harness служат рефере
 | --- | --- | --- | --- |
 | [Claude Desktop](../packages/claude-desktop/README.md) | `0.1.0` | `1.5` | Донор `5.11492.5` на `ff8d9230`. Сверены контракты `6.6395.0` на `120edadaf`, исправлена проверка HTTP-адреса. Живой Desktop предстоит проверить |
 | [Command Code](../packages/commandcode/README.md) | `0.1.3` | `1.12` | Community `0.1.24`. CLI `1.91.0` сверён с `1.89.2`. Native Generate и System One отправляют заголовок версии `1.91.0` |
-| [Devin](../packages/devin/README.md) | `0.8.0` | `1.12` | Community `0.1.44` → `0.1.45`, перенос проверен; восстановленный Devin `3000.11.228` |
+| [Devin](../packages/devin/README.md) | `0.8.1` | `1.12` | Локальный Devin `3000.11.228` на `e977587d` подтвердил `GetAccountManagedPluginBundle`. Перенос проверен через HTTP-шлюз Magpie. Community `0.1.45` совпал с прежним референсом |
 | [MiniMax](../packages/minimax/README.md) | `0.1.0` | `1.12` | Community `0.2.9` |
 | [OMP](../packages/omp/README.md) | `0.1.0` | `1.10` | OMP `18.22.2` проверен на `04a4c101`. Экспорт в Codex и Claude учитывает `custom_message` и сохраняет порядок реплик и результатов инструментов. Архив сохраняется побайтово |
-| [OpenCode](../packages/opencode/README.md) | `0.8.0` | `1.12` | OpenCode `2.3.0` проверен на `79bd2c6f`. Относительно `521ceac0` отслеживаемые пути протоколов не изменились. Снятие `glm-5.3-flash-free` из `1862f2ce` перенесено. Magpie принимает ведущую developer-реплику Responses. Перенос community Zen `0.1.27` → `0.1.28` проверен |
+| [OpenCode](../packages/opencode/README.md) | `0.8.1` | `1.12` | Локальная ссылка OpenCode `origin/dev` на `011f9043e8` уточнила распознавание отказов OpenAI и Gemini в Go и Zen. Перенос community Zen `0.1.28` сохранён |
 | [ZCode](../packages/zcode/README.md) | `0.15.0` | `1.12` | Desktop `3.18.2`, CLI `0.17.1`; community `0.1.66` → `0.1.68`, перенос проверен |
 
 Версия пакета, минимальная ревизия API и версия референса независимы. Все пакеты используют
@@ -28,7 +28,8 @@ native ABI `1`. Точные исходные коммиты, версии, пе
 
 [Отчёт за 17 ноября](REFERENCE-UPDATES-2026-11-17.md) сохраняет сравнения
 на дату прогона. Сравнения за 18 ноября записаны в source-lock пакетов
-Command Code, OMP и OpenCode.
+Command Code, OMP и OpenCode. Сравнения локальных референсов за 19 ноября
+и проверки версий `0.8.1` записаны в пакетах Devin и OpenCode.
 Номера в колонке API обозначают совместимость контракта. Публичный релиз
 SDK имеет `VERSION` приложения и не называется `1.12`.
 
