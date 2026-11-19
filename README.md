@@ -60,12 +60,33 @@ ZCode's process cleanup and ingress ownership fixtures run on Linux. They use
 
 Every module is built and released at its own version. A release tag is
 `<manifest-id>-v<semver>`, for example `minimax-v0.1.0` or
-`devin-inbound-v0.8.0`. There is no global all-modules release.
+`devin-inbound-v0.8.0`. Build release assets on a Mac and upload the resulting
+ZIP and `checksums.txt` to the module's GitHub Release. A push or tag never
+starts a plugin build.
 
 ```sh
-python3 scripts/release_build.py minimax --version 0.1.0 --sdk /path/to/sealed-sdk --sdk-source-manifest /path/to/sdk-source.json --published /path/to/publication-inventory.json --output /path/to/fresh-minimax-candidate
-python3 scripts/release.py minimax --input /path/to/fresh-minimax-candidate/built --output /path/to/fresh-minimax-release --platform darwin_arm64
+python3 scripts/release_local.py minimax --sdk ../magpie
 ```
+
+The command reads the selected package version from `docs/source-lock.json`
+and verifies the built manifest agrees. It uses the local `gh` login to check
+published versions in the private repository. An already published version
+returns `skip-published` before opening the SDK checkout or running Go. An
+unpublished version requires committed inputs for the selected package and
+shared build scripts. Changes in sibling packages do not block it. It takes a
+temporary snapshot of the selected SDK checkout's committed HEAD and writes
+`candidate/build-receipt.json` and `assets/` under `dist/releases/<module tag>/`
+by default. Select the SDK commit that matches the target host and
+run `scripts/check.py` for the selected package before preparing a release.
+The command records the tag, plugin commit, SDK commit, asset paths and checksum
+in `release.json`. Publish the assets against the recorded `pluginCommit`.
+Reuse a verified unpublished build with
+`--previous <path-to-build-receipt.json>` and a fresh output directory.
+
+### Offline release tooling
+
+The local command uses `scripts/release_build.py` and `scripts/release.py`.
+They also accept explicit offline inputs for preparing release candidates.
 
 The build wrapper accepts exactly one package and an explicit version matching
 its source provenance. It checks a supplied complete offline publication
