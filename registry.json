@@ -3,7 +3,6 @@
   "packages": {
     "claude-desktop": {
       "id": "agent-claude-desktop",
-      "description": "Claude Desktop third-party gateway agent configuration",
       "platforms": [
         "darwin/arm64",
         "darwin/amd64"
@@ -20,7 +19,6 @@
     },
     "commandcode": {
       "id": "protocol-commandcode",
-      "description": "Command Code provider, agent and decision models",
       "checks": [
         {
           "command": [
@@ -34,7 +32,6 @@
     },
     "devin": {
       "id": "devin-inbound",
-      "description": "Devin native protocol, provider and agent",
       "checks": [
         {
           "command": [
@@ -52,12 +49,10 @@
     },
     "minimax": {
       "id": "minimax",
-      "description": "MiniMax Code China and Global providers, tools, media and search",
       "checks": []
     },
     "omp": {
       "id": "omp-sessions",
-      "description": "OMP session conversion and history sources",
       "checks": [
         {
           "command": [
@@ -75,7 +70,6 @@
     },
     "opencode": {
       "id": "opencode",
-      "description": "OpenCode provider, agent, history and interface",
       "checks": [
         {
           "command": [
@@ -95,7 +89,6 @@
     },
     "zcode": {
       "id": "zcode",
-      "description": "ZCode native protocol, provider, agent and interface",
       "checks": [
         {
           "command": [

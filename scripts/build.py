@@ -1,13 +1,39 @@
 #!/usr/bin/env python3
 """Build one or all independently installable plugin distributions."""
 import argparse
+import hashlib
 import json
 from pathlib import Path
 import subprocess
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _workspace import ROOT, effective_target, packages, sdk_source, select_build_packages, validate_distribution
+from _workspace import ROOT, effective_target, packages, read_json, sdk_source, select_build_packages, validate_distribution
+
+
+def write_package_description(package, distribution, manifest):
+    source = read_json(package / "package.json")
+    if (source["name"], source["version"]) != (manifest["id"], manifest["version"]):
+        raise ValueError("Package metadata and SDK manifest differ in identity or version")
+    description = source["description"]
+    if not isinstance(description, str) or not description.strip():
+        raise ValueError("Package description must be a non-empty string")
+
+    path = distribution / "package.json"
+    metadata = read_json(path) if path.exists() else {
+        "name": source["name"], "version": source["version"],
+    }
+    if metadata["version"] != source["version"]:
+        raise ValueError("Packaged window metadata has a different version")
+    metadata["description"] = description
+    data = (json.dumps(metadata, indent=2) + "\n").encode()
+    path.write_bytes(data)
+
+    inventory_path = distribution / "inventory.json"
+    if inventory_path.is_file():
+        inventory = read_json(inventory_path)
+        inventory["package.json"] = hashlib.sha256(data).hexdigest()
+        inventory_path.write_text(json.dumps(inventory, indent=2) + "\n")
 
 
 def main():
@@ -37,6 +63,7 @@ def main():
         subprocess.run([sys.executable, str(package / "scripts/build.py"),
                         "--output", str(output / name), "--sdk", str(sdk)], check=True, env=environment)
         manifest = validate_distribution(output / name, spec["id"])
+        write_package_description(package, output / name, manifest)
         print(json.dumps({"package": name, "version": manifest["version"],
                           "directory": str(output / name)}), flush=True)
 

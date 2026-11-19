@@ -1,0 +1,125 @@
+name: Build and publish a selected plugin
+
+on:
+  workflow_call:
+    inputs:
+      package:
+        required: true
+        type: string
+      id:
+        required: true
+        type: string
+      version:
+        required: true
+        type: string
+      tag:
+        required: true
+        type: string
+
+env:
+  SDK_COMMIT: 56714a300898017624e82c029bd681a0d662259b
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    outputs:
+      built: ${{ steps.package.outputs.built }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - name: Confirm the selected version is unpublished
+        id: pending
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PACKAGE: ${{ inputs.package }}
+        run: |
+          inventory="$RUNNER_TEMP/publications.json"
+          python3 -I scripts/release_ci.py inventory "$inventory"
+          python3 -I scripts/release_ci.py plan --package "$PACKAGE" --inventory "$inventory"
+      - uses: actions/checkout@v5
+        if: steps.pending.outputs.has-releases == 'true'
+        with:
+          repository: TransmuteLabs/magpie
+          ref: ${{ env.SDK_COMMIT }}
+          path: sdk-source
+          persist-credentials: false
+      - uses: actions/setup-go@v6
+        if: steps.pending.outputs.has-releases == 'true'
+        with:
+          go-version-file: sdk-source/go.mod
+          cache-dependency-path: |
+            packages/${{ inputs.package }}/src/go.sum
+            sdk-source/go.sum
+      - uses: oven-sh/setup-bun@v2
+        if: steps.pending.outputs.has-releases == 'true'
+        with:
+          bun-version: 1.4.2
+      - name: Install the pinned UI compiler
+        if: steps.pending.outputs.has-releases == 'true'
+        run: |
+          npm install --global --prefix "$RUNNER_TEMP/sdk-tools" --ignore-scripts --no-audit --no-fund typescript@7.0.2
+          echo "$RUNNER_TEMP/sdk-tools/bin" >> "$GITHUB_PATH"
+      - name: Check and package the selected version
+        id: package
+        if: steps.pending.outputs.has-releases == 'true'
+        env:
+          PACKAGE: ${{ inputs.package }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          python3 -I scripts/release_ci.py build "$PACKAGE" --version "$VERSION" \
+            --sdk sdk-source --sdk-commit "$SDK_COMMIT" \
+            --inventory "$RUNNER_TEMP/publications.json" --output "$RUNNER_TEMP/plugin-release"
+      - uses: actions/upload-artifact@v6
+        if: steps.package.outputs.built == 'true'
+        with:
+          name: ${{ inputs.tag }}-darwin-arm64
+          path: ${{ runner.temp }}/plugin-release/*
+          if-no-files-found: error
+          retention-days: 3
+
+  publish:
+    needs: build
+    if: needs.build.outputs.built == 'true'
+    runs-on: macos-15
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v7
+        with:
+          name: ${{ inputs.tag }}-darwin-arm64
+          path: ${{ runner.temp }}/plugin-release
+      - name: Publish the verified ZIP for the triggering commit
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MODULE_ID: ${{ inputs.id }}
+          VERSION: ${{ inputs.version }}
+          TAG: ${{ inputs.tag }}
+        run: |
+          [[ "$MODULE_ID" =~ ^[a-z0-9][a-z0-9_.-]{0,127}$ ]]
+          [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ && "$TAG" == "$MODULE_ID-v$VERSION" ]]
+          release="$RUNNER_TEMP/plugin-release"
+          asset="magpie-plugin_${MODULE_ID}__darwin_arm64.zip"
+          checksum=$(cat "$release/checksums.txt")
+          digest=${checksum%% *}
+          [[ "$digest" =~ ^[0-9a-f]{64}$ && "$checksum" == "$digest  $asset" ]]
+          (cd "$release" && shasum -a 256 -c --strict checksums.txt)
+
+          releases=$(gh api --paginate --slurp "repos/$GITHUB_REPOSITORY/releases?per_page=100")
+          jq -e --arg tag "$TAG" 'all(.[][]; .tag_name != $tag)' <<< "$releases" > /dev/null
+
+          ref="refs/tags/$TAG"
+          refs=$(gh api "repos/$GITHUB_REPOSITORY/git/matching-refs/tags/$TAG")
+          if jq -e --arg ref "$ref" 'all(.[]; .ref != $ref)' <<< "$refs" > /dev/null; then
+            gh api "repos/$GITHUB_REPOSITORY/git/refs" -f ref="$ref" -f sha="$GITHUB_SHA" > /dev/null
+          fi
+          gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$TAG" \
+            | jq -e --arg sha "$GITHUB_SHA" '.object.type == "commit" and .object.sha == $sha' > /dev/null
+          gh release create "$TAG" "$release/$asset" "$release/checksums.txt" \
+            --repo "$GITHUB_REPOSITORY" --verify-tag --title "$TAG" --latest=false \
+            --notes "$MODULE_ID for macOS arm64 from $GITHUB_SHA. Magpie SDK: TransmuteLabs/magpie@$SDK_COMMIT."

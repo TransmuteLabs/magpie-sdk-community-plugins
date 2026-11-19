@@ -1,0 +1,6 @@
+{
+  "name": "omp-sessions",
+  "version": "0.1.0",
+  "description": "Oh My Pi session conversion and history sources",
+  "private": true
+}

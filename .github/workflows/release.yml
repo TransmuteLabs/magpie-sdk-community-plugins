@@ -1,0 +1,60 @@
+name: Release plugin versions for macOS
+
+on:
+  push:
+    branches: [main]
+    paths: ['packages/*/package.json']
+  workflow_dispatch:
+    inputs:
+      package:
+        description: Package to release or retry at the version already in main
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-plugin-versions
+  queue: max
+
+jobs:
+  plan:
+    if: github.repository == 'TransmuteLabs/magpie-sdk-community-plugins' && github.ref == 'refs/heads/main'
+    runs-on: macos-15
+    timeout-minutes: 5
+    outputs:
+      matrix: ${{ steps.versions.outputs.matrix }}
+      has-releases: ${{ steps.versions.outputs.has-releases }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Select new package versions
+        id: versions
+        env:
+          BEFORE: ${{ github.event.before }}
+          PACKAGE: ${{ inputs.package }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [[ "$GITHUB_EVENT_NAME" == push ]]; then
+            python3 -I scripts/release_ci.py plan --before "$BEFORE"
+          else
+            python3 -I scripts/release_ci.py plan --package "$PACKAGE"
+          fi
+
+  release:
+    needs: plan
+    if: needs.plan.outputs.has-releases == 'true'
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    permissions:
+      contents: write
+    uses: ./.github/workflows/release-package.yml
+    with:
+      package: ${{ matrix.package }}
+      id: ${{ matrix.id }}
+      version: ${{ matrix.version }}
+      tag: ${{ matrix.tag }}

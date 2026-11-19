@@ -58,34 +58,33 @@ ZCode's process cleanup and ingress ownership fixtures run on Linux. They use
 
 ## Release assets
 
-Every module is built and released at its own version. A release tag is
-`<manifest-id>-v<semver>`, for example `minimax-v0.1.0` or
-`devin-inbound-v0.8.0`. Build release assets on a Mac and upload the resulting
-ZIP and `checksums.txt` to the module's GitHub Release. A push or tag never
-starts a plugin build.
+Each module declares its release version in `packages/<package>/package.json`,
+as in the community plugin repository. That file also describes the package's
+purpose. The SDK manifest declares the capabilities and compatibility the host
+can verify. GitHub Actions compares package versions before and after a push
+to `main`. Only a new, unpublished version enters the macOS arm64 build.
+Changes to code or description ship with the next package version. To release
+an existing unpublished version, run **Release plugin versions for macOS** and
+select the package.
 
-```sh
-python3 scripts/release_local.py minimax --sdk ../magpie
-```
+Keep the package version, native manifest and source provenance in agreement.
+The build verifies these fields and uses the Magpie commit pinned in
+`.github/workflows/release-package.yml`. Update that pin when a package needs
+a newer host contract. The current ZCode sources use `RequestHandoff`, which
+requires a newer SDK commit than the OpenCode `0.8.0` pin.
 
-The command reads the selected package version from `docs/source-lock.json`
-and verifies the built manifest agrees. It uses the local `gh` login to check
-published versions in the private repository. An already published version
-returns `skip-published` before opening the SDK checkout or running Go. An
-unpublished version requires committed inputs for the selected package and
-shared build scripts. Changes in sibling packages do not block it. It takes a
-temporary snapshot of the selected SDK checkout's committed HEAD and writes
-`candidate/build-receipt.json` and `assets/` under `dist/releases/<module tag>/`
-by default. Select the SDK commit that matches the target host and
-run `scripts/check.py` for the selected package before preparing a release.
-The command records the tag, plugin commit, SDK commit, asset paths and checksum
-in `release.json`. Publish the assets against the recorded `pluginCommit`.
-Reuse a verified unpublished build with
-`--previous <path-to-build-receipt.json>` and a fresh output directory.
+The publish job creates `<manifest-id>-v<version>` at the triggering commit and
+uploads the ZIP and `checksums.txt`. The verified ZIP includes the package
+description alongside its SDK manifest, using the existing window metadata
+where present. Magpie installs and updates from these releases.
+
+Retry a failed publication by rerunning the original workflow. An existing tag
+can be reused when it points to that commit. An existing draft or a tag on
+another commit blocks publication until the conflict is resolved.
 
 ### Offline release tooling
 
-The local command uses `scripts/release_build.py` and `scripts/release.py`.
+The workflow uses `scripts/release_build.py` and `scripts/release.py`.
 They also accept explicit offline inputs for preparing release candidates.
 
 The build wrapper accepts exactly one package and an explicit version matching

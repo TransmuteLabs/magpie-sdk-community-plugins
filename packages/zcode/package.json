@@ -1,0 +1,6 @@
+{
+  "name": "zcode",
+  "version": "0.15.0",
+  "description": "ZCode native protocol, provider, agent, and interface",
+  "private": true
+}

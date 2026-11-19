@@ -1,0 +1,6 @@
+{
+  "name": "opencode",
+  "version": "0.8.0",
+  "description": "OpenCode provider, agent, session history, and interface",
+  "private": true
+}

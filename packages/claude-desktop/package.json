@@ -1,0 +1,6 @@
+{
+  "name": "agent-claude-desktop",
+  "version": "0.1.0",
+  "description": "Claude Desktop agent configuration for a third-party gateway",
+  "private": true
+}

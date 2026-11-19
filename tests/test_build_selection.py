@@ -1,4 +1,5 @@
 from contextlib import redirect_stderr, redirect_stdout
+import hashlib
 import io
 import json
 import os
@@ -112,9 +113,18 @@ class BuildCommandSelectionTests(unittest.TestCase):
         self.packages.return_value = self.entries
         self.sdk_source.return_value = self.root / "sdk"
         self.effective_target.return_value = self.target
-        self.validate_distribution.return_value = {"version": "0.1.0"}
+        for name, spec in self.entries.items():
+            package = self.root / "packages" / name
+            package.mkdir(parents=True)
+            (package / "package.json").write_text(json.dumps({
+                "name": spec["id"], "version": "0.1.0", "description": f"Description for {name}",
+            }))
+        self.validate_distribution.side_effect = lambda _, identifier: {
+            "id": identifier, "version": "0.1.0",
+        }
         runner = patch.object(workspace_build.subprocess, "run")
         self.runner = runner.start()
+        self.runner.side_effect = lambda command, **_: Path(command[3]).mkdir(parents=True)
         self.addCleanup(runner.stop)
 
     def run_command(self, selection):
@@ -163,6 +173,42 @@ class BuildCommandSelectionTests(unittest.TestCase):
         self.assertIn('"package": "claude-desktop"', stdout)
         self.assertEqual(self.runner.call_count, 1)
         self.assertEqual(self.runner.call_args.kwargs["env"], {"GOOS": "darwin", "GOARCH": "arm64"})
+        self.assertEqual(json.loads((self.root / "output/claude-desktop/package.json").read_text()), {
+            "name": "agent-claude-desktop", "version": "0.1.0", "description": "Description for claude-desktop",
+        })
+
+    def test_build_keeps_window_metadata_and_refreshes_its_inventory_entry(self):
+        window = {
+            "name": "magpie-minimax", "version": "0.1.0",
+            "magpie": {"page": {"title": "MiniMax", "file": "web/index.html"}},
+            "files": ["web", "lib"],
+        }
+
+        def build_window(command, **_):
+            output = Path(command[3])
+            output.mkdir(parents=True)
+            (output / "package.json").write_text(json.dumps(window))
+            (output / "inventory.json").write_text(json.dumps({
+                "package.json": hashlib.sha256((output / "package.json").read_bytes()).hexdigest(),
+                "lib/module.so": "preserved",
+            }))
+
+        self.runner.side_effect = build_window
+        self.run_command("minimax")
+        distribution = self.root / "output/minimax"
+        data = (distribution / "package.json").read_bytes()
+        self.assertEqual(json.loads(data), {**window, "description": "Description for minimax"})
+        self.assertEqual(json.loads((distribution / "inventory.json").read_text()), {
+            "package.json": hashlib.sha256(data).hexdigest(), "lib/module.so": "preserved",
+        })
+
+    def test_build_rejects_metadata_for_a_different_sdk_version(self):
+        metadata = self.root / "packages/minimax/package.json"
+        data = json.loads(metadata.read_text())
+        metadata.write_text(json.dumps({**data, "version": "0.2.0"}))
+        with self.assertRaisesRegex(ValueError, "differ in identity or version"):
+            self.run_command("minimax")
+        self.assertFalse((self.root / "output/minimax/package.json").exists())
 
     def test_linux_planner_unit_checks_are_not_filtered_by_distribution_platforms(self):
         entry = dict(self.entries["claude-desktop"], checks=[{"command": ["{python}", "-I", "tests/provenance_test.py"]}])
