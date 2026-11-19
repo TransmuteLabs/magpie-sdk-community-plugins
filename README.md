@@ -72,9 +72,9 @@ the package's version metadata. To release an existing unpublished version, run
 
 Keep the package version, native manifest and source provenance in agreement.
 The build verifies these fields and uses the Magpie commit pinned in
-`.github/workflows/release-package.yml`. Update that pin when a package needs
-a newer host contract. The current ZCode sources use `RequestHandoff`, which
-requires a newer SDK commit than the OpenCode `0.8.0` pin.
+`.github/workflows/release-package.yml`. When a package needs a newer host
+contract, push the tested SDK commit to `TransmuteLabs/magpie` before updating
+the pin. Changing the pin leaves existing release assets in place.
 
 The publish job creates `<manifest-id>-v<version>` at the triggering commit and
 uploads the ZIP and `checksums.txt`. The verified ZIP includes the package
