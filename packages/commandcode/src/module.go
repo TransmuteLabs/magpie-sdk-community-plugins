@@ -231,8 +231,12 @@ func usage(ctx context.Context, call sdk.Call, stream *sdk.Stream) (any, error) 
 		return sdk.UsageResult{Revision: request.Revision, Error: "CommandCode allowance is unknown"}, nil
 	}
 	result := sdk.UsageResult{Revision: request.Revision, Windows: value.Windows}
+	balanceOnly := sub.Monthly == 0 && len(value.Windows) == 0
+	separateBalance := sub.Unit == "credits" && value.ExtraUSD != nil && *value.ExtraUSD > 0
 	if subErr != nil {
 		result.Error = "CommandCode subscription is unknown; only independently known windows are shown"
+	} else if value.ExtraUSD != nil && (balanceOnly || separateBalance) {
+		result.Windows = append(result.Windows, sdk.UsageWindow{Name: "Balance", Balance: value.ExtraUSD, Unit: "USD", Aside: true})
 	}
 	return result, nil
 }

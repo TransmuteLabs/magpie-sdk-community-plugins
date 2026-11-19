@@ -49,7 +49,7 @@ func ParseSubscription(body []byte) (Subscription, error) {
 		return Subscription{Plan: "No plan"}, nil
 	}
 	value := subscriptionFor(row.PlanID)
-	value.Until = resetTime(row.Until)
+	value.Until = resetMillis(row.Until)
 	return value, nil
 }
 
@@ -113,7 +113,7 @@ func ParseCredits(body []byte, subscription Subscription) (Credits, error) {
 		if window.Exceeded {
 			percent = 100
 		}
-		value.Windows = append(value.Windows, sdk.UsageWindow{Name: name, Used: percent, Limit: 100, ResetsAt: resetTime(window.Reset)})
+		value.Windows = append(value.Windows, sdk.UsageWindow{Name: name, Used: percent, Limit: 100, ResetsAt: resetMillis(window.Reset)})
 	}
 	if value.Monthly != nil && subscription.Monthly > 0 {
 		pool := math.Max(subscription.Monthly, *value.Monthly)
@@ -125,7 +125,8 @@ func ParseCredits(body []byte, subscription Subscription) (Credits, error) {
 		if math.IsInf(pool, 0) {
 			return Credits{}, errors.New("credit pool overflow")
 		}
-		value.Windows = append(value.Windows, sdk.UsageWindow{Name: "Credits", Used: math.Min(100, 100*((pool-left)/pool)), Limit: 100, ResetsAt: subscription.Until})
+		spent := pool - left
+		value.Windows = append(value.Windows, sdk.UsageWindow{Name: "Credits", Used: math.Min(100, 100*(spent/pool)), Amount: &spent, Limit: pool, Unit: subscription.Unit, ResetsAt: subscription.Until})
 	}
 	if value.Monthly == nil && value.ExtraUSD == nil && len(value.Windows) == 0 {
 		return Credits{}, errors.New("credits are unknown")
@@ -185,21 +186,25 @@ func amount(raw json.RawMessage) (float64, error) {
 	return number, nil
 }
 
-func resetTime(raw json.RawMessage) int64 {
+func resetMillis(raw json.RawMessage) int64 {
+	const lastSupportedMillisecond = 253402300799999
 	var text string
 	if json.Unmarshal(raw, &text) == nil {
-		if value, err := time.Parse(time.RFC3339Nano, text); err == nil && value.Unix() > 0 {
-			return value.Unix()
+		if value, err := time.Parse(time.RFC3339Nano, text); err == nil {
+			if millis := value.UnixMilli(); millis > 0 && millis <= lastSupportedMillisecond {
+				return millis
+			}
+			return 0
 		}
 	}
 	number, err := amount(raw)
 	if err != nil || number <= 0 {
 		return 0
 	}
-	if number >= 1e12 {
-		number /= 1000
+	if number < 1e12 {
+		number *= 1000
 	}
-	if number > float64(math.MaxInt64/1000) {
+	if number > lastSupportedMillisecond {
 		return 0
 	}
 	return int64(number)

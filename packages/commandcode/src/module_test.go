@@ -337,6 +337,83 @@ func TestUsageAcknowledgesTheHostRevision(t *testing.T) {
 	}
 }
 
+func TestUsageReportsResetTimesInMilliseconds(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		switch request.URL.Path {
+		case "/alpha/billing/subscriptions":
+			io.WriteString(writer, `{"data":{"planId":"individual-go","status":"active","currentPeriodEnd":"2026-11-28T12:00:00.125Z"}}`)
+		case "/alpha/billing/credits":
+			io.WriteString(writer, `{"credits":{"monthlyCredits":9},"windowLimits":{"fiveHour":{"used":1,"cap":2,"resetAt":1790000000},"weekly":{"used":3,"cap":4,"resetAt":"1792149831123"}}}`)
+		default:
+			writer.WriteHeader(http.StatusNotFound)
+		}
+	}))
+	defer server.Close()
+	worker := fixture(t, Config{APIURL: server.URL, StudioURL: "https://commandcode.ai"})
+	body, _, err := worker.call(sdk.MethodProviderUsage, sdk.UsageRequest{Revision: "1"}, testAuth())
+	if err != nil {
+		t.Fatal(err)
+	}
+	result, fresh, err := sdk.ValidateUsageResult(Manifest(), body)
+	if err != nil || !fresh || len(result.Windows) != 3 {
+		t.Fatalf("usage: %s %v", body, err)
+	}
+	for index, want := range []int64{1790000000000, 1792149831123, time.Date(2026, 11, 28, 12, 0, 0, 125000000, time.UTC).UnixMilli()} {
+		if got := result.Windows[index]; got.ResetsAt != want {
+			t.Errorf("%s reset %d, want %d", got.Name, got.ResetsAt, want)
+		}
+	}
+}
+
+func TestUsagePreservesKnownDollarBalanceApartFromCreditUnits(t *testing.T) {
+	for _, sample := range []struct {
+		name, subscription, credits string
+		balance                     *float64
+		windows                     int
+		fresh                       bool
+	}{
+		{"no-plan", `null`, `{"purchasedCredits":7,"freeCredits":0.25}`, new(7.25), 1, false},
+		{"known-zero", `null`, `{"purchasedCredits":0}`, new(0.0), 1, false},
+		{"unknown", `null`, `{}`, nil, 0, false},
+		{"plan-with-credit-units", `{"planId":"individual-go","status":"active"}`, `{"monthlyCredits":9,"purchasedCredits":7.25}`, new(7.25), 2, true},
+		{"plan-with-dollar-units", `{"planId":"individual-max","status":"active"}`, `{"monthlyCredits":100,"purchasedCredits":7.25}`, nil, 1, true},
+	} {
+		t.Run(sample.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+				switch request.URL.Path {
+				case "/alpha/billing/subscriptions":
+					io.WriteString(writer, `{"data":`+sample.subscription+`}`)
+				case "/alpha/billing/credits":
+					io.WriteString(writer, `{"credits":`+sample.credits+`}`)
+				default:
+					writer.WriteHeader(http.StatusNotFound)
+				}
+			}))
+			defer server.Close()
+			worker := fixture(t, Config{APIURL: server.URL, StudioURL: "https://commandcode.ai"})
+			body, _, err := worker.call(sdk.MethodProviderUsage, sdk.UsageRequest{Revision: "1"}, testAuth())
+			if err != nil {
+				t.Fatal(err)
+			}
+			result, fresh, err := sdk.ValidateUsageResult(Manifest(), body)
+			if err != nil || fresh != sample.fresh || len(result.Windows) != sample.windows {
+				t.Fatalf("usage: %s %v", body, err)
+			}
+			for _, window := range result.Windows {
+				if window.Name == "Credits" && sample.name == "plan-with-credit-units" && (window.Used != 10 || window.Amount == nil || *window.Amount != 1 || window.Limit != 10 || window.Unit != "credits") {
+					t.Errorf("plan credits: %+v", window)
+				}
+				if window.Balance != nil && (sample.balance == nil || *window.Balance != *sample.balance || window.Unit != "USD" || !window.Aside) {
+					t.Errorf("dollar balance: %+v", window)
+				}
+			}
+			if sample.balance != nil && result.Windows[len(result.Windows)-1].Balance == nil {
+				t.Fatalf("missing balance: %s", body)
+			}
+		})
+	}
+}
+
 func TestUsageRejectsInvalidAuthorityBeforeNetwork(t *testing.T) {
 	var requests atomic.Int64
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

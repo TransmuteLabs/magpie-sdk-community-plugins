@@ -41,6 +41,10 @@ Provider API. The Go-plan lane refuses token counting before acceptance;
 it never turns counting into generation. Conversational execution and model
 discovery stop when subscription lookup fails or returns malformed data.
 An explicit no-plan response remains a known Provider API state.
+Usage reports the rolling resets and plan period end as Unix milliseconds.
+Monthly usage includes amounts and limits in the plan's unit. Purchased and
+free dollar credits appear separately for plans denominated in credits and
+as a balance for accounts with only a known dollar balance, including zero.
 Sign-in admission reclaims expired flows for all three auth methods before
 enforcing the limit; live flows remain bounded, and removed browser listeners
 are closed and joined outside the controller lock.
