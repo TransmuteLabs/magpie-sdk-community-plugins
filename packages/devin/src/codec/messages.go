@@ -38,8 +38,9 @@ type messagesRequest struct {
 	Stream   bool            `json:"stream"`
 	System   json.RawMessage `json:"system"`
 	Messages []struct {
-		Role    string          `json:"role"`
-		Content json.RawMessage `json:"content"`
+		Role         string          `json:"role"`
+		Content      json.RawMessage `json:"content"`
+		OutputConfig json.RawMessage `json:"output_config"`
 	} `json:"messages"`
 	MaxTokens   *uint64  `json:"max_tokens"`
 	Temperature *float64 `json:"temperature"`

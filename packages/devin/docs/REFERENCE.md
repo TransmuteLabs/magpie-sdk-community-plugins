@@ -5,7 +5,7 @@
 > original snapshots. See [relocation verification](migration/RELOCATION.md) for
 > the new workspace checks and [current entry point](../README.md).
 
-The standard `python3 scripts/build.py --output DISTRIBUTION` builds the complete **0.8.1**
+The standard `python3 scripts/build.py --output DISTRIBUTION` builds the complete **0.8.2**
 native module through `NewAgent`: inbound, outbound Chat/Messages, auth,
 models, usage/Facts/diagnostics, the `devin-native` agent, four finite
 bootstrap operations, managed bundle lookup and the default-off paid cache task.
@@ -79,7 +79,7 @@ core loader.
 
 Experimental native Devin module for Magpie, serving both directions:
 native Devin ingress, canonical Chat and scoped Messages requests execute
-against the selected Devin account. Standard version **0.8.1** requires
+against the selected Devin account. Standard version **0.8.2** requires
 **SDK API 1.12, native ABI 1** and
 declares `inbound-codec`, `outbound-executor`, `account-auth`,
 `model-discovery`, `usage-reporter`, `agent-wiring`, `module-rpc` and

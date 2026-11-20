@@ -1,6 +1,6 @@
 # Devin
 
-One native `devin-inbound` **0.8.1** package provides Devin ingress, Chat and
+One native `devin-inbound` **0.8.2** package provides Devin ingress, Chat and
 Messages execution, account sign-in, models, usage, agent bootstrap and
 account-managed bundle lookup. Requires SDK API **1.12**, native ABI **1**. Paid cache keepalive
 remains off by default. No community package is a runtime dependency.

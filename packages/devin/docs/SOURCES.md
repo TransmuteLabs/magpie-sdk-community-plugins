@@ -4,6 +4,15 @@ The machine-readable source of truth is `source-lock.json`, schema 1.
 It pins immutable commits and artifact SHA256s, not branch names or latest
 releases. Sources are read-only evidence, not packages installed at runtime.
 
+CLIProxyAPI commit `061ffe6fbc222b43e7bfd39fc77536e3b1e93858`
+(`v8.0.53-2-g061ffe6fb`) records Claude Code's mid-conversation effort
+directive in `internal/thinking/claude_effort_directive.go` and the
+Devin executor regression. Version 0.8.2 accepts the effort-only
+`output_config` on a system turn. The last directive takes precedence over
+the top-level effort, and selected-account variant lookup keeps concrete
+model UIDs and disabled thinking behavior. Existing system-notice text
+stays in the conversation.
+
 The November 19 comparison uses committed `Agents/devinapp`
 `e977587dd6a76ed2125ea7e09ac4771035100d35` (reconstructed CLI `3000.11.228`).
 `client/account_upload_wire.rs` and `client/plugins.rs`, present since
@@ -300,7 +309,7 @@ host identities and pins exact committed descriptor hashes.
 
 | Distribution | Version / minimum SDK | Implemented surface |
 | --- | --- | --- |
-| Default / `--agent`, source `magpie-agent.json` | 0.8.1 / 1.12 | Paired ingress/outbound/auth/models/usage/Facts/diagnostics, agent/bootstrap, managed bundle lookup and default-off paid account task |
+| Default / `--agent`, source `magpie-agent.json` | 0.8.2 / 1.12 | Paired ingress/outbound/auth/models/usage/Facts/diagnostics, agent/bootstrap, managed bundle lookup and default-off paid account task |
 | `--paired-only`, source `magpie-plugin.json` | 0.5.0 / 1.12 | Paired ingress, Chat/Messages, auth/models/usage/Facts/diagnostics and request policy |
 | `--inbound-only` | 0.2.0 / 1.1 | Canonical Chat/model converter; no provider or account sign-in |
 

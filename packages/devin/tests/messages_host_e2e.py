@@ -16,7 +16,24 @@ from conformance import connect_frames, data_frame, fields, number_field, text_f
 from http_e2e import CALLER_KEY, DenyProxy, Provider, SERVICE, digest, require, server_thread
 
 
+EFFORT_FAMILY = "swe-2"
+EFFORT_LOW = "swe-2-low"
+EFFORT_HIGH = "swe-2-high"
+
+
 class MessagesVendorHandler(donor.DomainVendorHandler):
+    def reply(self, content_type, body, status=200):
+        if self.path == SERVICE + "GetCliModelConfigs" and status == 200:
+            claude_info = number_field(4, 32768) + number_field(13, 4096)
+            swe_info = claude_info + text_field(23, EFFORT_FAMILY)
+            swe_info += text_field(6, number_field(12, 1) + number_field(15, 1))
+            for uid, info in (("claude-fixture", claude_info), (EFFORT_LOW, swe_info), (EFFORT_HIGH, swe_info)):
+                entry = text_field(1, uid) + text_field(22, uid) + number_field(18, 32768)
+                body += text_field(1, entry + text_field(23, info))
+            super(donor.DomainVendorHandler, self).reply(content_type, body, status)
+            return
+        super().reply(content_type, body, status)
+
     def do_POST(self):
         if self.path != SERVICE + "GetChatMessage":
             super().do_POST()
@@ -28,7 +45,7 @@ class MessagesVendorHandler(donor.DomainVendorHandler):
             require(len(frames) == 1 and frames[0][0] in (0, 1), "invalid Messages native framing")
             payload = gzip.decompress(frames[0][1]) if frames[0][0] else frames[0][1]
             request = fields(payload)
-            require(request.get(21) == [b"claude-fixture"] and
+            require(request.get(21) in ([b"claude-fixture"], [EFFORT_LOW.encode()], [EFFORT_HIGH.encode()]) and
                     self.headers.get("Authorization") == "Basic " + paired.SELECTED_KEY and
                     paired.SELECTED_KEY.encode() in request[1][0] and CALLER_KEY.encode() not in payload,
                     "Messages lost selected account/model authority")
@@ -37,6 +54,10 @@ class MessagesVendorHandler(donor.DomainVendorHandler):
                 self.server.chat.append(payload)
             prompts = [fields(value) for value in request.get(3, [])]
             text = b"".join(prompt.get(3, [b""])[0] for prompt in prompts)
+            if request[21] != [b"claude-fixture"]:
+                reply = text_field(3, "Messages effort answer") + number_field(5, 2)
+                self.reply("application/connect+proto", data_frame(reply) + b"\2\0\0\0\2{}")
+                return
             thought = text_field(9, "native thought") + text_field(16, "thought-1")
             signature = (text_field(10, "messages-signed") + text_field(16, "thought-1")
                          + text_field(21, "anthropic-bedrock") + text_field(23, "claude-fixture"))
@@ -102,12 +123,13 @@ def run(host, distribution, artifacts):
             while time.monotonic() < deadline:
                 status, _, body = gateway.request("/v1/models", method="GET")
                 require(status == 200, "Messages catalog unavailable")
-                model = next((row["id"] for row in json.loads(body)["data"]
-                              if row["id"].endswith("/claude-fixture")), None)
-                if model:
+                models = {row["id"].rsplit("/", 1)[-1]: row["id"] for row in json.loads(body)["data"]}
+                model = models.get("claude-fixture")
+                family = models.get(EFFORT_FAMILY)
+                if model and family:
                     break
                 time.sleep(0.05)
-            require(model, "Messages model was not discovered")
+            require(model and family, "Messages model or two-variant effort family was not discovered")
             mappings = Path("/proc", str(gateway.process.pid), "maps").read_text()
             libraries = {line.split()[-1] for line in mappings.splitlines()
                          if line.split()[-1].startswith(str(home)) and ".so" in line.split()[-1]}
@@ -196,6 +218,32 @@ def run(host, distribution, artifacts):
             status, _, _ = request({"messages": cancelled})
             require(status >= 400 and vendor.count() == before, "cancelled Messages stream issued a signature receipt")
             result["checks"].append("caller disconnect cancels native HTTP and issues no resumable signature")
+
+            effort_body = {"thinking": {"type": "adaptive"}, "output_config": {"effort": "low"},
+                           "messages": [{"role": "system", "content": [], "output_config": {"effort": "low"}},
+                                        {"role": "user", "content": "first"},
+                                        {"role": "assistant", "content": "ok"},
+                                        {"role": "system", "content": "Keep this system note",
+                                         "output_config": {"effort": "high"}},
+                                        {"role": "user", "content": "continue"}]}
+            result["effortRoutes"] = []
+            for name, pin, expected in (("messages-effort-agent", "", EFFORT_HIGH),
+                                        ("messages-effort-pinned", ":low", EFFORT_LOW)):
+                gateway.command("group", "add", name, "models=" + family + pin, "routing=order", "stays=off")
+                before = vendor.count()
+                status, _, _ = request({**effort_body, "model": "group/" + name}, marker=name)
+                attempts = vendor.count() - before
+                require(status == 200 and attempts == 1,
+                        f"{name} must make one native request: status={status} attempts={attempts}")
+                native = fields(vendor.chat[-1])
+                uid = native[21][0].decode()
+                result["effortRoutes"].append({"group": name, "expected": expected, "uid": uid, "attempts": attempts})
+                prompts = [fields(value) for value in native.get(3, [])]
+                require([prompt.get(3, [b""])[0] for prompt in prompts] ==
+                        [b"first", b"ok", b"Keep this system note", b"continue"],
+                        f"{name} changed the conversation sent to Devin")
+                require(uid == expected, f"{name}: expected native UID {expected}, got {uid}")
+            result["checks"].append("ordinary Messages group selects last inline effort or pinned member effort and keeps notice")
             require(not proxy.requests and not foreign.snapshot() and not vendor.failures,
                     "Messages fixture crossed a peer boundary or failed vendor assertions")
             result["status"] = "passed"

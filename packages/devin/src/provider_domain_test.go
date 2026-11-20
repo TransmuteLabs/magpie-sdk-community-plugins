@@ -93,20 +93,32 @@ func TestProviderDomainCatalogProjectsFamiliesEffortsFastAliasesAndFreeScope(t *
 }
 
 func TestProviderDomainSelectionUsesCurrentAccountVariantsAndKeepsConcreteUIDs(t *testing.T) {
+	const plainTurns = `[{"role":"user","content":"hello"}]`
+	const effortTurns = `[{"role":"system","content":[],"output_config":{"effort":"max"}},
+		{"role":"user","content":"first"},{"role":"assistant","content":"ok"},
+		{"role":"system","content":"Keep this system note","output_config":{"effort":"high"}},
+		{"role":"user","content":"hello"}]`
 	for _, fixture := range []struct {
-		name, model, controls, want string
-		messages                    bool
+		name, model, controls, want, turns string
 	}{
-		{"family-default", "swe-2", "", "swe-2-high", false},
-		{"alias-nearest-tie-up", "swe", `,"reasoning_effort":"medium"`, "swe-2-high", false},
-		{"ultra-alias", "swe", `,"reasoning_effort":"ultra"`, "swe-2-max", false},
-		{"fast-nearest-tie-up", "opus-fast", `,"reasoning_effort":"medium"`, "claude-opus-5-high-fast", false},
-		{"priority-underscore-min", "opus-priority", `,"reasoning_effort":"none"`, "claude-opus-5_MIN_PRIORITY", false},
-		{"concrete-stays-pinned", "swe-2-low", `,"reasoning_effort":"max"`, "swe-2-low", false},
-		{"messages-effort", "opus", `,"output_config":{"effort":"max"}`, "claude-opus-5-xhigh", true},
-		{"messages-budget", "swe", `,"thinking":{"type":"enabled","budget_tokens":4096}`, "swe-2-low", true},
-		{"messages-disabled", "swe", `,"thinking":{"type":"disabled"},"output_config":{"effort":"low"}`, "swe-2-high", true},
-		{"discovered-dynamic", "account-only", "", "account-only-low", false},
+		{"family-default", "swe-2", "", "swe-2-high", ""},
+		{"alias-nearest-tie-up", "swe", `,"reasoning_effort":"medium"`, "swe-2-high", ""},
+		{"ultra-alias", "swe", `,"reasoning_effort":"ultra"`, "swe-2-max", ""},
+		{"fast-nearest-tie-up", "opus-fast", `,"reasoning_effort":"medium"`, "claude-opus-5-high-fast", ""},
+		{"priority-underscore-min", "opus-priority", `,"reasoning_effort":"none"`, "claude-opus-5_MIN_PRIORITY", ""},
+		{"concrete-stays-pinned", "swe-2-low", `,"reasoning_effort":"max"`, "swe-2-low", ""},
+		{"messages-effort", "opus", `,"output_config":{"effort":"max"}`, "claude-opus-5-xhigh", plainTurns},
+		{"messages-budget", "swe", `,"thinking":{"type":"enabled","budget_tokens":4096}`, "swe-2-low", plainTurns},
+		{"messages-disabled", "swe", `,"thinking":{"type":"disabled"},"output_config":{"effort":"low"}`, "swe-2-high", plainTurns},
+		{"messages-turn-effort", "swe", `,"thinking":{"type":"adaptive"},"output_config":{"effort":"low"}`, "swe-2-high", effortTurns},
+		{"messages-turn-pinned", "swe-2-low", `,"thinking":{"type":"adaptive"}`, "swe-2-low", effortTurns},
+		{"messages-turn-disabled", "swe", `,"thinking":{"type":"disabled"},"output_config":{"effort":"max"}`, "swe-2-high",
+			`[{"role":"system","content":[],"output_config":{"effort":"low"}},{"role":"user","content":"hello"}]`},
+		{"messages-turn-user", "swe", "", "", `[{"role":"user","content":"hello","output_config":{"effort":"max"}}]`},
+		{"messages-turn-extra", "swe", "", "", `[{"role":"system","content":[],"output_config":{"effort":"max","format":{}}},{"role":"user","content":"hello"}]`},
+		{"messages-turn-duplicate", "swe", "", "", `[{"role":"system","content":[],"output_config":{"effort":"low","effort":"max"}},{"role":"user","content":"hello"}]`},
+		{"messages-turn-invalid", "swe", "", "", `[{"role":"system","content":[],"output_config":{"effort":"unknown"}},{"role":"user","content":"hello"}]`},
+		{"discovered-dynamic", "account-only", "", "account-only-low", ""},
 	} {
 		t.Run(fixture.name, func(t *testing.T) {
 			var dispatches atomic.Int32
@@ -123,6 +135,25 @@ func TestProviderDomainSelectionUsesCurrentAccountVariantsAndKeepsConcreteUIDs(t
 						t.Error(err)
 						writer.WriteHeader(http.StatusBadRequest)
 						return
+					}
+					if fixture.turns == effortTurns {
+						var roles []uint64
+						var texts []string
+						for _, field := range oracleFields(t, payload) {
+							if field.number != 3 {
+								continue
+							}
+							texts = append(texts, oracleValue(t, field.value, 3))
+							for _, prompt := range oracleFields(t, field.value) {
+								if prompt.number == 2 {
+									roles = append(roles, prompt.count)
+								}
+							}
+						}
+						if !slices.Equal(roles, []uint64{1, 2, 1, 1}) ||
+							!slices.Equal(texts, []string{"first", "ok", "Keep this system note", "hello"}) {
+							t.Errorf("effort directive changed the native conversation: roles=%v texts=%q", roles, texts)
+						}
 					}
 					fields, err := codec.RawFields(payload)
 					if err != nil {
@@ -152,14 +183,24 @@ func TestProviderDomainSelectionUsesCurrentAccountVariantsAndKeepsConcreteUIDs(t
 					t.Fatal(discovered)
 				}
 			}
-			body := []byte(`{"model":"` + fixture.model + `","max_tokens":64,"messages":[{"role":"user","content":"hello"}]` + fixture.controls + `}`)
+			turns := fixture.turns
+			if turns == "" {
+				turns = plainTurns
+			}
+			body := []byte(`{"model":"` + fixture.model + `","max_tokens":64,"messages":` + turns + fixture.controls + `}`)
 			request := fixtureExecute(body, sdk.ExecuteOptions{CallerID: "domain-caller"})
 			request.Model = fixture.model
-			if fixture.messages {
+			if fixture.turns != "" {
 				request.Protocol = "anthropic"
 				request.Options, _ = json.Marshal(sdk.ExecuteOptions{Method: "POST", Path: "/v1/messages", CallerID: "domain-caller"})
 			}
 			frame, events := peer.call(t, sdk.MethodProviderExecute, request)
+			if fixture.want == "" {
+				if frame.Error == nil || frame.Error.Code != "invalid_params" || frame.Error.Outcome != "not-started" || dispatches.Load() != 0 {
+					t.Fatalf("invalid directive should stop before dispatch: %+v dispatches=%d", frame.Error, dispatches.Load())
+				}
+				return
+			}
 			if frame.Error != nil || dispatches.Load() != 1 {
 				t.Fatalf("source-proven family/effort selection did not execute once: %+v dispatches=%d", frame.Error, dispatches.Load())
 			}
