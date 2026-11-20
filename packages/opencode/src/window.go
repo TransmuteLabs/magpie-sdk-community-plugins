@@ -9,11 +9,36 @@ import (
 	"github.com/yetone/magpie/pkg/protocolext"
 )
 
-const windowVersion = "0.8.1"
+const windowVersion = "0.8.2"
 
 func WindowManifest() sdk.Manifest {
-	manifest := AgentManifest()
+	manifest := API8WindowManifest()
 	manifest.Version = windowVersion
+	manifest.Contract.Capabilities = append(manifest.Contract.Capabilities, sdk.ProviderSignIn)
+	device := sdk.WindowAuthMethod{ID: "device", Mode: "poll", Label: "Sign in with OpenCode"}
+	manifest.AuthBindings = append(manifest.AuthBindings,
+		sdk.WindowAuthBindingDescriptor{
+			ID: "provider.go", From: sdk.ProviderSignInPart, Provider: ProviderGo, Reauthorize: true,
+			Methods: []sdk.WindowAuthMethod{device},
+		},
+		sdk.WindowAuthBindingDescriptor{
+			ID: "provider.zen", From: sdk.ProviderSignInPart, Provider: ProviderZen, Reauthorize: true,
+			Methods: []sdk.WindowAuthMethod{device, {
+				ID: "key", Mode: "poll", Label: "Use API key",
+				Fields: []sdk.AuthInputField{{Key: "key", Label: "API key", Type: "secret"}},
+			}},
+		},
+		sdk.WindowAuthBindingDescriptor{
+			ID: "provider.zen-free", From: sdk.ProviderSignInPart, Provider: ProviderZenPublic,
+			Methods: []sdk.WindowAuthMethod{{ID: "public", Mode: "poll", Label: "Enable free models"}},
+		},
+	)
+	return manifest
+}
+
+func API8WindowManifest() sdk.Manifest {
+	manifest := AgentManifest()
+	manifest.Version = "0.8.1"
 	protocols := []protocolext.Protocol{"chat", "responses", "messages", "gemini"}
 	manifest.Providers = append(manifest.Providers,
 		sdk.ProviderDescriptor{ID: ProviderZen, Name: "OpenCode Zen personal", Protocols: protocols, Models: zenBootstrap(false)},
@@ -55,20 +80,17 @@ func WindowManifest() sdk.Manifest {
 	return manifest
 }
 
-func API8WindowManifest() sdk.Manifest {
-	manifest := WindowManifest()
-	return manifest
-}
-
 func NewAPI8WindowModule(options ModuleOptions) sdk.Module {
-	module := NewWindowModule(options)
-	module.Manifest = API8WindowManifest()
-	return module
+	return newWindowModule(options, API8WindowManifest())
 }
 
 func NewWindowModule(options ModuleOptions) sdk.Module {
+	return newWindowModule(options, WindowManifest())
+}
+
+func newWindowModule(options ModuleOptions, manifest sdk.Manifest) sdk.Module {
 	module := newModule(options, true)
-	module.Manifest = WindowManifest()
+	module.Manifest = manifest
 	module.Handlers[sdk.MethodAgentInspect] = inspectAgent
 	module.Handlers[sdk.MethodAgentPlan] = planAgent
 	module.Actions["account.info"] = func(ctx context.Context, call sdk.Call, _ *sdk.Stream) (any, error) {

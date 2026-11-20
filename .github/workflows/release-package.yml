@@ -17,7 +17,7 @@ on:
         type: string
 
 env:
-  SDK_COMMIT: 342f6f5315656e80200c2fe60dbf8ea0147f04af
+  SDK_COMMIT: 1a478840fc13199bf302efcdc9cf9b987d821438
 
 jobs:
   build:

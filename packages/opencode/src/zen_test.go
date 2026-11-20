@@ -30,6 +30,9 @@ func TestZenWindowDeclaresSeparatePersonalAndPublicAuthority(t *testing.T) {
 	}
 	methods := map[string]string{}
 	for _, binding := range module.Manifest.AuthBindings {
+		if binding.From != "window:page" {
+			continue
+		}
 		for _, method := range binding.Methods {
 			methods[binding.Provider+"/"+method.ID] = method.Mode
 		}
@@ -85,6 +88,17 @@ func TestZenKeyPublicFlowAndRefreshKeepSeparateAuthority(t *testing.T) {
 		selected := sdk.Call{Scope: zenScope(test.Provider, identity), Auth: result.Credentials}
 		if _, err := selectedZen(selected); err != nil {
 			t.Fatal(err)
+		}
+		for _, revision := range []string{"", "17"} {
+			usage, _ := harness.invoke(sdk.MethodProviderUsage, selected.Scope, sdk.UsageRequest{Revision: revision}, selected.Auth)
+			quota, fresh, err := sdk.ValidateUsageResult(WindowManifest(), usage.Result)
+			if usage.Error != nil || err != nil || fresh || quota.Revision != revision || len(quota.Windows) != 0 {
+				t.Fatalf("%s has no ordinary quota at revision %q: %+v, error %v, fresh %v, result %s",
+					test.Provider, revision, usage.Error, err, fresh, usage.Result)
+			}
+			if revision == "" && bytesContains(usage.Result, `"revision"`) {
+				t.Fatal("the omitted host usage revision was synthesized")
+			}
 		}
 		selected.Scope.Provider = ProviderGo
 		if _, err := selectedZen(selected); err == nil {

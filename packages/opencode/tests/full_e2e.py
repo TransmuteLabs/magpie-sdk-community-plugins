@@ -29,7 +29,9 @@ def main():
     parser.add_argument("distribution", type=Path)
     parser.add_argument("output", type=Path)
     parser.add_argument("--zen-console", action="store_true")
-    parser.add_argument("--agent-metadata-only", action="store_true")
+    focused = parser.add_mutually_exclusive_group()
+    focused.add_argument("--agent-metadata-only", action="store_true")
+    focused.add_argument("--provider-signin-only", action="store_true")
     parser.add_argument("--agent-format", choices=("v1", "v2"), default="v2")
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1] / "src"
@@ -72,6 +74,32 @@ def main():
     donor_console = json.loads((root / "testdata/donors/console.json").read_text())
     donor_models = json.loads((root / "testdata/donors/zen-list.json").read_text())
     donor_catalog = json.loads((root / "testdata/donors/zen-catalog.json").read_text())["models"]
+    signin_catalog_ids = {
+        "go-initial": ("deepseek-v4.1-flash", "glm-5.2"),
+        "go-renewed": ("kimi-k3", "gemini-4-argon"),
+        "zen-device": ("claude-sonnet-5-5",),
+        "zen-key": ("claude-haiku-5-5",),
+        "zen-free": ("deepseek-v4.1-flash-free",),
+    }
+    signin_go_accounts = {("Bearer PRIVATE-access-1", "initial-org"): "go-initial",
+                          ("Bearer PRIVATE-access-3", "changed-org"): "go-renewed"}
+    signin_zen_accounts = {("Bearer PRIVATE-access-2", "changed-org"): "zen-device",
+                           ("Bearer SYNTHETIC-ZEN-SERVICE", ""): "zen-key",
+                           ("Bearer public", ""): "zen-free"}
+    pinned_go = json.loads((root / "testdata/compat/provider-0.2.0.json").read_text())["providers"][0]["models"]
+    go_model_ids = {model["id"] for model in pinned_go}
+    zen_models_by_id = {model["id"]: model for model in donor_models["data"]}
+    signin_lists = {}
+    for account, models in signin_catalog_ids.items():
+        if account in signin_go_accounts.values():
+            assert set(models) <= go_model_ids, "Go sign-in fixture departed from the pinned donor projection"
+            entries = [{"id": model, "object": "model"} for model in models]
+        else:
+            if account == "zen-free":
+                models += signin_catalog_ids["zen-device"]
+            entries = [zen_models_by_id[model] for model in models]
+        signin_lists[account] = {"object": "list", "data": entries}
+    state.update(signinCatalogReads=[], signinQuotaReads=[])
     devices = set()
     namespace = "/fixture-" + secrets.token_hex(16)
 
@@ -216,6 +244,17 @@ def main():
 
         def do_GET(self):
             path = urlsplit(self.path).path
+            selected = (self.headers.get("Authorization", ""), self.headers.get("x-opencode-org-id", ""))
+            if args.provider_signin_only and self.path in ("/inference/go/v1/models", "/inference/v1/models"):
+                accounts = signin_go_accounts if path == "/inference/go/v1/models" else signin_zen_accounts
+                account = accounts.get(selected)
+                if not account or self.headers.get("Cookie") or self.headers.get("x-opencode-client") != "cli":
+                    with lock:
+                        state["failures"].append("catalog request used unexpected account or headers: " + path)
+                    return self.reply({}, 401)
+                with lock:
+                    state["signinCatalogReads"].append(account)
+                return self.reply(signin_lists[account])
             if args.zen_console and path == "/inference/v1/models":
                 return self.reply(donor_models)
             if args.zen_console and path.startswith("/console/api/v2/"):
@@ -245,9 +284,20 @@ def main():
             if self.path == "/console/api/orgs":
                 return self.reply([{"id": "initial-org", "name": "Initial"}, {"id": "changed-org", "name": "Changed"}])
             if self.path == "/zen/go/v1/usage":
+                percent = 23
+                if args.provider_signin_only:
+                    account = signin_go_accounts.get(selected)
+                    if not account or self.headers.get("Cookie"):
+                        with lock:
+                            state["failures"].append("Go quota request used unexpected account or headers")
+                        return self.reply({}, 401)
+                    with lock:
+                        state["signinQuotaReads"].append(account)
+                    if account == "go-renewed":
+                        percent = 57
                 with lock:
                     state["quota"] += 1
-                return self.reply({"usage": {"rolling": {"percent": 23}}})
+                return self.reply({"usage": {"rolling": {"percent": percent}}})
             if urlsplit(self.path).path == "/updates":
                 return self.reply({}, 404)
             with lock:
@@ -272,7 +322,8 @@ def main():
                MAGPIE_BUN=str(home / "no-bun"), MAGPIE_UPDATE_FEED=vendor + "/updates")
     events = output / "native-events.jsonl"
     env["MAGPIE_OPENCODE_FIXTURE_EVENTS"] = str(events)
-    if args.agent_metadata_only and json.loads((args.distribution / "magpie-plugin.json").read_text())["contract"]["version"]["minor"] == 8:
+    contract = json.loads((args.distribution / "magpie-plugin.json").read_text())["contract"]
+    if "provider-signin" not in contract["capabilities"]:
         env["MAGPIE_OPENCODE_FIXTURE_VARIANT"] = "window-api8"
     (config / "settings.json").write_text(json.dumps({"noStats": True, "noUsageStats": True, "noAutoUpdate": True,
                                                       "noAccountDiscovery": False, "agentTelemetryOff": True}))
@@ -313,6 +364,116 @@ def main():
         connection.close()
         assert response.status == 200, (response.status, raw[:1000])
         return json.loads(raw)
+
+    def providers_signin():
+        provider_ids = ("opencode-go", "opencode-zen", "opencode-zen-free")
+        ids = {name: "extension-" + hashlib.sha256(("opencode\0" + name).encode()).hexdigest()[:24] for name in provider_ids}
+        rows = {row["id"]: row for row in request("/api/providers")["sdkSubscriptions"]}
+        methods = {
+            "opencode-go": {"device": []},
+            "opencode-zen": {"device": [], "key": [{"key": "key", "label": "API key", "type": "secret"}]},
+            "opencode-zen-free": {"public": []},
+        }
+        for provider, expected in methods.items():
+            row = rows[ids[provider]]
+            assert row["revision"] and not row.get("page")
+            assert bool(row.get("reauthorize")) == (provider != "opencode-zen-free")
+            assert all(method["mode"] == "poll" and method["label"] for method in row["methods"])
+            assert {method["id"]: method.get("fields", []) for method in row["methods"]} == expected
+
+        def authorize(provider, method, account=None):
+            row = rows[ids[provider]]
+            parent = secrets.token_hex(16)
+            options = {"method": method}
+            if method == "key":
+                options["input"] = {"key": "SYNTHETIC-ZEN-SERVICE"}
+            if account:
+                options["account"] = {"id": account["id"], "expectedGeneration": account["generation"]}
+
+            def call(operation, **fields):
+                view = request("/api/provider/sdk-signin", {"id": row["id"], "revision": row["revision"],
+                               "parent": parent, "request": secrets.token_hex(16),
+                               "operation": operation, **fields})
+                for secret in ("PRIVATE-access-", "PRIVATE-refresh-", "PRIVATE-device-", "SYNTHETIC-ZEN-SERVICE", "continuation"):
+                    assert secret not in json.dumps(view), "Providers response disclosed private authorization data"
+                return view
+
+            view = call("start", options=options)
+            if method == "device":
+                assert view["userCode"] == "SAFE-CODE" and view["url"] == vendor + "/console/verify"
+            else:
+                assert not view.get("url") and not view.get("userCode")
+            deadline = time.monotonic() + 15
+            while view["state"] in {"waiting", "pending"} and time.monotonic() < deadline:
+                time.sleep(max(0.01, view.get("retryAfterMs", 0) / 1000))
+                view = call("finish", flow=view["flow"])
+            assert view["state"] == "complete", view
+            assert not view.get("url") and not view.get("userCode")
+            return view["account"]
+
+        def await_models(expected):
+            deadline = time.monotonic() + 15
+            while True:
+                providers = {row["id"]: row for row in request("/api/providers")["providers"]}
+                found = {provider: sorted(model["id"] for model in providers.get(ids[provider], {}).get("models") or [])
+                         for provider in expected}
+                if found == {provider: sorted(models) for provider, models in expected.items()}:
+                    return found
+                assert time.monotonic() < deadline, ("ordinary Provider models differ from selected catalogs", expected, found)
+                time.sleep(0.1)
+
+        def fetch_catalog(provider):
+            fetched = request("/api/provider/models", {"id": ids[provider]})
+            assert fetched.get("provider", {}).get("id") == ids[provider] and fetched.get("count", 0) > 0, fetched
+
+        go = authorize("opencode-go", "device")
+        fetch_catalog("opencode-go")
+        await_models({"opencode-go": signin_catalog_ids["go-initial"]})
+        zen = authorize("opencode-zen", "device")
+        fetch_catalog("opencode-zen")
+        await_models({"opencode-zen": signin_catalog_ids["zen-device"]})
+        key = authorize("opencode-zen", "key")
+        switched = request("/api/login/switch", {"agent": ids["opencode-zen"], "user": key["id"]})
+        assert not switched.get("error"), switched
+        fetch_catalog("opencode-zen")
+        public = authorize("opencode-zen-free", "public")
+        fetch_catalog("opencode-zen-free")
+        accounts = (go, zen, key, public)
+        assert len({account["id"] for account in accounts}) == len(accounts) == 4
+        assert all(account["generation"] == "1" for account in accounts)
+        renewed = authorize("opencode-go", "device", go)
+        assert renewed["id"] == go["id"] and renewed["generation"] == "2"
+        fetch_catalog("opencode-go")
+        listed = await_models({
+            "opencode-go": signin_catalog_ids["go-renewed"],
+            "opencode-zen": signin_catalog_ids["zen-device"] + signin_catalog_ids["zen-key"],
+            "opencode-zen-free": signin_catalog_ids["zen-free"],
+        })
+        usage = request("/api/login/usage?agent=" + ids["opencode-go"])
+        quota = usage[go["id"]]
+        assert quota["provider"] == ids["opencode-go"] and quota["user"] == go["id"] and not quota.get("error"), quota
+        assert [(window["name"], window["used"]) for window in quota["windows"]] == [("5 hours", 57)], quota
+        zen_usage = request("/api/login/usage?agent=" + ids["opencode-zen"])
+        public_usage = request("/api/login/usage?agent=" + ids["opencode-zen-free"])
+        assert set(zen_usage) == {zen["id"], key["id"]} and set(public_usage) == {public["id"]}
+        for reading in (*zen_usage.values(), *public_usage.values()):
+            assert not reading.get("error") and not reading.get("windows"), reading
+        native = [json.loads(line) for line in events.read_text().splitlines()]
+        assert {item["scope"]["provider"] for item in native
+                if item["pid"] == process.pid and item["method"] == "auth.finish" and not item["error"]} == set(provider_ids)
+        assert {(item["scope"]["provider"], item["scope"]["generation"]) for item in native
+                if item["pid"] == process.pid and item["method"] == "provider.usage" and not item["error"]} == {
+                    ("opencode-go", 2), ("opencode-zen", 1), ("opencode-zen-free", 1)}
+        with lock:
+            assert state["starts"] == 3 and state["polls"] == 3 and not state["failures"], state
+            assert set(state["signinCatalogReads"]) == set(signin_catalog_ids), state
+            assert "go-renewed" in state["signinQuotaReads"], state
+        for secret in ("PRIVATE-access-", "PRIVATE-refresh-", "PRIVATE-device-", "SYNTHETIC-ZEN-SERVICE"):
+            assert secret not in json.dumps((usage, zen_usage, public_usage)), "Providers quota disclosed private credentials"
+            assert secret not in (output / "host.log").read_text(), "host log disclosed private credentials"
+        return {"installEntry": "Plugins Add", "providers": list(provider_ids), "accountSignIns": len(accounts),
+                "reauthorizationGeneration": "2", "providerModels": listed, "goUsedPercent": 57,
+                "zenAccountsWithoutQuotaWindows": 3, "nativeHostPID": process.pid, "liveVendors": False}
 
     def self_contained():
         catalog = json.loads((config / "extensions/catalog.json").read_text())
@@ -407,11 +568,12 @@ def main():
         shutil.copytree(distribution, fixture)
         subprocess.run(["go", "build", "-mod=readonly", "-buildmode=c-shared", "-o", str(fixture / "lib/opencode.so"), "./testdata/native-fixture"],
                        cwd=root, env=env, check=True, timeout=180)
-        command("plugin", "sdk", "add", str(fixture))
-        module_config = {"projectId": "global"}
-        if args.agent_metadata_only:
-            module_config["agentFormat"] = args.agent_format
-        command("plugin", "sdk", "config", "opencode", json.dumps(module_config), "--expected", "0")
+        if not args.provider_signin_only:
+            command("plugin", "sdk", "add", str(fixture))
+            module_config = {"projectId": "global"}
+            if args.agent_metadata_only:
+                module_config["agentFormat"] = args.agent_format
+            command("plugin", "sdk", "config", "opencode", json.dumps(module_config), "--expected", "0")
         web_port = free_port()
         origin = "http://127.0.0.1:" + str(web_port)
         env["MAGPIE_WEB_KEY"] = "synthetic-web-entry"
@@ -436,6 +598,17 @@ def main():
                 pass
             time.sleep(0.05)
         assert cookie, "web never became ready"
+        if args.provider_signin_only:
+            assert not request("/api/providers").get("sdkSubscriptions"), "fixture did not start with an empty catalog"
+            installed = request("/api/plugins/add", {"spec": str(fixture)})
+            assert not installed.get("error") and not installed.get("sdkError"), installed
+            plugin, = installed["plugins"]
+            assert plugin["spec"] == "sdk:opencode" and plugin["version"] == declaration["version"]
+            assert plugin["sdk"]["runtime"] == "native" and "provider-signin" in plugin["sdk"]["capabilities"]
+            report = providers_signin()
+            (output / "result.json").write_text(json.dumps(report, indent=2) + "\n")
+            print(json.dumps(report))
+            return
         pages = request("/api/plugin-pages")
         page = next(item for item in pages if item["name"] == "opencode")
         settings = output / "window-driver.json"

@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "id": "opencode",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "runtime": "native",
   "entry": "lib/opencode.so",
   "contract": {
@@ -17,7 +17,8 @@
       "request-policy",
       "agent-wiring",
       "module-rpc",
-      "session-storage-source"
+      "session-storage-source",
+      "provider-signin"
     ]
   },
   "providers": [
@@ -2790,6 +2791,56 @@
         }
       ],
       "reauthorize": true
+    },
+    {
+      "id": "provider.go",
+      "from": "provider:signin",
+      "provider": "opencode-go",
+      "methods": [
+        {
+          "id": "device",
+          "mode": "poll",
+          "label": "Sign in with OpenCode"
+        }
+      ],
+      "reauthorize": true
+    },
+    {
+      "id": "provider.zen",
+      "from": "provider:signin",
+      "provider": "opencode-zen",
+      "methods": [
+        {
+          "id": "device",
+          "mode": "poll",
+          "label": "Sign in with OpenCode"
+        },
+        {
+          "id": "key",
+          "mode": "poll",
+          "label": "Use API key",
+          "fields": [
+            {
+              "key": "key",
+              "label": "API key",
+              "type": "secret"
+            }
+          ]
+        }
+      ],
+      "reauthorize": true
+    },
+    {
+      "id": "provider.zen-free",
+      "from": "provider:signin",
+      "provider": "opencode-zen-free",
+      "methods": [
+        {
+          "id": "public",
+          "mode": "poll",
+          "label": "Enable free models"
+        }
+      ]
     }
   ]
 }

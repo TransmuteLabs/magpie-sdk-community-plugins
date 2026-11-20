@@ -1,7 +1,12 @@
 # OpenCode module source provenance
 
-OpenCode **0.8.1** uses public SDK API **1.12** and native ABI **1**.
-The source review advances OpenCode `2.3.0` from `d33b578333` to
+OpenCode **0.8.2** uses public SDK API **1.12** with the required
+`provider-signin` capability and native ABI **1**. It declares the existing
+device, API-key, and public workflows for Magpie's Providers screen. The
+previous window bindings remain available. `--compat-api8` retains the 0.8.1
+window package at API **1.12**.
+
+The 0.8.1 source review advances OpenCode `2.3.0` from `d33b578333` to
 `011f9043e8a90dc9a1ac42fb1181486dd4d13b71`. The 25 commits change
 260 paths and leave the 17 extraction paths unchanged. The module applies
 the exact HTTP refusals added in `bca1def93b` and `a8dbca1065` through

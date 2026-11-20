@@ -280,11 +280,24 @@ func TestPublicSDKDeviceFlowModelsUsageAndScopedChat(t *testing.T) {
 		t.Fatal("finished device authorization was exchanged again")
 	}
 	scope.Account, scope.Generation = account.ID, 1
-	usage, _ := h.invoke(sdk.MethodProviderUsage, scope, sdk.UsageRequest{}, account.Credentials)
-	var quota sdk.UsageResult
-	json.Unmarshal(usage.Result, &quota)
-	if usage.Error != nil || len(quota.Windows) != 2 || quota.Windows[0].Used != 23 || quota.Windows[0].Limit != 100 {
-		t.Fatalf("SDK quota mapping: %+v", usage.Error)
+	for _, revision := range []string{"", "17"} {
+		usage, _ := h.invoke(sdk.MethodProviderUsage, scope, sdk.UsageRequest{Revision: revision}, account.Credentials)
+		quota, fresh, err := sdk.ValidateUsageResult(Manifest(), usage.Result)
+		if usage.Error != nil || err != nil || !fresh || quota.Revision != revision ||
+			len(quota.Windows) != 2 || quota.Windows[0].Used != 23 || quota.Windows[0].Limit != 100 {
+			t.Fatalf("SDK quota mapping for revision %q: %+v, error %v, fresh %v, result %s",
+				revision, usage.Error, err, fresh, usage.Result)
+		}
+		if revision == "" && bytesContains(usage.Result, `"revision"`) {
+			t.Fatal("the omitted host usage revision was synthesized")
+		}
+	}
+	beforeUsage := requests.Load()
+	for _, request := range []sdk.UsageRequest{{Revision: "017"}, {Credentials: account.Credentials}} {
+		usage, _ := h.invoke(sdk.MethodProviderUsage, scope, request, account.Credentials)
+		if usage.Error == nil || usage.Error.Code != "invalid_params" || requests.Load() != beforeUsage {
+			t.Fatal("invalid usage parameters reached the vendor")
+		}
 	}
 	request := sdk.ExecuteRequest{Protocol: "chat", Model: "deepseek-v4.1-flash",
 		Body:    []byte(`{"model":"deepseek-v4.1-flash","messages":[{"role":"user","content":"hello"}]}`),

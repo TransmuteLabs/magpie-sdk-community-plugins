@@ -639,11 +639,26 @@ func (owner *module) usage(ctx context.Context, call sdk.Call, stream *sdk.Strea
 	if err := owner.provider(call); err != nil {
 		return nil, err
 	}
+	var request sdk.UsageRequest
+	if len(call.Params) != 0 {
+		if err := decode(call.Params, &request); err != nil {
+			return nil, err
+		}
+	}
+	if len(request.Credentials) != 0 && string(request.Credentials) != "null" {
+		return nil, &sdk.Error{Code: "invalid_params", Message: "OpenCode usage credentials must come from the selected account"}
+	}
+	if request.Revision != "" {
+		if _, err := sdk.ParseUsageRevision(request.Revision); err != nil {
+			return nil, &sdk.Error{Code: "invalid_params", Message: "OpenCode usage requires the canonical host revision"}
+		}
+	}
+	result := sdk.UsageResult{Revision: request.Revision, Windows: []sdk.UsageWindow{}}
 	if call.Scope.Provider == ProviderZen || call.Scope.Provider == ProviderZenPublic {
 		if _, err := selectedZen(call); err != nil {
 			return nil, err
 		}
-		return sdk.UsageResult{AsOf: owner.options.Now().UnixMilli(), Windows: []sdk.UsageWindow{}}, nil
+		return result, nil
 	}
 	credentials, err := selected(call)
 	if err != nil {
@@ -661,7 +676,6 @@ func (owner *module) usage(ctx context.Context, call sdk.Call, stream *sdk.Strea
 	if err != nil {
 		return nil, failure(err, "")
 	}
-	result := sdk.UsageResult{AsOf: owner.options.Now().UnixMilli(), Windows: []sdk.UsageWindow{}}
 	for _, window := range windows {
 		value := sdk.UsageWindow{Name: window.Name, Used: window.Used, Limit: 100}
 		if window.ResetsAt != nil {

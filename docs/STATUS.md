@@ -11,7 +11,7 @@ Community-плагины и исходники harness служат рефере
 | [Devin](../packages/devin/README.md) | `0.8.2` | `1.12` | Devin `3000.11.228` на `e977587d` подтвердил `GetAccountManagedPluginBundle`. Сверка с CLIProxyAPI `061ffe6f` добавила выбор effort из последнего системного сообщения. Оба пути проверены через HTTP-шлюз с локальным Connect |
 | [MiniMax](../packages/minimax/README.md) | `0.1.0` | `1.12` | Community `0.2.9` |
 | [OMP](../packages/omp/README.md) | `0.1.0` | `1.10` | OMP `18.22.2` проверен на `04a4c101`. Экспорт в Codex и Claude учитывает `custom_message` и сохраняет порядок реплик и результатов инструментов. Архив сохраняется побайтово |
-| [OpenCode](../packages/opencode/README.md) | `0.8.1` | `1.12` | Локальная ссылка OpenCode `origin/dev` на `011f9043e8` уточнила распознавание отказов OpenAI и Gemini в Go и Zen. Перенос community Zen `0.1.28` сохранён |
+| [OpenCode](../packages/opencode/README.md) | `0.8.2` | `1.12` + `provider-signin` | Go, Zen и Zen Free подключаются через Providers. Референсы OpenCode `011f9043e8` и community Zen `0.1.28` сохранены |
 | [ZCode](../packages/zcode/README.md) | `0.15.0` | `1.12` | Desktop `3.18.2`, CLI `0.17.1`; community `0.1.66` → `0.1.68`, перенос проверен |
 
 Версия пакета, минимальная ревизия API и версия референса независимы. Все пакеты используют

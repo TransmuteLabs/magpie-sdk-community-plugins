@@ -36,10 +36,17 @@ def main():
         expected = json.loads((root / "magpie-plugin.json").read_text())
         expected["entry"] = manifest["entry"]
         if lock["variant"] == "api8":
-            assert {"id": "opencode", "version": manifest["version"], "sdkMinimum": "1.12",
-                    "nativeABI": 1, "variant": "api8", "buildFlag": "--compat-api8"} in source["compatibilityArtifacts"]
+            artifact = next(item for item in source["compatibilityArtifacts"] if item["variant"] == "api8")
+            assert artifact == {"id": "opencode", "version": manifest["version"], "sdkMinimum": "1.12",
+                                "nativeABI": 1, "variant": "api8", "buildFlag": "--compat-api8"}
+            expected["version"] = artifact["version"]
+            expected["contract"]["capabilities"].remove("provider-signin")
+            expected["authBindings"] = [binding for binding in expected["authBindings"] if binding["from"] != "provider:signin"]
         else:
             assert lock["variant"] == "full"
+            assert manifest["version"] == json.loads((root.parent / "package.json").read_text())["version"]
+            assert lock["providerSignInAdoption"] == source["providerSignInAdoption"]
+            assert manifest["version"] == lock["providerSignInAdoption"]["version"]
         assert manifest == expected, "full package drifted from its complete declaration"
         assert minimum == {"major": 1, "minor": 12}
         assert "request-policy" in manifest["contract"]["capabilities"]
@@ -47,7 +54,7 @@ def main():
         assert "session-storage-source" in manifest["contract"]["capabilities"]
         assert [source["id"] for source in manifest["storageSources"]] == ["opencode-history"]
         assert len(manifest["providers"]) == 3 and len(manifest["agents"]) == 1
-        assert len(manifest["authBindings"]) == 3
+        assert len(manifest["authBindings"]) == (3 if lock["variant"] == "api8" else 6)
         metadata = json.loads((package / manifest["window"]["metadata"]).read_text())
         assert not metadata.get("dependencies") and not metadata.get("devDependencies")
         assert metadata["version"] == manifest["version"]

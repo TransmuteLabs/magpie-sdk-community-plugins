@@ -25,8 +25,8 @@ not install a community/OpenCode auth plugin or run a Bun backend.
 
 | Distribution | Version | Minimum SDK | Contents |
 | --- | --- | --- | --- |
-| Ordinary full package | 0.8.1 | 1.12 | Default no-flag build with effective agent metadata, Go + Zen OAuth/key/public, auth UI, Console HTTP and SQLite/WAL history |
-| Full compatibility artifact | 0.8.1 | 1.12 | Explicit legacy `--compat-api8` flag with the full package contents and SDK floor |
+| Ordinary full package | 0.8.2 | 1.12 | Default no-flag build with `provider-signin`, agent metadata, Go + Zen OAuth/key/public, auth UI, Console HTTP and SQLite/WAL history |
+| Full compatibility artifact | 0.8.1 | 1.12 | Explicit legacy `--compat-api8` flag with the previous window-only sign-in declarations |
 | Provider compatibility artifact | 0.2.0 | 1.12 | Historical Go OAuth, four models, Chat/Gemini, quota |
 | Agent compatibility artifact | 0.3.0 | 1.12 | Historical provider plus declared profile, config planner and launch metadata |
 
@@ -228,12 +228,12 @@ retires models; a failed read retains the last good list or pinned bootstrap.
 No refusal switches account/provider. Zen usage returns no fabricated Go quota.
 Zen balance, `countTokens` and remote operation reconciliation remain absent.
 
-Service keys enter the declared `zen.signin` authentication workflow, never a
-business action; the page clears its password input on submission/disposal.
+Service keys enter the authentication broker through the declared `key`
+method in Providers or the OpenCode page. Both forms use a secret input.
 Key identity is derived from that key; replacing it creates another account,
 and reauthorization with a different key is refused. OAuth identity remains
 user + initial organization within its provider domain. Public auth accepts
-no personal credential. The UI requires explicit provider and account selection.
+no personal credential. Zen Free can be activated from Providers without reauthorization.
 
 Personal Zen has selected-account actions `console.snapshot`, `console.skill`,
 `console.watch.list`, `console.watch.types`, `console.watch.poll` and
@@ -387,6 +387,11 @@ gcc -std=c11 -Wall -Wextra -Werror -O2 -o /tmp/opencode-loopback tests/loopback_
 /tmp/opencode-loopback /tmp/opencode-network.json \
   python3 tests/full_e2e.py /path/to/sdk-host /tmp/opencode-dist /tmp/opencode-proof
 ```
+
+Use `--provider-signin-only` to install the native fixture through Plugins Add
+and exercise the four declared sign-in methods through Providers. The check
+refreshes models for the selected accounts and reads Go's quota after
+reauthorization. Zen and Zen Free return no quota windows.
 
 Run these commands only on `usbox`, under the isolated build environment above.
 The supervisor executes approved IPv4 loopback socket operations itself and

@@ -234,11 +234,19 @@
   },
   "plugin": {
     "id": "opencode",
-    "version": "0.8.1",
+    "version": "0.8.2",
     "sdkMinimum": "1.12",
     "nativeABI": 1
   },
   "variant": "full",
+  "providerSignInAdoption": {
+    "version": "0.8.2",
+    "requiredCapability": "provider-signin",
+    "releaseSDKCommit": "1a478840fc13199bf302efcdc9cf9b987d821438",
+    "bindingPart": "provider:signin",
+    "providers": ["opencode-go", "opencode-zen", "opencode-zen-free"],
+    "retainsWindowBindings": true
+  },
   "requestPolicyAdoption": {
     "state": "unpublished API1.12 working adoption; Astra review separate",
     "sdkMinimum": "1.12",

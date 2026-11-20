@@ -1,6 +1,8 @@
 # OpenCode
 
-OpenCode Go and Zen providers, agent wiring, device sign-in UI and consented local session history ship in one native plugin. **OpenCode 0.8.1** requires SDK **1.12** and native ABI **1**. Its browser interface is bundled.
+OpenCode Go and Zen providers, agent wiring, and consented local session history ship in one native plugin. **OpenCode 0.8.2** requires SDK **1.12**, the `provider-signin` capability, and native ABI **1**.
+
+In Magpie, open **Providers → Add → Subscriptions** to sign in to OpenCode Go or Zen with a device code, add a Zen API key, or activate Zen Free. The bundled OpenCode page also offers account actions, Console, and history.
 
 ## Install and update
 
@@ -19,8 +21,8 @@ The unpinned source follows stable OpenCode releases from the same repository.
 
 The [request-policy contract](docs/REQUEST-POLICY.md) records exact rejection
 proof and intentionally unrecovered flows. Every rebuilt compatibility
-constructor also requires API1.12. The legacy `--compat-api8` flag builds with
-the same API floor and version as the full package.
+constructor also requires API1.12. The legacy `--compat-api8` flag builds the
+0.8.1 full-window compatibility artifact with sign-in from the OpenCode page.
 
 The normal verification target is regular **usbox** with a fresh HOME/XDG,
 pinned offline caches and the network guard. The explicitly authorized

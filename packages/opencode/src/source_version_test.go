@@ -73,6 +73,14 @@ func TestSourceLockMatchesModuleVendorAndContractVersions(t *testing.T) {
 		lock.Plugin.NativeABI != manifest.Compatibility.NativeABI || len(lock.Limits) == 0 {
 		t.Fatal("source lock drifted from repository module declaration")
 	}
+	metadata, err := os.ReadFile("../package.json")
+	var release struct {
+		Name    string `json:"name"`
+		Version string `json:"version"`
+	}
+	if err != nil || json.Unmarshal(metadata, &release) != nil || release.Name != manifest.ID || release.Version != manifest.Version {
+		t.Fatal("release metadata drifted from the native manifest", err)
+	}
 	documentation, err := os.ReadFile("../docs/SOURCES.md")
 	if err != nil {
 		t.Fatal(err)
@@ -130,7 +138,7 @@ func TestOrdinaryManifestIncludesEveryReadyComponent(t *testing.T) {
 	expected := WindowManifest()
 	if manifest.ID != expected.ID || manifest.Version != expected.Version || manifest.Contract.Version != expected.Contract.Version ||
 		manifest.Window == nil || len(manifest.Providers) != 3 || len(manifest.Agents) != len(expected.Agents) ||
-		len(manifest.AuthBindings) != 3 || len(manifest.Bindings) != len(expected.Bindings) ||
+		!reflect.DeepEqual(manifest.AuthBindings, expected.AuthBindings) || len(manifest.Bindings) != len(expected.Bindings) ||
 		!reflect.DeepEqual(manifest.StorageSources, expected.StorageSources) || !manifest.Contract.Has(sdk.StorageSource) {
 		t.Fatal("ordinary manifest omitted a ready provider, agent or auth/UI component")
 	}
@@ -157,8 +165,8 @@ func TestSourceLockDeclaresCurrentAPI8VariantWithoutRepublishingHistory(t *testi
 	}
 	artifact := lock.CompatibilityArtifacts[0]
 	manifest := API8WindowManifest()
-	if artifact.ID != manifest.ID || artifact.Version != manifest.Version || artifact.Version != WindowManifest().Version ||
-		artifact.Version == "0.6.0" || artifact.SDKMinimum != "1.12" ||
+	if artifact.ID != manifest.ID || artifact.Version != manifest.Version || artifact.Version != "0.8.1" ||
+		artifact.SDKMinimum != "1.12" || manifest.Contract.Has(sdk.ProviderSignIn) ||
 		artifact.NativeABI != manifest.Compatibility.NativeABI || artifact.Variant != "api8" || artifact.BuildFlag != "--compat-api8" {
 		t.Fatal("API8 compatibility would republish immutable history or drift from its declared version")
 	}
