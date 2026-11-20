@@ -165,7 +165,7 @@ func GenerateBody(raw []byte, place Place) ([]byte, error) {
 			return nil, errors.New("native generate tool schema must be a JSON object")
 		}
 		if isGoogle(chat.Model) {
-			normalized, err := googleSchema(object)
+			normalized, err := googleSchema(object, strings.HasPrefix(chat.Model, "google/gemini-"))
 			if err != nil {
 				return nil, err
 			}

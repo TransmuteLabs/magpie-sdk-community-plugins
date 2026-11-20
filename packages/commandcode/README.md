@@ -3,7 +3,7 @@
 One complete native package: Provider API Chat/Responses/Messages, Go-plan
 conversion, account sign-in, models, usage, SystemOne decisions, checked agent
 configuration and the browser page. Module `protocol-commandcode`, version
-`0.1.3`, negotiates SDK API1.12 and native ABI1, including shared request policy.
+`0.1.4`, negotiates SDK API1.12 and native ABI1, including shared request policy.
 The [policy boundaries](docs/REQUEST-POLICY.md) describe proved final refusals,
 the named read-only preflight and flows that remain fenced. The audited auth, transport and
 safe approval-link behavior is preserved; no optional variant is needed.

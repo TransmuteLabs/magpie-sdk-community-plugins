@@ -1,6 +1,6 @@
 {
   "name": "magpie-sdk-plugin-protocol-commandcode",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "private": true,
   "files": ["magpie-plugin.json", "lib", "web", "README.md", "SOURCES.md", "source-lock.json", "REQUEST-POLICY.md", "CONTRACT-PLAN.md", "SYSTEMONE-SDK-CONTRACT.md", "SYSTEMONE-SDK-FIXTURES.json", "OWN-MODEL-METADATA-API9.md", "THIRD_PARTY_NOTICES"],
   "magpie": {

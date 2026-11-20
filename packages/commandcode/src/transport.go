@@ -422,7 +422,7 @@ func providerBody(body []byte, model string) ([]byte, error) {
 			if decode(parameters, &schema) != nil || schema == nil {
 				return nil, errors.New("Google tool schema must be a JSON object")
 			}
-			normalized, err := googleSchema(schema)
+			normalized, err := googleSchema(schema, false)
 			if err != nil {
 				return nil, err
 			}

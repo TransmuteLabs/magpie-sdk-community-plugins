@@ -13,7 +13,7 @@ import (
 	"github.com/yetone/magpie/pkg/protocolext"
 )
 
-const Version = "0.1.3"
+const Version = "0.1.4"
 const ProviderID = "commandcode-native"
 const ModuleID = "protocol-commandcode"
 const cliVersion = "1.91.0"

@@ -1,9 +1,7 @@
 # Shared request policy
 
-The current unpublished working package is still CommandCode0.1.3. Its actual
-runtime floor is public SDK API1.12/native ABI1 with `request-policy`. Earlier
-API1.9 receipts and SDK donor records remain historical, not this adoption's
-verification.
+CommandCode adopted `request-policy` in version `0.1.3`. Its runtime floor
+remains public SDK API1.12/native ABI1. The adoption receipts apply to `0.1.3`.
 
 `request_policy.go` extracts the original HTTP status, actual code/type/message,
 and allowlisted timing headers before `refusalStatus` or an error codec can

@@ -1,5 +1,15 @@
 # CommandCode source provenance
 
+CommandCode `0.1.4` follows the native `google/gemini-*` nullable-tool adjustment in
+`patlux/pi-commandcode-provider` `0.7.1` at
+`6fd0ac75345c3fd9c94aa1638c0e00fe963041b8`, specifically
+`2af6bef7edca0420fa14885633714bb8cf04fcea` in `src/json-schema.ts` and
+`src/converters.ts`. The module applies the conversion through its existing
+bounded schema walk on native Go-plan requests and omits a null default only
+on a converted node. Provider API Chat retains its existing schema handling.
+The SDK `provider.execute` test checks the complete tool schema observed at
+the loopback transport.
+
 The November 18 reference comparison checks `command-code` `1.91.0`
 against `1.89.2`. Both npm archives match their published SHA-1 and
 SHA-512 integrity. The entry point `dist/index.mjs` is byte-identical.
@@ -41,8 +51,8 @@ verification checkpoint below. `currentVerification` in the source lock names
 the strict public helper used for the common-host closure and confirmed ZDR
 adoption. The original OBS/extraction identities remain historical evidence.
 
-Current unpublished request-policy adoption requires public API1.12. Package
-version0.1.3 and the original extraction pins below are unchanged.
+The request-policy adoption in `0.1.3` raised the public API floor to 1.12.
+The current version retains that floor and the original extraction pins.
 [REQUEST-POLICY.md](REQUEST-POLICY.md) records rejection proof, acceptance fences
 and excluded recovery flows; `requestPolicyAdoption` in the lock records the
 exact original OBS archive/manifest and stable public helper. The mutable shared

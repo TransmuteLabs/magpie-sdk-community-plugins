@@ -13,11 +13,11 @@ func isGoogle(model string) bool {
 	return strings.HasPrefix(model, "google/") || strings.HasPrefix(model, "gemini") || strings.Contains(model, "/gemini")
 }
 
-func googleSchema(root map[string]any) (map[string]any, error) {
+func googleSchema(root map[string]any, geminiNullable bool) (map[string]any, error) {
 	remaining := 65536
 	open := make(map[string]bool)
-	var walk func(any, int, int) (any, error)
-	walk = func(value any, depth, references int) (any, error) {
+	var walk func(any, int, int, bool) (any, error)
+	walk = func(value any, depth, references int, nullable bool) (any, error) {
 		remaining--
 		if remaining < 0 || depth > 64 || references > 32 {
 			return nil, errors.New("Google tool schema expansion exceeds its bounded limit")
@@ -25,7 +25,8 @@ func googleSchema(root map[string]any) (map[string]any, error) {
 		if list, ok := value.([]any); ok {
 			result := make([]any, len(list))
 			for index, child := range list {
-				next, err := walk(child, depth+1, references)
+				_, schema := child.(map[string]any)
+				next, err := walk(child, depth+1, references, nullable && schema)
 				if err != nil {
 					return nil, err
 				}
@@ -60,8 +61,11 @@ func googleSchema(root map[string]any) (map[string]any, error) {
 						merged[name] = child
 					}
 				}
-				return walk(merged, depth+1, references+1)
+				return walk(merged, depth+1, references+1, nullable)
 			}
+		}
+		if nullable {
+			collapseGeminiNullable(result)
 		}
 		for _, name := range []string{"properties", "patternProperties", "$defs", "definitions", "dependentSchemas"} {
 			children, ok := result[name].(map[string]any)
@@ -70,7 +74,8 @@ func googleSchema(root map[string]any) (map[string]any, error) {
 			}
 			updated := make(map[string]any, len(children))
 			for key, child := range children {
-				next, err := walk(child, depth+1, references)
+				_, schema := child.(map[string]any)
+				next, err := walk(child, depth+1, references, nullable && schema)
 				if err != nil {
 					return nil, err
 				}
@@ -80,7 +85,15 @@ func googleSchema(root map[string]any) (map[string]any, error) {
 		}
 		for _, name := range []string{"items", "additionalProperties", "contains", "propertyNames", "not", "if", "then", "else", "unevaluatedProperties", "unevaluatedItems", "contentSchema", "additionalItems", "anyOf", "oneOf", "allOf", "prefixItems"} {
 			if child, found := result[name]; found {
-				next, err := walk(child, depth+1, references)
+				_, list := child.([]any)
+				validShape := !list
+				switch name {
+				case "anyOf", "oneOf", "allOf", "prefixItems":
+					validShape = list
+				case "items":
+					validShape = true
+				}
+				next, err := walk(child, depth+1, references, nullable && validShape)
 				if err != nil {
 					return nil, err
 				}
@@ -89,7 +102,7 @@ func googleSchema(root map[string]any) (map[string]any, error) {
 		}
 		return result, nil
 	}
-	result, err := walk(root, 0, 0)
+	result, err := walk(root, 0, 0, geminiNullable)
 	if err != nil {
 		return nil, err
 	}
@@ -98,6 +111,31 @@ func googleSchema(root map[string]any) (map[string]any, error) {
 		return nil, errors.New("Google tool schema exceeds its serialized limit")
 	}
 	return result.(map[string]any), nil
+}
+
+func collapseGeminiNullable(schema map[string]any) {
+	types, ok := schema["type"].([]any)
+	if !ok || len(types) != 2 {
+		return
+	}
+	if declared, found := schema["nullable"]; found && declared != true {
+		return
+	}
+	base, nullType := types[0], types[1]
+	if base == "null" {
+		base, nullType = nullType, base
+	}
+	if nullType != "null" {
+		return
+	}
+	switch base {
+	case "array", "boolean", "integer", "number", "object", "string":
+		schema["type"] = base
+		schema["nullable"] = true
+		if schema["default"] == nil {
+			delete(schema, "default")
+		}
+	}
 }
 
 func schemaPointer(root map[string]any, ref string) (any, bool) {

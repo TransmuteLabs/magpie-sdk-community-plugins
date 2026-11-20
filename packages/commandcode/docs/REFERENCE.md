@@ -118,6 +118,11 @@ Google Provider Chat and native function tools expand supported nested local
 schema references without dropping their constraints or sibling annotations.
 Root definitions, unresolved/external references and data stay intact.
 Cyclic and excessive expansions are refused instead of weakening the schema.
+For native Go-plan generation with `google/gemini-*`, a schema type array
+containing exactly one supported type and `null` is sent as that type with
+`nullable: true`. A null default on the converted node is omitted. Required
+lists, constraints, literal data and other transport/model schemas retain
+their existing handling.
 Other Provider API protocols preserve their own request and response bytes.
 Provider API SSE forwarding observes the canonical protocol terminal before
 publishing a completed SDK receipt. EOF alone or malformed events leave the
