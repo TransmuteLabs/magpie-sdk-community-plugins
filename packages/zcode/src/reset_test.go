@@ -32,6 +32,12 @@ func resetResponse(spent bool) map[string]any {
 func TestResetRequiresNewerHistoryAfterConfirmedUse(t *testing.T) {
 	var uses atomic.Int32
 	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		if request.Method == http.MethodGet && request.URL.RequestURI() == "/" &&
+			request.ContentLength == 0 && len(request.TransferEncoding) == 0 &&
+			request.Header.Get("Authorization") == "" && request.Header.Get("X-Bigmodel-Authorization") == "" {
+			http.NotFound(writer, request)
+			return
+		}
 		writer.Header().Set("Content-Type", "application/json")
 		switch request.URL.Path {
 		case "/api/v1/oauth/profile":
@@ -55,6 +61,14 @@ func TestResetRequiresNewerHistoryAfterConfirmedUse(t *testing.T) {
 		}
 	}))
 	defer server.Close()
+	probe, err := server.Client().Get(server.URL + "/")
+	if err != nil {
+		t.Fatal(err)
+	}
+	probe.Body.Close()
+	if probe.StatusCode != http.StatusNotFound || uses.Load() != 0 {
+		t.Fatalf("probe counted as reset: status %d, %d uses", probe.StatusCode, uses.Load())
+	}
 	h := newHarnessConfigured(t, endpointOptions(server), moduleConfig{DataDir: filepath.Join(t.TempDir(), "state")})
 	account := nativeCredentials()
 	params := actionInput("reset.use", map[string]string{"window": "FIVE_HOUR"})
