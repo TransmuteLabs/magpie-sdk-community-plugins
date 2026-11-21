@@ -36,6 +36,7 @@ def file_inputs(directory):
 
 
 def sdk_inputs(directory, index_path):
+    directory = directory.resolve()
     index = read_json(index_path)
     files = index["files"]
     identity = hashlib.sha256(json.dumps(files, sort_keys=True, separators=(",", ":")).encode()).hexdigest()

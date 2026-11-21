@@ -164,9 +164,31 @@ class ReleaseCITests(unittest.TestCase):
         expected = self.commit(sdk, "contract.go")
         contract.write_text("dirty SDK\n")
         (sdk / "untracked").touch()
-        sealed = self.root / "sealed"
+        runner_temp = self.root / "runner-temp"
+        runner_temp.mkdir()
+        runner_alias = self.root / "temp-alias"
+        runner_alias.symlink_to(runner_temp, target_is_directory=True)
+        sealed = runner_alias / "sealed"
         index = self.root / "sdk.json"
         self.assertEqual(release_ci.seal_sdk(sdk, sealed, index), expected)
         self.assertEqual(json.loads(index.read_text())["commit"], expected)
         self.assertEqual((sealed / "contract.go").read_text(), "committed SDK\n")
-        self.assertEqual(sdk_inputs(sealed, index)["files"], 1)
+        verified = sdk_inputs(sealed.resolve(), index)
+        self.assertEqual(verified["files"], 1)
+        self.assertEqual(sdk_inputs(sealed, index), verified)
+
+        contract = sealed / "contract.go"
+        original_mode = contract.stat().st_mode & 0o777
+        contract.chmod(original_mode ^ 0o100)
+        with self.assertRaisesRegex(ValueError, "SDK source mode differs"):
+            sdk_inputs(sealed, index)
+        contract.chmod(original_mode)
+        contract.write_text("tampered SDK\n")
+        with self.assertRaisesRegex(ValueError, "SDK source differs"):
+            sdk_inputs(sealed, index)
+        contract.unlink()
+        saved = self.root / "committed-contract.go"
+        saved.write_text("committed SDK\n")
+        contract.symlink_to(saved)
+        with self.assertRaisesRegex(ValueError, "SDK input manifest cannot contain symlinks"):
+            sdk_inputs(sealed, index)
