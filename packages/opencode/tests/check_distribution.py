@@ -32,21 +32,40 @@ def main():
     assert not list(package.rglob("node_modules")), "distribution needs another package install"
     assert (package / manifest["entry"]).is_file()
     if manifest.get("window") or manifest["version"] == source["plugin"]["version"]:
-        assert manifest.get("window"), "ordinary package omitted its authentication UI"
+        assert manifest.get("window"), "ordinary package omitted its history UI"
         expected = json.loads((root / "magpie-plugin.json").read_text())
         expected["entry"] = manifest["entry"]
+        metadata = json.loads((package / manifest["window"]["metadata"]).read_text())
+        html = (package / "web/index.html").read_text()
         if lock["variant"] == "api8":
             artifact = next(item for item in source["compatibilityArtifacts"] if item["variant"] == "api8")
             assert artifact == {"id": "opencode", "version": manifest["version"], "sdkMinimum": "1.12",
                                 "nativeABI": 1, "variant": "api8", "buildFlag": "--compat-api8"}
             expected["version"] = artifact["version"]
             expected["contract"]["capabilities"].remove("provider-signin")
-            expected["authBindings"] = [binding for binding in expected["authBindings"] if binding["from"] != "provider:signin"]
+            legacy = {
+                "signin": ("opencode-go", ("device",)),
+                "zen.signin": ("opencode-zen", ("device", "key")),
+                "public.signin": ("opencode-zen-free", ("public",)),
+            }
+            expected["authBindings"] = [
+                {"id": grant, "from": "window:page", "provider": provider, "reauthorize": True,
+                 "methods": [{"id": method, "mode": "poll"} for method in methods]}
+                for grant, (provider, methods) in legacy.items()
+            ]
+            for binding in expected["bindings"]:
+                binding["from"] = "window:page"
+            assert metadata["magpie"]["page"]["file"] == "web/index.html"
+            assert "panels" not in metadata["magpie"] and 'id="signin"' in html
         else:
             assert lock["variant"] == "full"
             assert manifest["version"] == json.loads((root.parent / "package.json").read_text())["version"]
-            assert lock["providerSignInAdoption"] == source["providerSignInAdoption"]
-            assert manifest["version"] == lock["providerSignInAdoption"]["version"]
+            assert lock["windowPlacement"] == source["windowPlacement"]
+            assert manifest["version"] == lock["windowPlacement"]["version"]
+            assert metadata["magpie"]["name"] == "OpenCode" and metadata["magpie"]["icon"] == "opencode"
+            panel, = metadata["magpie"]["panels"]
+            assert panel["slot"] == "sessions" and panel["file"] == "web/index.html"
+            assert "page" not in metadata["magpie"] and 'id="signin"' not in html
         assert manifest == expected, "full package drifted from its complete declaration"
         assert minimum == {"major": 1, "minor": 12}
         assert "request-policy" in manifest["contract"]["capabilities"]
@@ -54,12 +73,10 @@ def main():
         assert "session-storage-source" in manifest["contract"]["capabilities"]
         assert [source["id"] for source in manifest["storageSources"]] == ["opencode-history"]
         assert len(manifest["providers"]) == 3 and len(manifest["agents"]) == 1
-        assert len(manifest["authBindings"]) == (3 if lock["variant"] == "api8" else 6)
-        metadata = json.loads((package / manifest["window"]["metadata"]).read_text())
+        assert len(manifest["authBindings"]) == 3
         assert not metadata.get("dependencies") and not metadata.get("devDependencies")
         assert metadata["version"] == manifest["version"]
-        assert (package / "web/index.html").is_file()
-        assert "app.browser.js" in (package / "web/index.html").read_text()
+        assert 'id="history-panel"' in html and "app.browser.js" in html
         browser = (package / "web/app.browser.js").read_text()
         assert not re.search(r"\b(?:from\s*|import\s*)[\"']", browser), "iframe bootstrap still loads relative module files"
         for script in (package / "web").glob("*.js"):

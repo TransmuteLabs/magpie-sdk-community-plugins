@@ -30,7 +30,7 @@ func TestZenWindowDeclaresSeparatePersonalAndPublicAuthority(t *testing.T) {
 	}
 	methods := map[string]string{}
 	for _, binding := range module.Manifest.AuthBindings {
-		if binding.From != "window:page" {
+		if binding.From != sdk.ProviderSignInPart {
 			continue
 		}
 		for _, method := range binding.Methods {

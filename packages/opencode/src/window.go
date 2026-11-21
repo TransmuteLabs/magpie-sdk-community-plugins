@@ -9,30 +9,33 @@ import (
 	"github.com/yetone/magpie/pkg/protocolext"
 )
 
-const windowVersion = "0.8.2"
+const windowVersion = "0.8.3"
 
 func WindowManifest() sdk.Manifest {
 	manifest := API8WindowManifest()
 	manifest.Version = windowVersion
+	for index := range manifest.Bindings {
+		manifest.Bindings[index].From = "window:panel:0"
+	}
 	manifest.Contract.Capabilities = append(manifest.Contract.Capabilities, sdk.ProviderSignIn)
 	device := sdk.WindowAuthMethod{ID: "device", Mode: "poll", Label: "Sign in with OpenCode"}
-	manifest.AuthBindings = append(manifest.AuthBindings,
-		sdk.WindowAuthBindingDescriptor{
+	manifest.AuthBindings = []sdk.WindowAuthBindingDescriptor{
+		{
 			ID: "provider.go", From: sdk.ProviderSignInPart, Provider: ProviderGo, Reauthorize: true,
 			Methods: []sdk.WindowAuthMethod{device},
 		},
-		sdk.WindowAuthBindingDescriptor{
+		{
 			ID: "provider.zen", From: sdk.ProviderSignInPart, Provider: ProviderZen, Reauthorize: true,
 			Methods: []sdk.WindowAuthMethod{device, {
 				ID: "key", Mode: "poll", Label: "Use API key",
 				Fields: []sdk.AuthInputField{{Key: "key", Label: "API key", Type: "secret"}},
 			}},
 		},
-		sdk.WindowAuthBindingDescriptor{
+		{
 			ID: "provider.zen-free", From: sdk.ProviderSignInPart, Provider: ProviderZenPublic,
 			Methods: []sdk.WindowAuthMethod{{ID: "public", Mode: "poll", Label: "Enable free models"}},
 		},
-	)
+	}
 	return manifest
 }
 

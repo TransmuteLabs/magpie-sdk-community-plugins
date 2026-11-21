@@ -33,9 +33,14 @@ class Element {
 class Option extends Element {
   constructor(label, value) { super(); this.textContent = label; this.value = value; }
 }
-const elements = Object.fromEntries(["provider", "method", "key", "key-label", "account", "status", "code", "auth-address", "auth-url", "auth-select", "reload", "inspect", "signin", "reauthorize", "poll", "cancel"].map(id => [id, new Element()]));
-elements.provider.value = "go";
-elements.method.value = "device";
+const elements = {};
+if (!config.zenAccounts) {
+  for (const id of ["provider", "method", "key", "key-label", "account", "status", "code", "auth-address", "auth-url", "auth-select", "reload", "inspect", "signin", "reauthorize", "poll", "cancel"]) {
+    elements[id] = new Element();
+  }
+  elements.provider.value = "go";
+  elements.method.value = "device";
+}
 const listeners = new Map(), parentProxy = {}, sent = [], replies = [];
 const modules = new Map();
 const parentContext = vm.createContext({
@@ -120,8 +125,42 @@ async function pollComplete() {
   }
   throw new Error("auth never completed");
 }
+async function signInToZenFromLegacyPage() {
+  const selectProvider = async value => {
+    const before = transcript.length;
+    elements.provider.value = value;
+    elements.provider.dispatch("change");
+    await wait(() => transcript.length > before && !elements.reload.disabled, "provider account list did not settle");
+    assert.equal(elements.account.value, "");
+  };
+  const signIn = async method => {
+    assert.equal(elements.method.value, method);
+    click("signin");
+    assert.equal(elements.key.value, "", "service key remained in the input after start");
+    await wait(() => !elements.poll.disabled, `${method} flow did not start`);
+    const flow = await pollComplete();
+    await wait(() => !elements.signin.disabled, `${method} completion did not settle`);
+    return flow.account;
+  };
+  await selectProvider("zen");
+  elements.method.value = "key";
+  elements.method.dispatch("change");
+  elements.key.value = "SYNTHETIC-ZEN-SERVICE";
+  const key = await signIn("key");
+  elements.method.value = "device";
+  elements.method.dispatch("change");
+  const oauth = await signIn("device");
+  await selectProvider("public");
+  const publicAccount = await signIn("public");
+  return { key, oauth, public: publicAccount, keyInputCleared: true };
+}
+
 try {
-  await wait(() => !elements.reload.disabled && transcript.some(item => item.route.endsWith("accounts")), "UI never became ready");
+  if (config.zenAccounts) {
+    await sdk.ui.ready;
+  } else {
+    await wait(() => !elements.reload.disabled && transcript.some(item => item.route.endsWith("accounts")), "UI never became ready");
+  }
   let first, second, zen;
   if (!config.zenOnly) {
   assert.equal(elements.account.value, "");
@@ -176,23 +215,9 @@ try {
   assert.equal(elements["auth-address"].hidden, true);
   assert.equal(elements["auth-url"].value, "");
   } else {
-    const selectProvider = async value => {
-      const before = transcript.length;
-      elements.provider.value = value;
-      elements.provider.dispatch("change");
-      await wait(() => transcript.length > before && !elements.reload.disabled, "provider account list did not settle");
-      assert.equal(elements.account.value, "");
-    };
-    await selectProvider("zen");
-    elements.method.value = "key";
-    elements.method.dispatch("change");
-    elements.key.value = "SYNTHETIC-ZEN-SERVICE";
-    click("signin");
-    assert.equal(elements.key.value, "", "service key remained in the input after start");
-    await wait(() => !elements.poll.disabled, "key flow did not start");
-    const keyed = await pollComplete();
-    await wait(() => !elements.signin.disabled, "key completion did not settle");
-    const selectedKey = { id: keyed.account.id, expectedGeneration: keyed.account.generation };
+    const accounts = config.zenAccounts ?? await signInToZenFromLegacyPage();
+    assert.equal(new Set([accounts.key.id, accounts.oauth.id, accounts.public.id]).size, 3);
+    const selectedKey = { id: accounts.key.id, expectedGeneration: accounts.key.generation };
     const snapshot = await sdk.ui.backend.call("console.snapshot", {}, { account: selectedKey });
     assert.equal(snapshot.lists, true);
     assert.equal(snapshot.watches, true);
@@ -208,29 +233,15 @@ try {
     assert.equal(page.events.length, 1);
     assert.equal((await sdk.ui.backend.call("console.watch.ack", { receipt: page.receipt, ids: page.events.map(event => event.id) }, { account: selectedKey })).acknowledged, 1);
     await assert.rejects(sdk.ui.backend.call("console.watch.ack", { receipt: page.receipt, ids: ["ev_1"] }, { account: selectedKey }));
-    elements.method.value = "device";
-    elements.method.dispatch("change");
-    click("signin");
-    await wait(() => !elements.poll.disabled, "Zen OAuth did not start");
-    const oauth = await pollComplete();
-    await wait(() => !elements.signin.disabled, "Zen OAuth completion did not settle");
-    assert.notEqual(oauth.account.id, keyed.account.id);
-    await selectProvider("public");
-    assert.equal(elements.method.value, "public");
-    click("signin");
-    await wait(() => !elements.poll.disabled, "public flow did not start");
-    const publicFlow = await pollComplete();
-    await wait(() => !elements.signin.disabled, "public completion did not settle");
-    assert.notEqual(publicFlow.account.id, oauth.account.id);
-    assert.notEqual(publicFlow.account.id, keyed.account.id);
-    await assert.rejects(sdk.ui.backend.call("console.snapshot", {}, { account: { id: publicFlow.account.id, expectedGeneration: publicFlow.account.generation } }));
-    await assert.rejects(sdk.ui.backend.call("zen.account.info", null, { account: { id: publicFlow.account.id, expectedGeneration: publicFlow.account.generation } }));
+    const selectedPublic = { id: accounts.public.id, expectedGeneration: accounts.public.generation };
+    await assert.rejects(sdk.ui.backend.call("console.snapshot", {}, { account: selectedPublic }));
+    await assert.rejects(sdk.ui.backend.call("zen.account.info", null, { account: selectedPublic }));
     assert(!JSON.stringify(replies).includes("SYNTHETIC-ZEN-SERVICE"), "service key reached a browser result");
     for (const message of sent) {
       if (message.input?.key) message.input.key = "[authentication input redacted]";
     }
-    zen = { key: keyed.account, oauth: oauth.account, public: publicFlow.account, consoleSnapshot: true, watchTypes: true,
-      skillBundle: true, httpWatchPoll: true, ackReplayRefused: true, foreignProviderRefused: true, keyInputCleared: true };
+    zen = { ...accounts, consoleSnapshot: true, watchTypes: true,
+      skillBundle: true, httpWatchPoll: true, ackReplayRefused: true, foreignProviderRefused: true };
   }
   assert.equal(violations.length, 0);
   const result = {

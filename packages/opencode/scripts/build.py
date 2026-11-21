@@ -72,8 +72,11 @@ with build_environment(PACKAGE, args.sdk) as (env, sdk_root):
             raise SystemExit("browser packaging requires the existing pinned Bun build tool")
         subprocess.run([bun, "build", str(web / "app.js"), "--target=browser", "--format=iife",
                         "--outfile=" + str(web / "app.browser.js")], cwd=root, env=env, check=True)
-        shutil.copyfile(PACKAGE / "web/index.html", web / "index.html")
+        html = "index.html" if args.compat_api8 else "history.html"
+        shutil.copyfile(PACKAGE / "web" / html, web / "index.html")
         metadata = json.loads((PACKAGE / "web/package.json").read_text())
         metadata["version"] = manifest["version"]
+        if args.compat_api8:
+            metadata["magpie"] = {"page": {"title": "OpenCode", "file": "web/index.html"}, "permissions": []}
         (destination / "package.json").write_text(json.dumps(metadata, indent=2) + "\n")
 print(destination)

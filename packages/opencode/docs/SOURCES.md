@@ -1,10 +1,10 @@
 # OpenCode module source provenance
 
-OpenCode **0.8.2** uses public SDK API **1.12** with the required
-`provider-signin` capability and native ABI **1**. It declares the existing
-device, API-key, and public workflows for Magpie's Providers screen. The
-previous window bindings remain available. `--compat-api8` retains the 0.8.1
-window package at API **1.12**.
+OpenCode **0.8.3** uses public SDK API **1.12**, native ABI **1**, and the
+Magpie `sessions` panel slot. It keeps the device, API-key, and public flows
+from 0.8.2 in Providers and binds history and Console to the Sessions panel.
+The provider and agent protocol sources below also apply to 0.8.3.
+`--compat-api8` builds the 0.8.1 window package at API **1.12**.
 
 The 0.8.1 source review advances OpenCode `2.3.0` from `d33b578333` to
 `011f9043e8a90dc9a1ac42fb1181486dd4d13b71`. The 25 commits change

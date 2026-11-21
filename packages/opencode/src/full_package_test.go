@@ -46,7 +46,7 @@ func TestDefaultFullPackageDeclaresAndBindsHistory(t *testing.T) {
 		t.Fatal("ordinary full package is invalid", err)
 	}
 	manifest := module.Manifest
-	if manifest.Version != "0.8.2" || manifest.Contract.Version != (sdk.APIVersion{Major: 1, Minor: 12}) ||
+	if manifest.Version != "0.8.3" || manifest.Contract.Version != (sdk.APIVersion{Major: 1, Minor: 12}) ||
 		manifest.Compatibility.HostAPI != "^1.12" {
 		t.Fatal("ordinary full package did not negotiate effective agent metadata")
 	}
@@ -58,7 +58,7 @@ func TestDefaultFullPackageDeclaresAndBindsHistory(t *testing.T) {
 	}
 	if !reflect.DeepEqual(manifest.StorageSources, []sdk.StorageSourceDescriptor{HistoryDescriptor()}) ||
 		len(manifest.Providers) != 3 || len(manifest.Agents) != 1 || manifest.Window == nil ||
-		len(manifest.AuthBindings) != 6 || len(manifest.Services) != 0 {
+		len(manifest.AuthBindings) != 3 || len(manifest.Services) != 0 {
 		t.Fatal("ordinary full package omitted a ready component or required a companion")
 	}
 	for _, method := range []string{sdk.MethodStorageList, sdk.MethodStorageRead} {
@@ -90,14 +90,28 @@ func TestDefaultFullPackageDeclaresAndBindsHistory(t *testing.T) {
 		!historical.Manifest.Contract.Has(sdk.RequestPolicy) {
 		t.Fatal("legacy flag lowered the actual request-policy runtime floor")
 	}
+	for _, binding := range manifest.Bindings {
+		if binding.From != "window:panel:0" {
+			t.Fatalf("ordinary package binding %s escaped the Sessions panel: %s", binding.ID, binding.From)
+		}
+	}
+	for _, binding := range historical.Manifest.Bindings {
+		if binding.From != "window:page" {
+			t.Fatalf("legacy page lost binding %s", binding.ID)
+		}
+	}
 }
 
 func TestProvidersSignInMethodsMatchOpenCodeCredentialAuthority(t *testing.T) {
 	manifest := WindowManifest()
 	legacy := API8WindowManifest()
-	if len(legacy.AuthBindings) != 3 || len(manifest.AuthBindings) < 3 ||
-		!reflect.DeepEqual(manifest.AuthBindings[:3], legacy.AuthBindings) {
-		t.Fatal("ordinary package changed the existing OpenCode page sign-in grants")
+	if len(legacy.AuthBindings) != 3 {
+		t.Fatal("legacy package lost its OpenCode page sign-in grants")
+	}
+	for _, grant := range legacy.AuthBindings {
+		if grant.From != "window:page" {
+			t.Fatalf("legacy sign-in grant changed: %+v", grant)
+		}
 	}
 	device := sdk.WindowAuthMethod{ID: "device", Mode: "poll", Label: "Sign in with OpenCode"}
 	want := []sdk.WindowAuthBindingDescriptor{
@@ -109,7 +123,7 @@ func TestProvidersSignInMethodsMatchOpenCodeCredentialAuthority(t *testing.T) {
 		{ID: "provider.zen-free", From: "provider:signin", Provider: "opencode-zen-free",
 			Methods: []sdk.WindowAuthMethod{{ID: "public", Mode: "poll", Label: "Enable free models"}}},
 	}
-	if !reflect.DeepEqual(manifest.AuthBindings[3:], want) {
+	if !reflect.DeepEqual(manifest.AuthBindings, want) {
 		t.Fatal("OpenCode Providers must offer only methods bound to each provider, with Zen key kept secret")
 	}
 }

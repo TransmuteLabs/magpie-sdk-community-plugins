@@ -15,9 +15,10 @@ func TestWindowGrantKeepsCredentialsAndContinuationsOutOfUIResult(t *testing.T) 
 	if err := module.Validate(); err != nil {
 		t.Fatal(err)
 	}
-	grant, found := module.Manifest.ResolveAuthBinding("signin")
-	if module.Manifest.Contract.Version.Minor != 12 || !found || grant.From != "window:page" ||
-		len(grant.Methods) != 1 || grant.Methods[0].ID != "device" || module.Manifest.Bindings[0].Provider != ProviderGo ||
+	grant, found := module.Manifest.ResolveAuthBinding("provider.go")
+	if module.Manifest.Contract.Version.Minor != 12 || !found || grant.From != sdk.ProviderSignInPart ||
+		len(grant.Methods) != 1 || grant.Methods[0].ID != "device" ||
+		module.Manifest.Bindings[0].From != "window:panel:0" || module.Manifest.Bindings[0].Provider != ProviderGo ||
 		AgentManifest().Window != nil || Manifest().Window != nil {
 		t.Fatal("window negotiation changed headless/agent variants")
 	}

@@ -115,7 +115,7 @@ export function mount(document: Document) {
 }
 
 if (typeof document !== "undefined") {
-  const page = mount(document);
+  const page = document.getElementById("account") ? mount(document) : undefined;
   const history = document.getElementById("history-panel") ? mountHistory(document) : undefined;
-  window.addEventListener("pagehide", () => { page.dispose(); history?.dispose(); }, { once: true });
+  window.addEventListener("pagehide", () => { page?.dispose(); history?.dispose(); }, { once: true });
 }

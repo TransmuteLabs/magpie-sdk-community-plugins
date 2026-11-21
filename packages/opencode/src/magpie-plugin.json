@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "id": "opencode",
-  "version": "0.8.2",
+  "version": "0.8.3",
   "runtime": "native",
   "entry": "lib/opencode.so",
   "contract": {
@@ -2675,55 +2675,55 @@
   "bindings": [
     {
       "id": "account.info",
-      "from": "window:page",
+      "from": "window:panel:0",
       "action": "account.info",
       "provider": "opencode-go"
     },
     {
       "id": "zen.account.info",
-      "from": "window:page",
+      "from": "window:panel:0",
       "action": "account.info",
       "provider": "opencode-zen"
     },
     {
       "id": "public.account.info",
-      "from": "window:page",
+      "from": "window:panel:0",
       "action": "account.info",
       "provider": "opencode-zen-free"
     },
     {
       "id": "console.snapshot",
-      "from": "window:page",
+      "from": "window:panel:0",
       "action": "console.snapshot",
       "provider": "opencode-zen"
     },
     {
       "id": "console.skill",
-      "from": "window:page",
+      "from": "window:panel:0",
       "action": "console.skill",
       "provider": "opencode-zen"
     },
     {
       "id": "console.watch.list",
-      "from": "window:page",
+      "from": "window:panel:0",
       "action": "console.watch.list",
       "provider": "opencode-zen"
     },
     {
       "id": "console.watch.types",
-      "from": "window:page",
+      "from": "window:panel:0",
       "action": "console.watch.types",
       "provider": "opencode-zen"
     },
     {
       "id": "console.watch.poll",
-      "from": "window:page",
+      "from": "window:panel:0",
       "action": "console.watch.poll",
       "provider": "opencode-zen"
     },
     {
       "id": "console.watch.ack",
-      "from": "window:page",
+      "from": "window:panel:0",
       "action": "console.watch.ack",
       "provider": "opencode-zen"
     }
@@ -2752,46 +2752,6 @@
     }
   ],
   "authBindings": [
-    {
-      "id": "signin",
-      "from": "window:page",
-      "provider": "opencode-go",
-      "methods": [
-        {
-          "id": "device",
-          "mode": "poll"
-        }
-      ],
-      "reauthorize": true
-    },
-    {
-      "id": "zen.signin",
-      "from": "window:page",
-      "provider": "opencode-zen",
-      "methods": [
-        {
-          "id": "device",
-          "mode": "poll"
-        },
-        {
-          "id": "key",
-          "mode": "poll"
-        }
-      ],
-      "reauthorize": true
-    },
-    {
-      "id": "public.signin",
-      "from": "window:page",
-      "provider": "opencode-zen-free",
-      "methods": [
-        {
-          "id": "public",
-          "mode": "poll"
-        }
-      ],
-      "reauthorize": true
-    },
     {
       "id": "provider.go",
       "from": "provider:signin",

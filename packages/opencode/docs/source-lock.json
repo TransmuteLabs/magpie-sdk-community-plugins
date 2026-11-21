@@ -234,7 +234,7 @@
   },
   "plugin": {
     "id": "opencode",
-    "version": "0.8.2",
+    "version": "0.8.3",
     "sdkMinimum": "1.12",
     "nativeABI": 1
   },
@@ -246,6 +246,12 @@
     "bindingPart": "provider:signin",
     "providers": ["opencode-go", "opencode-zen", "opencode-zen-free"],
     "retainsWindowBindings": true
+  },
+  "windowPlacement": {
+    "version": "0.8.3",
+    "slot": "sessions",
+    "part": "window:panel:0",
+    "signInPart": "provider:signin"
   },
   "requestPolicyAdoption": {
     "state": "unpublished API1.12 working adoption; Astra review separate",

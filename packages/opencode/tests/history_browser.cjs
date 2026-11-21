@@ -1,4 +1,5 @@
 const assert = require("node:assert/strict");
+const { createHash } = require("node:crypto");
 const { readFile, writeFile } = require("node:fs/promises");
 const path = require("node:path");
 const { chromium } = require("playwright");
@@ -29,7 +30,14 @@ async function main() {
       }
     }
   });
-  const app = await (await fetch(config.origin + "/app.js", { headers: { Cookie: config.cookie } })).text();
+  const sessionsPanel = config.page.slot === "sessions";
+  async function assertDonorUnchanged() {
+    for (const [file, digest] of Object.entries(config.donorFiles)) {
+      const hash = createHash("sha256").update(await readFile(file)).digest("hex");
+      assert.equal(hash, digest, "Delegated history changed " + path.basename(file));
+    }
+  }
+  const app = sessionsPanel ? "" : await (await fetch(config.origin + "/app.js", { headers: { Cookie: config.cookie } })).text();
   const functionSource = name => {
     const start = app.indexOf("function " + name + "(");
     assert(start >= 0, "actual trusted parent function missing: " + name);
@@ -37,8 +45,8 @@ async function main() {
     assert(end > start);
     return app.slice(start, end + 2);
   };
-  const dialog = functionSource("backdropClick") + "\nlet confirmationPending = null;\n" + functionSource("confirmAction");
-  const html = `<!doctype html><meta charset="utf-8"><h1>Isolated installed history fixture</h1>
+  const dialog = sessionsPanel ? "" : functionSource("backdropClick") + "\nlet confirmationPending = null;\n" + functionSource("confirmAction");
+  const html = sessionsPanel ? "" : `<!doctype html><meta charset="utf-8"><h1>Isolated installed history fixture</h1>
     <iframe id="module" sandbox="allow-scripts" style="width:100%;height:800px"></iframe>
     <script>
       const NO_SCROLL={preventScroll:true};
@@ -71,12 +79,19 @@ async function main() {
       foreign.push(url.origin);
       return route.abort();
     }
-    if (url.pathname === "/history-fixture-parent") return route.fulfill({ contentType: "text/html", body: html });
+    if (!sessionsPanel && url.pathname === "/history-fixture-parent") return route.fulfill({ contentType: "text/html", body: html });
     return route.continue();
   });
   try {
-    await page.goto(config.origin + "/history-fixture-parent");
-    const frame = page.frameLocator("#module");
+    await page.goto(config.origin + (sessionsPanel ? "/" : "/history-fixture-parent"));
+    let frameSelector = "#module";
+    if (sessionsPanel) {
+      await page.locator('button[data-view="sessions"]').click();
+      frameSelector = '#view-sessions .plugin-slot[data-slot="sessions"] iframe';
+      await page.locator(frameSelector).waitFor();
+      assert.equal(await page.locator("button[data-plugin-page]").count(), 0);
+    }
+    const frame = page.frameLocator(frameSelector);
     await frame.locator("#history-status").waitFor();
     if (config.unsupported) {
       await frame.locator("#history-status").filter({ hasText: "Просмотр истории недоступен" }).waitFor();
@@ -99,6 +114,7 @@ async function main() {
       await frame.locator("#history-status").filter({ hasText: "отменён" }).waitFor();
       assert.equal(catalogCalls().length, 0);
       assert(!requests.some(request => request.body?.operation === "request"));
+      await assertDonorUnchanged();
       await frame.locator("#history-access").click();
       await dialog.waitFor();
       await dialog.getByRole("button", { name: "Continue", exact: true }).click();
@@ -145,6 +161,7 @@ async function main() {
         const { rootRef, ...payload } = negative;
         assert.equal(await frameObject.evaluate(selection => magpie.history.media(selection).then(() => false, () => true), payload), true);
       }
+      await assertDonorUnchanged();
       await frame.locator("#history-refresh").click();
       await frame.locator("#history-release").click();
       await frame.locator("#history-status").filter({ hasText: "отозвано" }).waitFor();
@@ -164,7 +181,8 @@ async function main() {
     assert.deepEqual(errors, []);
     assert(!requests.some(request => request.path === "/api/plugin-pages/auth" || request.path === "/api/plugin-pages/call"));
     const result = {
-      chromium: true, installedNativePackage: true, actualHostHTTP: true, syntheticParentHarness: true,
+      chromium: true, installedNativePackage: true, actualHostHTTP: true, syntheticParentHarness: !sessionsPanel,
+      ordinarySessionsPanel: sessionsPanel,
       actualTrustedConfirmAction: true, actualParentBindings: true, actualPageBridge: true,
       actualOpenCodeProcess: false, liveAccountOrVendor: false, unsupported: config.unsupported,
       requests, responses, errors, foreign,

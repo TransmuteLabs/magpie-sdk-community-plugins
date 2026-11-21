@@ -25,12 +25,17 @@ not install a community/OpenCode auth plugin or run a Bun backend.
 
 | Distribution | Version | Minimum SDK | Contents |
 | --- | --- | --- | --- |
-| Ordinary full package | 0.8.2 | 1.12 | Default no-flag build with `provider-signin`, agent metadata, Go + Zen OAuth/key/public, auth UI, Console HTTP and SQLite/WAL history |
+| Ordinary full package | 0.8.3 | 1.12 | Providers sign-in, agent wiring, Go + Zen OAuth/key/public, Console HTTP bindings and a Sessions panel for SQLite/WAL history |
+| Previous release | 0.8.2 | 1.12 | Providers sign-in plus the standalone OpenCode page |
 | Full compatibility artifact | 0.8.1 | 1.12 | Explicit legacy `--compat-api8` flag with the previous window-only sign-in declarations |
 | Provider compatibility artifact | 0.2.0 | 1.12 | Historical Go OAuth, four models, Chat/Gemini, quota |
 | Agent compatibility artifact | 0.3.0 | 1.12 | Historical provider plus declared profile, config planner and launch metadata |
 
-The window supports rendered history through the optional
+Update Magpie to a build that supports the `sessions` panel slot before
+installing or updating to 0.8.3. The Add and Update paths validate panel
+metadata before activating the package.
+
+The panel supports rendered history through the optional
 SDK UI1.10 `session-history-v1` feature. It requires a selected root and a
 trusted parent confirmation for the independent root/read gates, and renders
 only issued session/media selections. Account sign-in grants no history
@@ -154,10 +159,10 @@ exchange is one-shot. A crash between device exchange and host publication
 still requires a new sign-in: the refresh transaction does not make initial
 device authorization crash-resumable.
 
-During device sign-in, choose “Выделить адрес”, copy the complete HTTPS address
+In link-only mode during device sign-in, copy the complete HTTPS address
 and open it in a separate browser tab to confirm the displayed code. The auth
-page keeps its scripts-only sandbox; it receives no popup or generic URL-opening
-authority. The address clears when the flow ends, is canceled or the page closes.
+form clears the address when the flow ends, is canceled or is dismissed.
+The compatibility artifact's sign-in page runs in a scripts-only sandbox.
 
 ## Models and native protocols
 
@@ -229,7 +234,8 @@ No refusal switches account/provider. Zen usage returns no fabricated Go quota.
 Zen balance, `countTokens` and remote operation reconciliation remain absent.
 
 Service keys enter the authentication broker through the declared `key`
-method in Providers or the OpenCode page. Both forms use a secret input.
+method in Providers. The compatibility artifact uses its OpenCode page.
+Both forms use a secret input.
 Key identity is derived from that key; replacing it creates another account,
 and reauthorization with a different key is refused. OAuth identity remains
 user + initial organization within its provider domain. Public auth accepts

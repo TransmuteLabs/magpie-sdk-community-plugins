@@ -107,6 +107,19 @@ def prepare_sources():
         assert time.monotonic() < deadline, "ordinary source preparation stayed pending"
         time.sleep(0.05)
 
+def history_part():
+    pages, _ = request("/api/plugin-pages")
+    pages = [item for item in json.loads(pages) if item["name"] == "opencode"]
+    if "provider-signin" not in declaration["contract"]["capabilities"]:
+        part, = pages
+        return part
+    assert not pages, "OpenCode history appeared in the sidebar"
+    panels, _ = request("/api/plugin-panels")
+    part, = (item for item in json.loads(panels) if item["name"] == "opencode")
+    assert part["slot"] == "sessions"
+    return part
+
+
 try:
     writer = subprocess.Popen([sys.executable, str(root.parent / "tests/storage_writer.py"),
                                str(home / ".local/share/opencode")], cwd=home, env=env,
@@ -135,12 +148,15 @@ try:
         time.sleep(0.05)
     assert cookie, "ordinary web never became ready"
     if args.history_browser or args.history_unsupported:
-        pages, _ = request("/api/plugin-pages")
-        page = next(page for page in json.loads(pages) if page["name"] == "opencode")
+        page = history_part()
         browser_config = output / "history-browser-config.json"
+        donor = home / ".local/share/opencode/opencode.db"
         browser_config.write_text(json.dumps({
             "origin": origin, "cookie": cookie, "page": page,
             "unsupported": args.history_unsupported, "output": str(output),
+            "donorFiles": {str(donor) + suffix: ready[key] for key, suffix in (
+                ("db", ""), ("wal", "-wal"), ("shm", "-shm"),
+            )},
         }))
         browser_result = subprocess.run(
             ["/usr/bin/node-22", str(root.parent / "tests/history_browser.cjs"), str(browser_config)],
@@ -148,6 +164,18 @@ try:
         )
         (output / "history-browser.log").write_text(browser_result.stdout + browser_result.stderr)
         assert browser_result.returncode == 0, (browser_result.returncode, browser_result.stdout, browser_result.stderr)
+        if args.history_browser:
+            after = ask_writer("state")
+            assert all(ready[key] == after[key] for key in ("db", "wal")), "history changed the donor database or WAL"
+            reads = json.loads((config / "settings.json").read_text())["sessionReads"]
+            assert not reads.get("all", False) and reads["agents"] == {"opencode": True}
+            report = {"ordinarySessionsPanel": page.get("slot") == "sessions", "moduleVersion": declaration["version"],
+                      "renderedStorageConsentUI": True, "donorFilesUnchangedWhileDelegated": True,
+                      "donorDBAndWALUnchangedAfterRelease": True, "agentReadPermissionRetained": True,
+                      "liveAccountsOrVendors": False}
+            (output / "result.json").write_text(json.dumps(report, indent=2) + "\n")
+            print(json.dumps(report), flush=True)
+            raise SystemExit(0)
     request("/api/sessions/storage-sources", expected=401, authenticated=False)
     request("/api/sessions/storage-sources", expected=403, headers={"Sec-Fetch-Site": "cross-site"})
     body, _ = request("/api/sessions/storage-sources")
@@ -192,8 +220,7 @@ try:
     assert b"later committed message" in transcript
     assert ask_writer("checkpoint")["busy"] == 0, "ordinary HTTP reader retained SQLite locks"
     request("/api/sessions/transcript?agent=opencode&id=ses_wal")
-    pages, _ = request("/api/plugin-pages")
-    assert any(page["name"] == "opencode" for page in json.loads(pages)), "full package omitted its UI"
+    assert history_part()["ref"], "full package omitted its checked history UI"
     catalog = json.loads((config / "extensions/catalog.json").read_text())
     assert [entry["manifest"]["id"] for entry in catalog] == ["opencode"]
     assert not list(home.rglob("node_modules"))
@@ -208,7 +235,7 @@ try:
     assert b"ses_wal" not in listing, "foreign CLI off retained a storage row or selected the built-in"
     report = {
         "ordinaryHost": True, "nativeFullPackage": True, "actualModuleSQLiteReader": True,
-        "actualOpenCodeBinary": False, "renderedStorageConsentUI": args.history_browser,
+        "actualOpenCodeBinary": False, "renderedStorageConsentUI": False,
         "oldHostHistoryUnsupported": args.history_unsupported,
         "installedModules": ["opencode"], "moduleVersion": declaration["version"],
         "sdkMinimum": ".".join(str(declaration["contract"]["version"][key]) for key in ("major", "minor")),
