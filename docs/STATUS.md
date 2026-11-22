@@ -11,7 +11,7 @@ Community-плагины и исходники harness служат рефере
 | [MiniMax](../packages/minimax/README.md) | `0.1.1` | `1.12` + `provider-signin` | Community `0.2.9` |
 | [OMP](../packages/omp/README.md) | `0.1.0` | `1.10` | OMP `18.22.2` проверен на `04a4c101`. Экспорт в Codex и Claude учитывает `custom_message` и сохраняет порядок реплик и результатов инструментов. Архив сохраняется побайтово |
 | [OpenCode](../packages/opencode/README.md) | `0.8.4` | `1.12` + `provider-signin` | Go, Zen и Zen Free подключаются через Providers. Референсы OpenCode `011f9043e8` и community Zen `0.1.28` сохранены |
-| [ZCode](../packages/zcode/README.md) | `0.16.0` | `1.12` + `provider-signin`, `provider-saved-signin` | Desktop `3.18.2` и CLI `0.17.1` на `fec97590`, Community `0.1.68` на `836f2e4e`. Поддерживаются проверяемые статические записи. Подписки с Desktop-follow остаются за Community |
+| [ZCode](../packages/zcode/README.md) | `0.16.0` | `1.20` + `provider-signin`, `provider-saved-signin` | Desktop `3.18.2` и CLI `0.17.1` на `fec97590`, Community `0.1.68` на `836f2e4e`. Поддерживаются проверяемые статические записи. Подписки с Desktop-follow остаются за Community |
 
 Версия пакета, минимальная ревизия API и версия референса независимы. Все пакеты используют
 native ABI `1`. Точные исходные коммиты, версии, переносимое поведение,
