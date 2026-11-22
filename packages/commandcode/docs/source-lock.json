@@ -98,9 +98,20 @@
   },
   "plugin": {
     "id": "protocol-commandcode",
-    "version": "0.1.4",
+    "version": "0.1.5",
     "sdkMinimum": "1.12",
+    "requiredCapabilities": ["provider-signin"],
     "nativeABI": 1
+  },
+  "providerSignInReview": {
+    "checkedAt": "2026-11-21",
+    "communityCommit": "836f2e4e4cd899318c422d67cc1b2b30baaf1e06",
+    "packageTree": "305e867f7f675041d4905c951fb2495a9d00fcb3",
+    "communityVersion": "0.1.24",
+    "communityPaths": ["packages/commandcode/index.mjs"],
+    "localCLIVersion": "1.88.0",
+    "localCLIEntrySHA256": "157feefa0140e78f060ef2c1f9c50d10de702196ea229dc73db6bbcc39a0bcbb",
+    "localCLIBundleSHA256": "600725f967cc98f6144066c24e850d934bd4a1f503c3bf82f2bd2584a8757dfd"
   },
   "requestPolicyAdoption": {
     "state": "unpublished API1.12 working adoption; Astra review separate",

@@ -6,6 +6,16 @@ This is a Go port of `packages/minimax` version 0.2.9 from
 dependency. `source-lock.json` records each donor file's SHA-256 and the copied
 matrix/schema fixtures. The donor MIT notice ships as `DONOR-LICENSE.txt`.
 
+MiniMax `0.1.1` exposes the two existing device flows through the SDK provider
+sign-in broker. Community `origin/main` at
+`836f2e4e4cd899318c422d67cc1b2b30baaf1e06` has the same `0.2.9` package tree.
+The local `Agents/minimax-code` checkout at
+`3c21163c85a9684030cb147bfef48c6284fa3c46` supplies supplementary OAuth
+reference evidence. `packages/oauth-core` version `0.2.1-beta.7` confirms
+regional device and token origins, PKCE, and rotating refresh. The harness
+also implements a vendor revocation endpoint. The Magpie sign-out action
+removes the selected local account, matching the community plugin's scope.
+
 On November 16, 2026, fetched community commit
 `b35d4b35b2446bd929896ddeb58f3cb299e9e2d1` still contains version `0.2.9`.
 Its `packages/minimax` tree is

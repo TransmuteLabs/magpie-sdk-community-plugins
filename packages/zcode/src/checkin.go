@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"slices"
 	"strconv"
+	"strings"
 	"sync/atomic"
 	"time"
 
@@ -18,11 +19,73 @@ import (
 type marketingLocaleKey struct{}
 type checkinCallKey struct{}
 
+const accountCheckinAction = "account.checkin"
+const checkinInterval = 30 * time.Minute
+
+var beijing = time.FixedZone("Beijing", 8*60*60)
 var marketingSequence atomic.Uint64
 
 type giftOffer struct {
 	PlanID string `json:"planId"`
 	Name   string `json:"name"`
+}
+
+type giftPause struct {
+	until int64
+	delay time.Duration
+}
+
+type checkinClaim struct {
+	day, name string
+	accepted  bool
+	posted    bool
+}
+
+type giftClaimAnswer struct {
+	Outcome string `json:"outcome"`
+	Until   int64  `json:"until"`
+	Day     string `json:"checkinDay"`
+	Name    string `json:"checkinName"`
+}
+
+type checkinReply struct {
+	Outcome string            `json:"outcome"`
+	Results []json.RawMessage `json:"results,omitempty"`
+	Until   int64             `json:"until"`
+	Message string            `json:"message,omitempty"`
+}
+
+type checkinRecord struct {
+	checkinReply
+	Day string `json:"checkinDay"`
+}
+
+func zcodeCheckinDay(now time.Time) string {
+	return now.In(beijing).Format(time.DateOnly)
+}
+
+func claimAnswer(body json.RawMessage) giftClaimAnswer {
+	var answer giftClaimAnswer
+	if json.Unmarshal(body, &answer) != nil {
+		return giftClaimAnswer{}
+	}
+	return answer
+}
+
+func giftNames(prefix string, names []string) string {
+	var label strings.Builder
+	label.WriteString(prefix)
+	slices.Sort(names)
+	for index, name := range slices.Compact(names) {
+		if label.Len()+len(name)+2 > 4096 {
+			break
+		}
+		if index > 0 {
+			label.WriteString(", ")
+		}
+		label.WriteString(name)
+	}
+	return label.String()
 }
 
 func claimCode(value any) (float64, bool) {
@@ -45,7 +108,7 @@ func retryDelay(headers http.Header, now time.Time, fallback time.Duration) time
 	if date, err := http.ParseTime(text); err == nil && date.After(now) {
 		return min(date.Sub(now), 6*time.Hour)
 	}
-	return min(max(fallback, 30*time.Minute), 6*time.Hour)
+	return min(max(fallback, checkinInterval), 6*time.Hour)
 }
 
 func marketingLocale(body json.RawMessage) (string, error) {
@@ -132,28 +195,30 @@ func feedOffers(data map[string]any) ([]giftOffer, error) {
 	return offers, nil
 }
 
-func (owner *module) readOffers(ctx context.Context, stream *sdk.Stream, account Credentials, fallback time.Duration) ([]giftOffer, time.Duration, error) {
+func (owner *module) readOffers(ctx context.Context, stream *sdk.Stream, account Credentials, fallback time.Duration) ([]giftOffer, giftPause, error) {
 	path := "/api/v1/marketing/touch?seq=" + strconv.FormatUint(marketingSequence.Add(1)-1, 10)
 	status, body, headers, err := owner.controlDetailed(ctx, stream, account, "", http.MethodGet, path, nil)
 	if err != nil {
-		return nil, 0, err
+		return nil, giftPause{}, err
 	}
 	root, err := protocol.ReadObject(body)
 	code, valid := claimCode(root["code"])
 	if status == 429 || valid && code == 3002 {
-		return nil, retryDelay(headers, owner.options.Now(), fallback), &sdk.Error{
+		now := owner.options.Now()
+		delay := retryDelay(headers, now, fallback)
+		return nil, giftPause{until: now.Add(delay).UnixMilli(), delay: delay}, &sdk.Error{
 			Code: "rate_limit_error", Message: "ZCode marketing feed rate limited this principal", Outcome: "not-started"}
 	}
 	if err != nil || !valid || code != 0 || status < 200 || status >= 300 ||
 		root["success"] == false || root["error"] != nil {
-		return nil, 0, unsupported("The ZCode feed could not be confirmed; no offers were inferred")
+		return nil, giftPause{}, unsupported("The ZCode feed could not be confirmed; no offers were inferred")
 	}
 	data := mapObject(root["data"])
 	if root["data"] != nil && data == nil {
-		return nil, 0, protocol.ErrInvalid
+		return nil, giftPause{}, protocol.ErrInvalid
 	}
 	offers, err := feedOffers(data)
-	return offers, 0, err
+	return offers, giftPause{}, err
 }
 
 func (owner *module) billingOffers(ctx context.Context, call sdk.Call, stream *sdk.Stream) (any, error) {
@@ -175,13 +240,11 @@ func (owner *module) billingOffers(ctx context.Context, call sdk.Call, stream *s
 		if entry := transaction.Journal.Checkin; entry != nil && entry.Pending && entry.Until > now.UnixMilli() {
 			return uncertain("Another check-in is pending; no concurrent feed was requested")
 		}
-		var rate time.Duration
-		offers, rate, readErr = owner.readOffers(context.WithValue(ctx, marketingLocaleKey{}, locale), stream, account,
+		var pause giftPause
+		offers, pause, readErr = owner.readOffers(context.WithValue(ctx, marketingLocaleKey{}, locale), stream, account,
 			time.Duration(transaction.Journal.ClaimHoldDelay)*time.Millisecond*2)
-		if rate > 0 {
-			transaction.Journal.ClaimHoldUntil, transaction.Journal.ClaimHoldDelay = now.Add(rate).UnixMilli(), rate.Milliseconds()
-		} else if readErr == nil {
-			transaction.Journal.ClaimHoldUntil, transaction.Journal.ClaimHoldDelay = 0, 0
+		if pause.until != 0 || readErr == nil {
+			transaction.MergeClaimHold(owner.options.Now().UnixMilli(), pause.until, pause.delay.Milliseconds())
 		}
 		return transaction.Save()
 	})
@@ -197,21 +260,59 @@ func (owner *module) billingCheckin(ctx context.Context, call sdk.Call, stream *
 	if err != nil {
 		return nil, err
 	}
-	if call.Scope.Operation == "" {
-		return nil, invalid("Check-in requires a host-owned operation")
+	return owner.runCheckin(ctx, call, stream, zcodeCheckinDay(owner.options.Now()), locale)
+}
+
+func (owner *module) accountCheckin(ctx context.Context, call sdk.Call, stream *sdk.Stream) (any, error) {
+	var request sdk.AccountCheckinRequest
+	if err := decode(call.Params, &request); err != nil || request.Validate() != nil || call.Scope.Session != "" ||
+		request.Day != zcodeCheckinDay(owner.options.Now()) {
+		return nil, invalid("Check-in requires the scheduler's selected account and day")
 	}
-	account, store, principal, _, err := owner.executionContext(ctx, call, stream)
+	account, err := owner.identity(call)
 	if err != nil {
 		return nil, err
 	}
+	if account.SessionToken == "" {
+		return sdk.AccountCheckinResult{Outcome: "inactive", Message: "Gift check-in requires a ZCode session"}, nil
+	}
+	reply, err := owner.runCheckin(ctx, call, stream, request.Day, "en-US")
+	if err != nil {
+		return nil, err
+	}
+	result := sdk.AccountCheckinResult{Outcome: reply.Outcome, Message: reply.Message}
+	until := reply.Until
+	switch reply.Outcome {
+	case "rate_limited":
+		result.Outcome = sdk.AccountCheckinRateLimited
+	case "captcha":
+		return result, nil
+	default:
+		dayStart, _ := time.ParseInLocation(time.DateOnly, request.Day, beijing)
+		until = min(until, dayStart.AddDate(0, 0, 1).UnixMilli())
+	}
+	result.Until = time.UnixMilli(until).UTC().Format(time.RFC3339Nano)
+	return result, nil
+}
+
+func (owner *module) runCheckin(ctx context.Context, call sdk.Call, stream *sdk.Stream, day, locale string) (checkinReply, error) {
+	if call.Scope.Operation == "" {
+		return checkinReply{}, invalid("Check-in requires a host-owned operation")
+	}
+	account, store, principal, _, err := owner.executionContext(ctx, call, stream)
+	if err != nil {
+		return checkinReply{}, err
+	}
 	now := owner.options.Now()
-	var cached json.RawMessage
+	var reply checkinReply
 	var delay int64
+	settled := map[string]giftClaimAnswer{}
+	var checked []string
 	err = store.Locked(ctx, principal, func(transaction *controller.Transaction) error {
 		previous := transaction.Journal.Checkin
 		delay = transaction.Journal.ClaimHoldDelay
 		if transaction.Journal.ClaimHoldUntil > now.UnixMilli() {
-			cached, _ = json.Marshal(map[string]any{"outcome": "rate_limited", "until": transaction.Journal.ClaimHoldUntil})
+			reply = checkinReply{Outcome: "rate_limited", Until: transaction.Journal.ClaimHoldUntil, Message: "ZCode rate limited this account"}
 			return nil
 		}
 		if previous != nil {
@@ -220,36 +321,59 @@ func (owner *module) billingCheckin(ctx context.Context, call sdk.Call, stream *
 				if previous.Pending {
 					return uncertain("Another check-in remains pending; no feed or claim was repeated")
 				}
-				cached = previous.Result
-				return nil
+				var record checkinRecord
+				if err := json.Unmarshal(previous.Result, &record); err != nil {
+					return err
+				}
+				if record.Day == day {
+					reply = record.checkinReply
+					return nil
+				}
+			}
+		}
+		for plan, claim := range transaction.Journal.Claims {
+			answer := claimAnswer(claim.Result)
+			if answer.Day != day {
+				continue
+			}
+			settled[plan] = answer
+			if claim.State == "confirmed" || claim.State == "observed" {
+				checked = append(checked, answer.Name)
 			}
 		}
 		transaction.Journal.Checkin = &controller.Checkin{Operation: call.Scope.Operation, Pending: true,
 			Until: now.Add(2 * time.Minute).UnixMilli(), Delay: delay}
 		return transaction.Save()
 	})
-	if err != nil || cached != nil {
-		return cached, err
+	if err != nil || reply.Outcome != "" {
+		return reply, err
 	}
-	if err := stream.Emit(ctx, "accepted", sdk.AcceptedEvent{OperationID: call.Scope.Operation}); err != nil {
-		return nil, uncertain("Check-in was fenced but its acceptance was not acknowledged")
+	checkin := &checkinClaim{day: day}
+	ctx = context.WithValue(context.WithValue(ctx, marketingLocaleKey{}, locale), checkinCallKey{}, checkin)
+	offers, pause, readErr := owner.readOffers(ctx, stream, account, time.Duration(delay)*time.Millisecond*2)
+	if readErr != nil && pause.until == 0 && ctx.Err() == nil {
+		readErr = &sdk.Error{Code: "upstream", Message: readErr.Error(), Outcome: "not-started"}
 	}
-	ctx = context.WithValue(context.WithValue(ctx, marketingLocaleKey{}, locale), checkinCallKey{}, true)
-	offers, rate, readErr := owner.readOffers(ctx, stream, account, time.Duration(delay)*time.Millisecond*2)
-	results := []json.RawMessage{}
-	outcome := "inactive"
-	until := now.Add(30 * time.Minute)
+	reply = checkinReply{Outcome: "inactive", Until: now.Add(checkinInterval).UnixMilli()}
+	var claimed []string
+	captcha, needsVerification, ineligible := false, false, false
 	if readErr == nil && len(offers) > 0 {
-		outcome = "done"
-		until = time.Date(now.UTC().Year(), now.UTC().Month(), now.UTC().Day()+1, 0, 0, 0, 0, time.UTC)
+		offers = slices.DeleteFunc(offers, func(offer giftOffer) bool {
+			answer, found := settled[offer.PlanID]
+			captcha = captcha || answer.Outcome == "captcha"
+			return found
+		})
+	}
+	if readErr == nil && len(offers) > 0 {
 		policyErr := owner.claimPolicy(ctx, stream, account)
 		var failure *sdk.Error
 		if errors.As(policyErr, &failure) && failure.Code == "verification_required" {
-			outcome, offers = "captcha", nil
+			needsVerification, offers = true, nil
 		} else if policyErr != nil {
 			readErr, offers = policyErr, nil
 		}
 		for _, offer := range offers {
+			checkin.name, checkin.posted = offer.Name, false
 			claim := call
 			claim.Params = rawClaimPlan(offer.PlanID)
 			result, err := owner.billingClaim(ctx, claim, stream)
@@ -258,70 +382,72 @@ func (owner *module) billingCheckin(ctx context.Context, call sdk.Call, stream *
 				break
 			}
 			body, _ := json.Marshal(result)
-			results = append(results, body)
-			value, _ := protocol.ReadObject(body)
-			switch value["outcome"] {
-			case "claimed", "confirmed", "observed":
-				if outcome != "captcha" && outcome != "rate_limited" {
-					outcome = "claimed"
+			reply.Results = append(reply.Results, body)
+			answer := claimAnswer(body)
+			switch answer.Outcome {
+			case "claimed", "confirmed":
+				if checkin.posted {
+					claimed = append(claimed, offer.Name)
+				} else {
+					checked = append(checked, offer.Name)
 				}
+			case "done", "observed":
+				checked = append(checked, offer.Name)
 			case "captcha":
-				outcome = "captcha"
+				captcha = true
+				needsVerification = checkin.posted
 			case "ineligible":
-				if outcome == "done" {
-					outcome = "ineligible"
-				}
-				until = minTime(until, now.Add(30*time.Minute))
+				ineligible = true
 			case "rate_limited":
-				outcome = "rate_limited"
-				if after, valid := metric(value["until"]); valid && after > float64(now.UnixMilli()) {
-					rate = time.Duration(int64(after)-now.UnixMilli()) * time.Millisecond
+				if after := time.UnixMilli(answer.Until).Sub(now); after > 0 {
+					pause = giftPause{until: answer.Until, delay: after}
 				}
+			default:
+				readErr = uncertain("The stored ZCode claim result could not be confirmed")
 			}
-			if outcome == "rate_limited" || outcome == "captcha" {
+			if pause.until != 0 || needsVerification || readErr != nil {
 				break
 			}
 		}
 	}
-	if rate > 0 {
-		until, delay, outcome = now.Add(rate), rate.Milliseconds(), "rate_limited"
+	switch {
+	case needsVerification || captcha && len(claimed) == 0 && len(checked) == 0:
+		dayStart, _ := time.ParseInLocation(time.DateOnly, day, beijing)
+		reply.Outcome, reply.Until, reply.Message = "captcha", dayStart.AddDate(0, 0, 1).UnixMilli(), "Complete verification in the ZCode app"
+	case len(claimed) > 0:
+		reply.Outcome, reply.Message = "claimed", giftNames("Claimed: ", claimed)
+	case len(checked) > 0:
+		reply.Outcome, reply.Message = "done", giftNames("Already claimed: ", checked)
+	case ineligible:
+		reply.Outcome, reply.Message = "ineligible", "ZCode did not offer this account the listed gift plan yet"
 	}
-	value := map[string]any{"outcome": outcome, "results": results, "until": until.UnixMilli()}
-	body, _ := json.Marshal(value)
 	saveErr := store.Locked(ctx, principal, func(transaction *controller.Transaction) error {
 		entry := transaction.Journal.Checkin
 		if entry == nil || entry.Operation != call.Scope.Operation {
 			return uncertain("Check-in ownership changed")
 		}
-		if readErr != nil && rate == 0 {
+		if readErr != nil && pause.until == 0 {
 			entry.Pending, entry.Until = true, now.UnixMilli()
 		} else {
-			entry.Pending, entry.Result, entry.Until, entry.Delay = false, body, until.UnixMilli(), delay
-			if rate > 0 {
-				transaction.Journal.ClaimHoldUntil, transaction.Journal.ClaimHoldDelay = until.UnixMilli(), rate.Milliseconds()
-			} else {
-				entry.Delay = 0
+			until := transaction.MergeClaimHold(owner.options.Now().UnixMilli(), pause.until, pause.delay.Milliseconds())
+			if until != 0 {
+				reply.Outcome, reply.Until, reply.Message = "rate_limited", until, "ZCode rate limited this account"
 			}
+			body, _ := json.Marshal(checkinRecord{checkinReply: reply, Day: day})
+			entry.Pending, entry.Result, entry.Until, entry.Delay = false, body, reply.Until, transaction.Journal.ClaimHoldDelay
 		}
 		return transaction.Save()
 	})
 	if saveErr != nil {
-		return nil, uncertain("Check-in result could not be durably published")
+		return checkinReply{}, uncertain("Check-in result could not be durably published")
 	}
-	if readErr != nil && rate == 0 {
-		return nil, readErr
+	if readErr != nil && pause.until == 0 {
+		return checkinReply{}, readErr
 	}
-	return json.RawMessage(body), nil
+	return reply, nil
 }
 
 func rawClaimPlan(id string) json.RawMessage {
 	body, _ := json.Marshal(map[string]string{"planId": id})
 	return body
-}
-
-func minTime(first, second time.Time) time.Time {
-	if first.Before(second) {
-		return first
-	}
-	return second
 }

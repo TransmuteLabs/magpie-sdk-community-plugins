@@ -46,7 +46,7 @@ func TestDefaultFullPackageDeclaresAndBindsHistory(t *testing.T) {
 		t.Fatal("ordinary full package is invalid", err)
 	}
 	manifest := module.Manifest
-	if manifest.Version != "0.8.3" || manifest.Contract.Version != (sdk.APIVersion{Major: 1, Minor: 12}) ||
+	if manifest.Version != "0.8.4" || manifest.Contract.Version != (sdk.APIVersion{Major: 1, Minor: 12}) ||
 		manifest.Compatibility.HostAPI != "^1.12" {
 		t.Fatal("ordinary full package did not negotiate effective agent metadata")
 	}

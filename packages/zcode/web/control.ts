@@ -89,9 +89,10 @@ export class ZcodeControl {
         throw new Error("Host returned an invalid account summary");
       }
       seen.add(value.id);
-      return value.expiresAt === undefined
-        ? { id: value.id, generation: value.generation }
-        : { id: value.id, generation: value.generation, expiresAt: value.expiresAt };
+      const summary: AccountSummary = { id: value.id, generation: value.generation };
+      if (value.expiresAt !== undefined) summary.expiresAt = value.expiresAt;
+      if (typeof value.name === "string" && value.name) summary.name = value.name;
+      return summary;
     });
     this.#accounts = accounts;
     const selected = this.#selected;

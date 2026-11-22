@@ -9,10 +9,10 @@ async function main() {
   const root = process.env.CC_UI_ROOT;
   const app = fs.readFileSync(path.join(host, "internal/gui/assets/app.js"), "utf8");
   const renderer = fs.readFileSync(path.join(host, "internal/gui/assets/provideroptions.js"), "utf8");
-  const section = (start, end) => {
-    const first = app.indexOf(start), last = app.indexOf(end, first);
-    assert.ok(first >= 0 && last > first);
-    return app.slice(first, last);
+  const section = (name) => {
+    const first = app.indexOf(`\nfunction ${name}(`), last = app.indexOf("\n}", first + 1);
+    assert.ok(first >= 0 && last > first, `host renderer has no ${name} function`);
+    return app.slice(first, last + 2) + "\n";
   };
   const browser = await chromium.launch({ headless: true, executablePath: process.env.CC_CHROMIUM,
     args: ["--no-sandbox", "--disable-background-networking", "--disable-component-update"] });
@@ -29,12 +29,9 @@ async function main() {
     await page.goto(base + "/fixture");
     await page.setContent('<div id="options"></div><button id="save">Save</button><pre id="error"></pre>');
     await page.addScriptTag({ content:
-      'const locale="en",NO_SCROLL={preventScroll:true};let segsMade=0;const segsDue=[[]];function slide(){};' +
+      'const locale="en",NO_SCROLL={preventScroll:true};let segsMade=0,confirmationPending=null;const segsDue=[[]];function slide(){};' +
       'function t(text,fields={}){for(const [key,value]of Object.entries(fields))text=text.replaceAll("{"+key+"}",value);return text;}' +
-      section("function el(tag,", "// replaceKeeping") +
-      section("function segs(items,", "// controls placed") +
-      section("function backdropClick(", "// Settings › Uninstall") +
-      section("function optionWords(", "// said under the models") + renderer });
+      ["el", "segs", "backdropClick", "confirmAction", "optionWords"].map(section).join("") + renderer });
     await page.evaluate(async () => {
       window.provider = await (await fetch("/fixture")).json();
       window.draft = { extensionOwner: structuredClone(provider.extensionOptions) };
@@ -93,13 +90,13 @@ async function main() {
       return route.fulfill({ contentType: "text/javascript", body: fs.readFileSync(path.join(root, relative)) });
     });
     await page.goto(base + "/web/index.html");
-    await page.locator("#output").filter({ hasText: "Choose an account" }).waitFor();
+    await page.locator("#output").filter({ hasText: "Sign in through Providers" }).waitFor();
     const checkbox = page.locator('input#zdr[type="checkbox"]');
     if (await checkbox.count()) {
       await checkbox.uncheck();
       await page.waitForFunction(() => casCalls > 0);
     }
-    assert.equal(await page.evaluate(() => casCalls), 0, "custom page bypassed the confirmed provider option owner");
+    assert.equal(await page.evaluate(() => casCalls), 0, "Usage panel bypassed the confirmed provider option owner");
     assert.match(await page.locator("#zdr").innerText(), /Providers.*Command Code/);
     assert.deepEqual(blocked, []);
     assert.deepEqual(errors, []);

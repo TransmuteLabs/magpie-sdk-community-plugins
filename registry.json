@@ -1,22 +1,6 @@
 {
   "schema": 1,
   "packages": {
-    "claude-desktop": {
-      "id": "agent-claude-desktop",
-      "platforms": [
-        "darwin/arm64",
-        "darwin/amd64"
-      ],
-      "checks": [
-        {
-          "command": [
-            "{python}",
-            "-I",
-            "tests/provenance_test.py"
-          ]
-        }
-      ]
-    },
     "commandcode": {
       "id": "protocol-commandcode",
       "checks": [

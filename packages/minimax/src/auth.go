@@ -215,6 +215,14 @@ func (owner *module) authFinish(ctx context.Context, call sdk.Call, stream *sdk.
 	if now < flow.Next {
 		return sdk.AuthResult{Pending: true}, nil
 	}
+	var previous Credentials
+	if call.Scope.Account != "" {
+		selected, err := owner.SelectedClient(ctx, call, stream, site.ID)
+		if err != nil {
+			return nil, err
+		}
+		previous = selected.credentials
+	}
 	flow.State = "polling"
 	version, err = writeFlow(ctx, stream, key.ID, version, flow)
 	if err != nil {
@@ -268,7 +276,7 @@ func (owner *module) authFinish(ctx context.Context, call sdk.Call, stream *sdk.
 	if contains([]string{"denied", "access_denied", "expired", "expired_token"}, state) {
 		return nil, &sdk.Error{Code: "auth_denied", Message: "MiniMax device authorization was denied or expired"}
 	}
-	credentials, err := owner.token(site, value, Credentials{})
+	credentials, err := owner.token(site, value, Credentials{SubjectKind: previous.SubjectKind})
 	if err != nil {
 		return nil, err
 	}
@@ -282,6 +290,25 @@ func (owner *module) authFinish(ctx context.Context, call sdk.Call, stream *sdk.
 	if owner.options.Now().UnixMilli() >= flow.Deadline {
 		return nil, &sdk.Error{Code: "expired", Message: "MiniMax device authorization expired before publication"}
 	}
+	if previous.ID != "" {
+		userKnown := previous.UserID != "" && credentials.UserID != ""
+		subjectKnown := previous.Subject != "" && credentials.Subject != "" && previous.SubjectKind == credentials.SubjectKind
+		if !userKnown && !subjectKnown || userKnown && previous.UserID != credentials.UserID ||
+			subjectKnown && previous.Subject != credentials.Subject {
+			return nil, denied("Authorization did not confirm the selected MiniMax account")
+		}
+		credentials.ID = previous.ID
+		if credentials.UserID == "" {
+			credentials.UserID = previous.UserID
+		}
+		if credentials.Subject == "" {
+			credentials.Subject, credentials.SubjectKind = previous.Subject, previous.SubjectKind
+		}
+		if credentials.Email == "" && credentials.Name == "" {
+			credentials.Email, credentials.Name = previous.Email, previous.Name
+		}
+		return authResult(credentials), nil
+	}
 	subject := credentials.UserID
 	if subject == "" {
 		subject = credentials.Subject
@@ -290,12 +317,6 @@ func (owner *module) authFinish(ctx context.Context, call sdk.Call, stream *sdk.
 		return nil, invalid("MiniMax token did not identify an account")
 	}
 	credentials.ID = accountID(site.ID, subject)
-	if call.Scope.Account != "" {
-		previous, err := owner.SelectedClient(ctx, call, stream, site.ID)
-		if err != nil || previous.credentials.ID != credentials.ID {
-			return nil, denied("Authorization returned a different MiniMax account")
-		}
-	}
 	return authResult(credentials), nil
 }
 
@@ -342,15 +363,13 @@ func (owner *module) token(site Site, value map[string]any, previous Credentials
 	return result, nil
 }
 func authResult(client Credentials) sdk.AuthResult {
-	name := client.Email
+	name := strings.TrimSpace(client.Email)
 	if name == "" {
-		name = client.Name
+		name = strings.TrimSpace(client.Name)
 	}
 	if name == "" {
-		name = client.UserID
-	}
-	if name == "" {
-		name = client.ID
+		id := strings.TrimPrefix(client.ID, "mm-")
+		name = "MiniMax [" + id[:min(len(id), 12)] + "]"
 	}
 	return sdk.AuthResult{ID: client.ID, Name: name, Credentials: raw(client), ExpiresAt: client.ExpiresAt}
 }
@@ -377,6 +396,15 @@ func (owner *module) authRefresh(ctx context.Context, call sdk.Call, stream *sdk
 	replacement, err := owner.token(client.site, value, client.credentials)
 	if err != nil {
 		return nil, uncertain("MiniMax refresh returned invalid credentials; do not replay the exchange")
+	}
+	if replacement.Email == "" && replacement.Name == "" {
+		client.credentials = replacement
+		if profile, err := client.identity(ctx); err == nil {
+			if replacement.UserID != "" && replacement.UserID != profile.UserID {
+				return nil, uncertain("MiniMax refreshed profile changed account identity; do not replay the exchange")
+			}
+			replacement.UserID, replacement.Email, replacement.Name = profile.UserID, profile.Email, profile.Name
+		}
 	}
 	return authResult(replacement), nil
 }

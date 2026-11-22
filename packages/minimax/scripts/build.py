@@ -46,10 +46,7 @@ def build(arguments, environment, sdk):
         (stage / "magpie-plugin.json").write_bytes(declaration)
         for name in ("source-lock.json", "SOURCES.md", "CONTRACT.md", "DONOR-LICENSE.txt"):
             shutil.copy2(PACKAGE / "docs" / name, stage / name)
-        shutil.copytree(PACKAGE / "web", stage / "web")
-        shutil.copy2(PACKAGE / "web/package.json", stage / "package.json")
-        for name in ("ui.js", "account-selection.js", "errors.js"):
-            shutil.copy2(sdk / "sdk/js" / name, stage / "web" / ("sdk-ui.js" if name == "ui.js" else name))
+        shutil.copy2(PACKAGE / "package.json", stage / "package.json")
         build_info = {
             "schema": 1,
             "module": manifest["id"],

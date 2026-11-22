@@ -5,6 +5,22 @@ Refs name exact commits; the verification host additionally pins its
 committed tree. Source repositories remain
 read-only; no dependency installation or vendor account was used.
 
+The full 0.16.0 composition requires `provider-signin` and
+`provider-saved-signin`. The latter denotes two-step saved-account preparation
+and activation through Magpie. Both compositions require API 1.20 for
+the typed rate-limit check-in result. The explicit
+0.7.4 headless composition retains its provider-only contract.
+
+The earlier browser-only candidate used the release workflow SDK commit
+`1a478840fc13199bf302efcdc9cf9b987d821438`. Its subscription checks on
+Magpie `c5d5404f7` exercised initial sign-in, selected reauthorization and
+logout. The new capability gates the full package on hosts that support the
+local saved-account commands. The API key method follows the Community
+plugin's `GLM Coding Plan API key` method and its site selection.
+`tests/ui_auth_e2e.py` exercises subscription transfer and rollback, the
+ordinary Providers and Installed surfaces, and gateway routing with a
+loopback vendor and local Community fixtures.
+
 | Identity | Exact baseline |
 | --- | --- |
 | Our committed readiness module | `8143212`, headless 0.6.0 / optional UI 0.8.0 |
@@ -12,9 +28,9 @@ read-only; no dependency installation or vendor account was used.
 | Confirmed CN/Start checkpoint | `3d949ff`, headless 0.6.2 / optional UI 0.8.2, wire client 3.18.2 |
 | Accepted owned-agent checkpoint | `ffa65a5`, headless 0.6.2 / native UI and agent 0.9.0 |
 | Bounded donor-parity checkpoint | `f6c708f`, headless compatibility 0.7.0 / native UI and agent 0.10.0 |
-| Ordinary full package | 0.15.0, provider/controller/agent/UI and rooted CLI history together; `scripts/build.py --output DIRECTORY` with no selection flags |
-| Current provider-only package | 0.7.3, explicit `--headless`, same domain fixes and public policy |
-| Runtime SDK floor | both current compositions 1.12; historical receipts retain their original API4/API9 floors |
+| Ordinary full package | 0.16.0, provider/controller/agent/UI and rooted CLI history together; `scripts/build.py --output DIRECTORY` with no selection flags |
+| Current provider-only package | 0.7.4, explicit `--headless`, same domain fixes and public policy |
+| Runtime SDK floor | both compositions use 1.20. The full composition requires `provider-saved-signin`. Historical receipts retain their original floors. |
 | 2026-11-16 baseline regression repair host | parent immutable local candidate-05, 11001-file source SHA256 `0db2f2e148b7263e196db2e1e4f40e2fd3a4bfba31fddf842a9417e6b57f4926`; separate from earlier native/policy freezes and final combined acceptance |
 | Current public policy SDK source | `sdk-request-policy12`, 10987-file physical snapshot SHA256 `e2ca42c6fa8529b781a61aec04862355a5b28183646cc57ee028f6133fb74c34`; capture base `705d67efc78f72cdc63973318ecaaaa661c1e04e` is not the physical tree |
 | Previous native lifecycle base | `c11acbc2bebec1fb213ef562900d35188cdf55fe` |
@@ -42,6 +58,17 @@ read-only; no dependency installation or vendor account was used.
 | 2026-11-16 community no-op audit | parent-fetched `b35d4b35b2446bd929896ddeb58f3cb299e9e2d1`; the same ZCode tree and package 0.1.66; no runtime delta |
 | 2026-11-16 vendor no-op audit | parent-fetched `fec975905a2abd4c07e35c40d51fa097a2258ec9`; unchanged full tree, desktop 3.18.2 / CLI 0.17.1 |
 | 2026-11-17 bounded community donor | `324acd6007f2d513c5072fe2e9fe1db3524ae03d`, package0.1.68, ZCode subtree `91595e647e66e6b45105ce45fcea2291b85d0634`; original extraction pins remain unchanged |
+| Saved sign-in comparison | community `836f2e4e4cd899318c422d67cc1b2b30baaf1e06`, same 0.1.68 subtree; desktop `fec975905a2abd4c07e35c40d51fa097a2258ec9` |
+| 2026-11-22 check-in donor | community `fdbf261b7d01d1c908220029473d671cc420cab7`, package 0.1.69, ZCode subtree `ee4de91f09b88382e6b2d55236b1f1e3e93dc6ec` |
+
+Community 0.1.69 rechecks the marketing feed after a successful claim so
+plans that arrive later in the Beijing day can be claimed. The SDK package
+uses the existing Magpie account scheduler and persists settled plan answers
+in its existing principal journal. A recheck can therefore find a later
+plan after a module restart without posting the first claim again.
+`src/checkin_recheck_test.go` verifies the registered SDK action and page
+action through the SDK wire with a controlled clock and loopback feed.
+The original extraction and 0.1.68 Start admission pins remain separate.
 
 The0.1.68 adoption reuses the existing Start transport admission owner for
 account3 plus6 per exact origin/proxy route and omits the provider's former
@@ -59,6 +86,12 @@ Donor0.1.67's enc:v2 desktop-store diagnostic was inspected but does not
 apply to this module's explicit polling/snapshot authentication; no automatic
 desktop store or Keychain reader was added. The new source-lock entry names
 this donor separately from extraction and historical acceptance.
+
+Saved sign-in support uses the donor's `asZCode` and `stateOf` to distinguish
+Desktop-follow from static records. The Desktop credential storage spec and
+`desktopHostProcess.ts` bind secure credential access to its own Main/Host
+bridge. The module verifies static Start snapshots with profile and entitlement
+reads. Desktop-follow and paid OAuth require fresh browser sign-in.
 
 Bounded author verification passed on package identity
 `0ebae38a4bca56c1ae75d2afa7dc21237636072871d245023103c1e5094dee7f`:
@@ -129,7 +162,7 @@ adoption uses the owner's separately inventoried `43b7e290` source
 snapshot. Neither the earlier d070 acceptance nor this uncommitted source
 snapshot proves final committed SDK release acceptance.
 
-The normal package selects the full SDK 1.12 manifest for public policy, provider defaults
+The normal package selects the full SDK 1.20 manifest for public policy, confirmed check-in pauses, provider defaults
 and rich quota metadata, retaining optional API7 execution Facts and diagnostics. The separate
 `--headless` option exists for historical compatibility fixtures.
 [PACKAGE-EVIDENCE.md](history/PACKAGE-EVIDENCE.md) records the default-package

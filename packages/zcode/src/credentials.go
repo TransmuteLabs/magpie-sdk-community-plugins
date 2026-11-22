@@ -15,6 +15,7 @@ type Credentials struct {
 	Site               string           `json:"site"`
 	LoginProvider      string           `json:"loginProvider,omitempty"`
 	Kind               string           `json:"kind"`
+	DisplayName        string           `json:"displayName,omitempty"`
 	UserID             string           `json:"userId,omitempty"`
 	Organization       string           `json:"organization,omitempty"`
 	Project            string           `json:"project,omitempty"`
@@ -116,6 +117,36 @@ func (value Credentials) Validate(now time.Time) error {
 		return ErrExpired
 	}
 	return nil
+}
+
+// The donor uses the selected OAuth user's email or name. Display metadata never
+// participates in AccountID, including when a phone.local alias changes.
+func oauthDisplayName(user map[string]any) string {
+	email, _ := user["email"].(string)
+	name, _ := user["name"].(string)
+	for _, candidate := range []string{strings.TrimSuffix(strings.TrimSpace(email), "@phone.local"), strings.TrimSpace(name)} {
+		if safeText(candidate) && len(candidate) <= 220 {
+			return candidate
+		}
+	}
+	return ""
+}
+
+func (value Credentials) accountName() string {
+	if value.Kind == "legacy-key" {
+		if value.Site == "bigmodel" {
+			return "BigModel · GLM Coding Plan API key"
+		}
+		return "Z.ai · GLM Coding Plan API key"
+	}
+	plan := "ZCode " + value.Site + " " + value.Kind
+	if safeText(value.DisplayName) && len(value.DisplayName) <= 220 {
+		return value.DisplayName + " · " + plan
+	}
+	if safeText(value.UserID) && len(value.UserID) <= 220 {
+		return value.UserID + " · " + plan
+	}
+	return plan
 }
 
 func (value Credentials) AccountID() string {

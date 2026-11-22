@@ -4,22 +4,20 @@
 Community-плагины и исходники harness служат референсами; дополнительная
 установка этих плагинов для работы наших пакетов не требуется.
 
-| Пакет | Версия | Минимум API | Исходные и дополнительно проверенные референсы |
+| Пакет | Версия в исходниках | Минимум API | Исходные и дополнительно проверенные референсы |
 | --- | --- | --- | --- |
-| [Claude Desktop](../packages/claude-desktop/README.md) | `0.1.0` | `1.5` | Донор `5.11492.5` на `ff8d9230`. Сверены контракты `6.6395.0` на `120edadaf`, исправлена проверка HTTP-адреса. Живой Desktop предстоит проверить |
-| [Command Code](../packages/commandcode/README.md) | `0.1.4` | `1.12` | Community `0.1.24`. CLI `1.91.0` сверён с `1.89.2`. Native Generate и System One отправляют заголовок версии `1.91.0`. Nullable-схемы Gemini Go сверены с `pi-commandcode-provider` `0.7.1` |
-| [Devin](../packages/devin/README.md) | `0.8.2` | `1.12` | Devin `3000.11.228` на `e977587d` подтвердил `GetAccountManagedPluginBundle`. Сверка с CLIProxyAPI `061ffe6f` добавила выбор effort из последнего системного сообщения. Оба пути проверены через HTTP-шлюз с локальным Connect |
-| [MiniMax](../packages/minimax/README.md) | `0.1.0` | `1.12` | Community `0.2.9` |
+| [Command Code](../packages/commandcode/README.md) | `0.1.5` | `1.12` + `provider-signin` | Community `0.1.24`. CLI `1.91.0` сверён с `1.89.2`. Native Generate и System One отправляют заголовок версии `1.91.0`. Nullable-схемы Gemini Go сверены с `pi-commandcode-provider` `0.7.1` |
+| [Devin](../packages/devin/README.md) | `0.8.3` | `1.12` + `provider-signin`, `provider-saved-signin` | Протокол Devin `3000.11.228` сверён на `b86869df`, изменения реконструкции просмотрены до `12bde35f`. Community `0.1.45` на `836f2e4e`. Фикстуры `provider.execute` покрывают stop 4 с поздним usage в Chat и Messages, а также `failed_precondition` до и после первой дельты. Многопользовательский перенос и откат проверены на локальном Connect. Живая проверка ожидает сборок |
+| [MiniMax](../packages/minimax/README.md) | `0.1.1` | `1.12` + `provider-signin` | Community `0.2.9` |
 | [OMP](../packages/omp/README.md) | `0.1.0` | `1.10` | OMP `18.22.2` проверен на `04a4c101`. Экспорт в Codex и Claude учитывает `custom_message` и сохраняет порядок реплик и результатов инструментов. Архив сохраняется побайтово |
-| [OpenCode](../packages/opencode/README.md) | `0.8.2` | `1.12` + `provider-signin` | Go, Zen и Zen Free подключаются через Providers. Референсы OpenCode `011f9043e8` и community Zen `0.1.28` сохранены |
-| [ZCode](../packages/zcode/README.md) | `0.15.0` | `1.12` | Desktop `3.18.2`, CLI `0.17.1`; community `0.1.66` → `0.1.68`, перенос проверен |
+| [OpenCode](../packages/opencode/README.md) | `0.8.4` | `1.12` + `provider-signin` | Go, Zen и Zen Free подключаются через Providers. Референсы OpenCode `011f9043e8` и community Zen `0.1.28` сохранены |
+| [ZCode](../packages/zcode/README.md) | `0.16.0` | `1.12` + `provider-signin`, `provider-saved-signin` | Desktop `3.18.2` и CLI `0.17.1` на `fec97590`, Community `0.1.68` на `836f2e4e`. Поддерживаются проверяемые статические записи. Подписки с Desktop-follow остаются за Community |
 
 Версия пакета, минимальная ревизия API и версия референса независимы. Все пакеты используют
 native ABI `1`. Точные исходные коммиты, версии, переносимое поведение,
 сравнения с обновлёнными референсами и границы проверок записаны в:
 
 - [Command Code source-lock](../packages/commandcode/docs/source-lock.json).
-- [Claude Desktop source-lock](../packages/claude-desktop/docs/source-lock.json).
 - [Devin source-lock](../packages/devin/docs/source-lock.json).
 - [MiniMax source-lock](../packages/minimax/docs/source-lock.json).
 - [OMP source-lock](../packages/omp/docs/source-lock.json).
@@ -49,10 +47,32 @@ Magpie с SDK может работать с пустым каталогом р�
 использование и пропуск уже опубликованных версий описаны в
 [общих командах сборки и выпуска](../README.md#release-assets).
 
-OpenCode `0.8.0` опубликован в приватном GitHub Releases как
-`opencode-v0.8.0`. Установка по ссылке на репозиторий и проверка обновления
-прошли в отдельном профиле macOS. Совместная проверка установленного Magpie
-и живых аккаунтов предстоит.
+21 ноября 2026 года в приватном GitHub Releases подтверждены публикации
+`opencode-v0.8.0`, `opencode-v0.8.2` и `opencode-v0.8.3`. В релизе `0.8.3`
+есть архив `darwin/arm64` и `checksums.txt`. Установка `0.8.0` по ссылке
+на репозиторий и проверка обновления проходили в отдельном профиле macOS.
+
+## Перенос подписки
+
+1. Оставьте Community-плагин установленным и включённым. Выполните
+   `magpie plugin sdk auth import` для каждого сохранённого аккаунта.
+2. Передайте все действующие билеты в один `magpie plugin sdk auth transfer`.
+   Проверьте активную запись через `magpie plugin sdk auth owners`, одну
+   подписку под прежним ID, алиасы аккаунтов, Usage и запрос через
+   существующий маршрут.
+3. При проблемах выполните `magpie plugin sdk auth rollback` с публичным
+   ID и ревизией владельца. Откат требует исходных сохранённых записей и
+   включённого Community-плагина. Сделайте его до смены credentials.
+   После приёмки SDK удалите Community-плагин, если откат больше не нужен.
+
+`auth activate` добавляет отдельный аккаунт под SDK ID и сохраняет
+владельца существующей подписки. Для Devin перенос проверен на локальном
+mock. Для ZCode записи Desktop-follow остаются у Community, пока нельзя
+подтвердить связь личности и ключа. Браузерный вход создаёт отдельный
+SDK-аккаунт. [Инструкция Devin](../packages/devin/docs/ONBOARDING.md#import-a-saved-community-sign-in) ·
+[Инструкция ZCode](../packages/zcode/docs/REFERENCE.md#settings-panel-and-subscription-sign-in)
+
+## Совместный прогон 19 ноября 2026 года
 
 19 ноября 2026 года все семь пакетов повторно прошли `scripts/check.py all
 --race` на `usbox` со снимком Magpie `1b94b2e0b` и незакоммиченными правками
@@ -90,9 +110,7 @@ Command Code, Devin, MiniMax, OMP, OpenCode и ZCode также собраны �
 - OMP прошёл экспорт и обратный импорт архива с `custom_message` через
   установленный модуль. Исходный журнал и вложение сохранились побайтово.
   [Сценарий `--custom-messages`](../packages/omp/tests/verify_host.py).
-- Claude Desktop поддерживает `darwin/arm64` и `darwin/amd64`. В этом прогоне
-  выполнены проверки исходников на Linux. Сборка и установка требуют macOS.
-  [Поддерживаемые платформы](../registry.json).
+- Для прежнего пакета Claude Desktop выполнены проверки исходников на Linux.
 
 Коды завершения, SHA-256 исходников, бинарника Magpie и дистрибутивов записаны
 в `usbox:/tmp/magpie-seven-fixtures.5b0KUFRO/receipt.json`. Для воспроизведения
@@ -107,8 +125,5 @@ Command Code, Devin, MiniMax, OMP, OpenCode и ZCode также собраны �
 с точными историческими результатами и ограничениями. Его положительные
 результаты относятся к указанным срезам, а не к последующим изменениям.
 Детальные записи каждого пакета доступны из его README и source-lock.
-Для нового плагина агента Claude Desktop отдельно записана
-[проверка через настоящий SDK host](../packages/claude-desktop/docs/VERIFICATION.md):
-подключение, синхронизация, восстановление, Messages/SSE, каталог и учёт
-запросов проверены с локальным сервером. Это не заменяет запуск подписанного
-Desktop и живую проверку Chat, Code и Cowork.
+Claude Desktop подключается через встроенный раздел **Agents → Claude Desktop**.
+Отдельный пакет снят после переноса проверки профиля и отката настроек в Magpie.

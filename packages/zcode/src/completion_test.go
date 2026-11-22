@@ -1,6 +1,7 @@
 package zcode
 
 import (
+	"crypto/rand"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -28,7 +29,25 @@ type completionVendor struct {
 	status       int
 }
 
-func newCompletionVendor(t *testing.T) (*completionVendor, *httptest.Server) {
+func newCompletionServer(t *testing.T, handler http.HandlerFunc) (*httptest.Server, ModuleOptions) {
+	t.Helper()
+	marker := rand.Text()
+	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		markers := request.Header.Values(fixtureHTTPHeader)
+		if len(markers) != 1 || markers[0] != marker {
+			writer.WriteHeader(http.StatusNotFound)
+			return
+		}
+		request.Header.Del(fixtureHTTPHeader)
+		handler(writer, request)
+	}))
+	t.Cleanup(server.Close)
+	options := endpointOptions(server)
+	options.HTTPFactory = FixtureHTTPFactory(server.URL, marker)
+	return server, options
+}
+
+func newCompletionVendor(t *testing.T) (*completionVendor, ModuleOptions) {
 	t.Helper()
 	value := &completionVendor{requests: make(chan *http.Request, 32), status: 200, media: "application/json",
 		answer: `{"type":"message","model":"glm-5.3","content":[{"type":"text","text":"GLM-5.3 and model are ordinary words"}]}`,
@@ -36,7 +55,7 @@ func newCompletionVendor(t *testing.T) (*completionVendor, *httptest.Server) {
 			"balances":[{"plan_id":"grant","user_plan_id":"owned","show_name":"GLM-5.3","total_units":100,"remaining_units":75,"capabilities":["model:GLM-5.3"]}]}}`}
 	value.paidActive.Store(true)
 	var server *httptest.Server
-	server = httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+	server, options := newCompletionServer(t, func(writer http.ResponseWriter, request *http.Request) {
 		writer.Header().Set("Content-Type", "application/json")
 		writer.Header().Set("Date", fixtureNow.Format(http.TimeFormat))
 		switch request.URL.Path {
@@ -79,19 +98,57 @@ func newCompletionVendor(t *testing.T) (*completionVendor, *httptest.Server) {
 			writer.WriteHeader(value.status)
 			io.WriteString(writer, value.answer)
 		default:
-			t.Errorf("unexpected completion fixture path %s", request.URL.Path)
+			t.Errorf("unexpected completion fixture request %s %s", request.Method, request.URL.Path)
 			writer.WriteHeader(404)
 		}
-	}))
-	t.Cleanup(server.Close)
-	return value, server
+	})
+	return value, options
+}
+
+func TestCompletionFixtureOnlyDispatchesItsClient(t *testing.T) {
+	observed := make(chan string, 3)
+	server, options := newCompletionServer(t, func(writer http.ResponseWriter, request *http.Request) {
+		if request.Header.Get(fixtureHTTPHeader) != "" {
+			t.Error("fixture marker reached the vendor handler")
+		}
+		observed <- request.Method + " " + request.URL.Path
+		writer.WriteHeader(http.StatusBadRequest)
+	})
+	request, err := http.NewRequestWithContext(t.Context(), http.MethodGet, server.URL+"/", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, marker := range []string{"", "incorrect-fixture-marker"} {
+		request.Header.Set(fixtureHTTPHeader, marker)
+		response, err := server.Client().Do(request)
+		if err != nil {
+			t.Fatal(err)
+		}
+		response.Body.Close()
+		if response.StatusCode != http.StatusNotFound {
+			t.Fatalf("outside request status = %d, want 404", response.StatusCode)
+		}
+	}
+	client, cleanup, err := options.HTTPFactory("")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer cleanup()
+	response, err := client.Do(request)
+	if err != nil {
+		t.Fatal(err)
+	}
+	response.Body.Close()
+	if response.StatusCode != http.StatusBadRequest || len(observed) != 1 || <-observed != "GET /" {
+		t.Fatalf("vendor handler did not see exactly the owned unexpected request: HTTP %d", response.StatusCode)
+	}
 }
 
 func TestCompletionStartShapeKeepsCallerTextAndSourceCacheBoundaries(t *testing.T) {
 	for _, start := range []bool{true, false} {
 		t.Run(map[bool]string{true: "start", false: "paid"}[start], func(t *testing.T) {
-			vendor, server := newCompletionVendor(t)
-			h := newHarnessConfigured(t, endpointOptions(server), moduleConfig{FreeFirst: new(false)})
+			vendor, options := newCompletionVendor(t)
+			h := newHarnessConfigured(t, options, moduleConfig{FreeFirst: new(false)})
 			account := giftAccount()
 			model := "GLM-5.3"
 			if start {
@@ -155,9 +212,9 @@ func TestCompletionStartShapeKeepsCallerTextAndSourceCacheBoundaries(t *testing.
 }
 
 func TestCompletionPaidFallbackRestoresOriginalSystemEnvelope(t *testing.T) {
-	vendor, server := newCompletionVendor(t)
+	vendor, options := newCompletionVendor(t)
 	vendor.answer = `{"code":1005}`
-	h := newHarness(t, endpointOptions(server))
+	h := newHarness(t, options)
 	account := giftAccount()
 	request := giftRequest("GLM-5.3")
 	request.Body = raw(map[string]any{"model": request.Model, "system": "original paid instructions",
@@ -179,14 +236,14 @@ func TestCompletionGiftRepliesNameActualTrialPoolWithoutChangingText(t *testing.
 	for _, streamed := range []bool{false, true} {
 		for _, model := range []string{"GLM-5.3", "GLM-5.3-Trial"} {
 			t.Run(model+map[bool]string{false: "/json", true: "/sse"}[streamed], func(t *testing.T) {
-				vendor, server := newCompletionVendor(t)
+				vendor, options := newCompletionVendor(t)
 				if streamed {
 					vendor.media = "text/event-stream"
 					vendor.answer = "event: message_start\ndata: {\"type\":\"message_start\",\"message\":{\"type\":\"message\",\"model\":\"glm-5.3\",\"content\":[]}}\n\n" +
 						"event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"delta\":{\"type\":\"text_delta\",\"text\":\"GLM-5.3 and model are ordinary words\"}}\n\n" +
 						"event: message_stop\ndata: {\"type\":\"message_stop\"}\n\n"
 				}
-				h := newHarness(t, endpointOptions(server))
+				h := newHarness(t, options)
 				frame, body := h.call(sdk.MethodProviderExecute, scope(giftAccount()), giftRequest(model), raw(giftAccount()))
 				if frame.Error != nil || !strings.Contains(string(body), `"model":"GLM-5.3-Trial"`) ||
 					!strings.Contains(string(body), "GLM-5.3 and model are ordinary words") ||
@@ -199,9 +256,9 @@ func TestCompletionGiftRepliesNameActualTrialPoolWithoutChangingText(t *testing.
 }
 
 func TestCompletionHeldFreeFirstBypassesGiftBeforeAcceptanceButTrialStaysStrict(t *testing.T) {
-	vendor, server := newCompletionVendor(t)
+	vendor, options := newCompletionVendor(t)
 	vendor.answer, vendor.status, vendor.media = "<html>errors.aliyun.com</html>", 405, "text/html"
-	h := newHarness(t, endpointOptions(server))
+	h := newHarness(t, options)
 	account := giftAccount()
 	first, _ := h.call(sdk.MethodProviderExecute, scope(account), giftRequest("GLM-5.3-Trial"), raw(account))
 	if first.Error != nil || vendor.startCalls.Load() != 1 {
@@ -218,8 +275,8 @@ func TestCompletionHeldFreeFirstBypassesGiftBeforeAcceptanceButTrialStaysStrict(
 }
 
 func TestCompletionManualPaidSnapshotKeepsGiftCatalogAndUsage(t *testing.T) {
-	_, server := newCompletionVendor(t)
-	h := newHarness(t, endpointOptions(server))
+	_, options := newCompletionVendor(t)
+	h := newHarness(t, options)
 	account := giftAccount()
 	account.Discovery = false
 	frame, _ := h.call(sdk.MethodProviderModels, scope(account), sdk.ModelsRequest{}, raw(account))
@@ -246,8 +303,8 @@ func TestCompletionManualPaidSnapshotKeepsGiftCatalogAndUsage(t *testing.T) {
 }
 
 func TestCompletionManualPaidFreeFirstUsesConfirmedGift(t *testing.T) {
-	vendor, server := newCompletionVendor(t)
-	h := newHarness(t, endpointOptions(server))
+	vendor, options := newCompletionVendor(t)
+	h := newHarness(t, options)
 	account := giftAccount()
 	account.Discovery = false
 	frame, _ := h.call(sdk.MethodProviderExecute, scope(account), giftRequest("GLM-5.3"), raw(account))
@@ -263,9 +320,9 @@ func TestCompletionPersonalEntitlementKeepsValidSiblingAndSourceEnvelope(t *test
 		`{"data":[{"productName":"Coding Plan","status":"VALID","inCurrentPeriod":true}]}`,
 	} {
 		t.Run(response, func(t *testing.T) {
-			vendor, server := newCompletionVendor(t)
+			vendor, options := newCompletionVendor(t)
 			vendor.paidList = response
-			h := newHarness(t, endpointOptions(server))
+			h := newHarness(t, options)
 			account := giftAccount()
 			frame, _ := h.call(sdk.MethodProviderModels, scope(account), sdk.ModelsRequest{}, raw(account))
 			var catalog sdk.ModelsResult
@@ -285,9 +342,9 @@ func TestCompletionPersonalEntitlementKeepsValidSiblingAndSourceEnvelope(t *test
 func TestCompletionMalformedCodingFieldsRemainUnknownWithoutGiftFallback(t *testing.T) {
 	for _, fields := range []string{`"productId":null`, `"autoRenew":{}`, `"nextRenewTime":false`} {
 		t.Run(fields, func(t *testing.T) {
-			vendor, server := newCompletionVendor(t)
+			vendor, options := newCompletionVendor(t)
 			vendor.paidList = `{"code":0,"data":[{"productName":"Coding Plan","status":"VALID","inCurrentPeriod":true,` + fields + `}]}`
-			h := newHarness(t, endpointOptions(server))
+			h := newHarness(t, options)
 			account := giftAccount()
 			frame, _ := h.call(sdk.MethodProviderModels, scope(account), sdk.ModelsRequest{}, raw(account))
 			if frame.Error == nil || vendor.balanceReads.Load() != 0 {
@@ -316,7 +373,7 @@ func TestCompletionPaidBusyRetriesOnlyConfirmedUnusedCaps(t *testing.T) {
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			var calls atomic.Int32
-			server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+			_, options := newCompletionServer(t, func(writer http.ResponseWriter, request *http.Request) {
 				if request.URL.Path != "/zai" {
 					t.Errorf("paid retry escaped inference: %s", request.URL.Path)
 				}
@@ -328,9 +385,8 @@ func TestCompletionPaidBusyRetriesOnlyConfirmedUnusedCaps(t *testing.T) {
 				}
 				writer.WriteHeader(test.status)
 				io.WriteString(writer, test.body)
-			}))
-			defer server.Close()
-			h := newHarnessConfigured(t, endpointOptions(server), moduleConfig{FreeFirst: new(false)})
+			})
+			h := newHarnessConfigured(t, options, moduleConfig{FreeFirst: new(false)})
 			h.recoverRequest = func(failure sdk.RequestRecoveryRequest) sdk.RequestRecoveryResult {
 				decision := sdk.RequestRecoveryResult{Step: failure.Step, Action: "terminal"}
 				if test.retry && failure.Evidence != "" && len(h.recoveries) < 3 {
@@ -356,9 +412,9 @@ func TestCompletionPaidBusyRetriesOnlyConfirmedUnusedCaps(t *testing.T) {
 }
 
 func TestCompletionConfirmedInactivePaidStillOffersAndServesOnlyGift(t *testing.T) {
-	vendor, server := newCompletionVendor(t)
+	vendor, options := newCompletionVendor(t)
 	vendor.paidActive.Store(false)
-	h := newHarnessConfigured(t, endpointOptions(server), moduleConfig{FreeFirst: new(false)})
+	h := newHarnessConfigured(t, options, moduleConfig{FreeFirst: new(false)})
 	account := giftAccount()
 	frame, _ := h.call(sdk.MethodProviderModels, scope(account), sdk.ModelsRequest{}, raw(account))
 	var catalog sdk.ModelsResult
@@ -382,10 +438,10 @@ func TestCompletionGiftOnlyCannotBecomePaidWhenConfirmationChanges(t *testing.T)
 		`{"code":0,"data":{"plans":[{"plan_id":"grant","status":"active"}],"balances":[]}}`,
 	} {
 		t.Run(balance, func(t *testing.T) {
-			vendor, server := newCompletionVendor(t)
+			vendor, options := newCompletionVendor(t)
 			vendor.paidActive.Store(false)
 			vendor.balanceAfter = balance
-			h := newHarness(t, endpointOptions(server))
+			h := newHarness(t, options)
 			account := giftAccount()
 			frame, _ := h.call(sdk.MethodProviderExecute, scope(account), giftRequest("GLM-5.3"), raw(account))
 			if frame.Error == nil || vendor.paidCalls.Load() != 0 || vendor.startCalls.Load() != 0 {
@@ -396,7 +452,7 @@ func TestCompletionGiftOnlyCannotBecomePaidWhenConfirmationChanges(t *testing.T)
 }
 
 func TestCompletionGiftWindowsCannotExceedPublicUsageBudget(t *testing.T) {
-	vendor, server := newCompletionVendor(t)
+	vendor, options := newCompletionVendor(t)
 	capabilities := []string{}
 	for index := range 1024 {
 		capabilities = append(capabilities, "model:gift-"+strconv.Itoa(index))
@@ -409,7 +465,7 @@ func TestCompletionGiftWindowsCannotExceedPublicUsageBudget(t *testing.T) {
 		"balances": []any{map[string]any{"plan_id": "active", "remaining_units": 1,
 			"total_units": 1, "capabilities": capabilities}},
 	}}))
-	h := newHarness(t, endpointOptions(server))
+	h := newHarness(t, options)
 	account := Credentials{Site: "zai", Kind: "start", UserID: "fixture-user", Device: "fixture-device",
 		SessionToken: "fixture-zcode-session", ExpiresAt: fixtureNow.Add(time.Hour).UnixMilli()}
 	if err := account.Validate(fixtureNow); err != nil {
@@ -421,8 +477,8 @@ func TestCompletionGiftWindowsCannotExceedPublicUsageBudget(t *testing.T) {
 	}
 }
 func TestCompletionStartQueryTracksUserTurnsAndIgnoresToolResults(t *testing.T) {
-	vendor, server := newCompletionVendor(t)
-	h := newHarness(t, endpointOptions(server))
+	vendor, options := newCompletionVendor(t)
+	h := newHarness(t, options)
 	account := giftAccount()
 	messages := []any{map[string]any{"role": "user", "content": "first"}}
 	var first string
@@ -457,13 +513,13 @@ func TestCompletionStartQueryTracksUserTurnsAndIgnoresToolResults(t *testing.T) 
 }
 
 func TestCompletionPendingGiftIsVisibleWithoutRoutingAuthority(t *testing.T) {
-	vendor, server := newCompletionVendor(t)
+	vendor, options := newCompletionVendor(t)
 	vendor.balance = string(raw(map[string]any{"code": 0, "data": map[string]any{
 		"plans": []any{map[string]any{"plan_id": "future", "name": "Tomorrow grant", "status": "unknown_pending",
 			"starts_at": fixtureNow.Add(5 * time.Hour).Unix(), "ends_at": fixtureNow.Add(48 * time.Hour).Unix()}},
 		"balances": []any{},
 	}}))
-	h := newHarness(t, endpointOptions(server))
+	h := newHarness(t, options)
 	account := giftAccount()
 	frame, _ := h.call(sdk.MethodProviderUsage, scope(account), sdk.UsageRequest{}, raw(account))
 	var usage sdk.UsageResult
@@ -483,14 +539,14 @@ func TestCompletionPendingGiftIsVisibleWithoutRoutingAuthority(t *testing.T) {
 }
 
 func TestCompletionGiftBucketsKeepPlanIdentityAndOnlyBestBucketControlsModel(t *testing.T) {
-	vendor, server := newCompletionVendor(t)
+	vendor, options := newCompletionVendor(t)
 	vendor.balance = `{"code":0,"data":{"plans":[
 		{"plan_id":"old","user_plan_id":"old-user-plan","name":"Start Plan","status":"active"},
 		{"plan_id":"new","user_plan_id":"new-user-plan","name":"Trust Build","status":"active"}],
 		"balances":[
 		{"plan_id":"old","user_plan_id":"old-user-plan","show_name":"GLM-5.3","total_units":100,"remaining_units":0,"capabilities":["model:GLM-5.3"]},
 		{"plan_id":"new","user_plan_id":"new-user-plan","show_name":"GLM-5.3","total_units":100,"remaining_units":75,"capabilities":["model:GLM-5.3"]}]}}`
-	h := newHarness(t, endpointOptions(server))
+	h := newHarness(t, options)
 	account := giftAccount()
 	frame, _ := h.call(sdk.MethodProviderUsage, scope(account), sdk.UsageRequest{}, raw(account))
 	var usage sdk.UsageResult

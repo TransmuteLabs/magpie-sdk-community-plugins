@@ -269,7 +269,7 @@ func authFinish(ctx context.Context, call sdk.Call, stream *sdk.Stream) (any, er
 	}
 	flow.consumed = true
 	flow.mu.Unlock()
-	result, err := controller.validateKey(ctx, stream, key)
+	result, err := controller.validateKey(ctx, call, stream, key)
 	if err != nil {
 		flow.mu.Lock()
 		if !flow.closed {
@@ -282,9 +282,21 @@ func authFinish(ctx context.Context, call sdk.Call, stream *sdk.Stream) (any, er
 	return result, nil
 }
 
-func (controller *controller) validateKey(ctx context.Context, stream *sdk.Stream, key string) (sdk.AuthResult, error) {
+func (controller *controller) validateKey(ctx context.Context, call sdk.Call, stream *sdk.Stream, key string) (sdk.AuthResult, error) {
+	var previous credentials
+	if call.Scope.Account != "" {
+		var err error
+		previous, err = account(call)
+		if err != nil {
+			return sdk.AuthResult{}, err
+		}
+	}
 	body, err := controller.read(ctx, stream, "/alpha/whoami", key)
 	if err != nil {
+		var refusal *sdk.Error
+		if errors.As(err, &refusal) && refusal.Code == "unauthenticated" {
+			return sdk.AuthResult{}, refusal
+		}
 		return sdk.AuthResult{}, &sdk.Error{Code: "unavailable", Message: "CommandCode could not verify this key; sign-in has not been completed"}
 	}
 	var identity struct {
@@ -304,25 +316,34 @@ func (controller *controller) validateKey(ctx context.Context, stream *sdk.Strea
 	if identity.ID == "" {
 		identity.ID = identity.User.ID
 	}
-	if identity.Name == "" {
-		identity.Name = identity.User.Name
-	}
-	if identity.Name == "" {
-		identity.Name = identity.User.UserName
-	}
-	if identity.Name == "" {
-		identity.Name = identity.User.Email
-	}
-	if identity.Name == "" {
-		identity.Name = identity.Email
-	}
 	if identity.ID == "" {
 		return sdk.AuthResult{}, &sdk.Error{Code: "upstream_error", Message: "CommandCode did not return an account identity"}
 	}
+	var name string
+	for _, label := range [...]string{identity.Name, identity.User.Name, identity.User.UserName, identity.User.Email, identity.Email} {
+		if name = strings.TrimSpace(label); name != "" {
+			break
+		}
+	}
 	hash := sha256.Sum256([]byte(key))
 	accountID := "key-" + hex.EncodeToString(hash[:16])
-	encoded, _ := json.Marshal(credentials{Key: key, UserID: identity.ID, Name: identity.Name})
-	return sdk.AuthResult{ID: accountID, Name: identity.Name, Credentials: encoded}, nil
+	if call.Scope.Account != "" {
+		sameUser := previous.UserID == identity.ID || (previous.UserID == "" && previous.Key == key)
+		if !sameUser {
+			return sdk.AuthResult{}, &sdk.Error{Code: "permission_denied", Message: "Authorization returned a different Command Code account"}
+		}
+		accountID = call.Scope.Account
+		previousName := strings.TrimSpace(previous.Name)
+		if name == "" && previousName != identity.ID && previousName != accountID {
+			name = previousName
+		}
+	}
+	if name == "" {
+		id := strings.TrimPrefix(accountID, "key-")
+		name = "Command Code [" + id[:min(len(id), 12)] + "]"
+	}
+	encoded, _ := json.Marshal(credentials{Key: key, UserID: identity.ID, Name: name})
+	return sdk.AuthResult{ID: accountID, Name: name, Credentials: encoded}, nil
 }
 
 func authRefresh(ctx context.Context, call sdk.Call, stream *sdk.Stream) (any, error) {
@@ -334,7 +355,7 @@ func authRefresh(ctx context.Context, call sdk.Call, stream *sdk.Stream) (any, e
 	if err != nil {
 		return nil, err
 	}
-	return controller.validateKey(ctx, stream, auth.Key)
+	return controller.validateKey(ctx, call, stream, auth.Key)
 }
 
 func authLogout(ctx context.Context, call sdk.Call, stream *sdk.Stream) (any, error) {

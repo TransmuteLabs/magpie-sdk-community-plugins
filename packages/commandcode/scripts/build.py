@@ -57,11 +57,6 @@ def build(output, env, selected_sdk, archive_requested=False):
     subprocess.run(["go", "build", "-trimpath", "-buildmode=c-shared", "-o", str(output / manifest["entry"]), "./cmd/native"], cwd=source, env=env, check=True)
     compile_web(root, selected_sdk, output / "web", env)
     shutil.copy2(root / "web/index.html", output / "web/index.html")
-    # Bundle the public browser helper and its existing dependencies so a
-    # clean installation needs no sibling checkout or runtime SDK package.
-    sdk = selected_sdk / "sdk/js"
-    for sdk_file, target in (("ui.js", "sdk-ui.js"), ("account-selection.js", "account-selection.js"), ("errors.js", "errors.js")):
-        shutil.copy2(sdk / sdk_file, output / "web" / target)
     header = (output / manifest["entry"]).with_suffix(".h")
     header.unlink(missing_ok=True)
     (output / "magpie-plugin.json").write_text(json.dumps(manifest, indent=2) + "\n")

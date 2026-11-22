@@ -1,6 +1,7 @@
 {
   "name": "minimax",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "MiniMax Code China and Global providers with tools, media, and search",
-  "private": true
+  "private": true,
+  "magpie": {"name": "MiniMax", "icon": "minimax-color"}
 }

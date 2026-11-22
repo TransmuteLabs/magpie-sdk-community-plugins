@@ -267,9 +267,9 @@ func TestFullModuleDeclaresBothDirectionsAndRejectsAmbiguousParameters(t *testin
 		t.Fatal(err)
 	}
 	if module.Manifest.Contract.Version != (sdk.APIVersion{Major: 1, Minor: 12}) || module.Manifest.Compatibility.HostAPI != "^1.12" || !module.Manifest.Contract.Has(sdk.RequestPolicy) ||
-		!module.Manifest.Contract.Has(sdk.OutboundExecutor) || !module.Manifest.Contract.Has(sdk.AccountAuth) ||
+		!module.Manifest.Contract.Has(sdk.OutboundExecutor) || !module.Manifest.Contract.Has(sdk.AccountAuth) || !module.Manifest.Contract.Has(sdk.ProviderSignIn) ||
 		len(module.Manifest.Providers) != 1 || module.Manifest.Providers[0].ID != ProviderID ||
-		module.Manifest.Version != "0.5.0" {
+		module.Manifest.Version != "0.5.1" {
 		t.Fatal("paired module contract drifted", module.Manifest)
 	}
 	for _, input := range []string{

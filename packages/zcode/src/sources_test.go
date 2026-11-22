@@ -196,6 +196,19 @@ func TestSourceLockMatchesActualModuleAndNamesImmutableBehaviorSources(t *testin
 				}
 			}
 		}
+		if source.ID == "community-zcode-0169" {
+			if source.Commit != "fdbf261b7d01d1c908220029473d671cc420cab7" || source.Version != "0.1.69" ||
+				source.ZcodeTree != "ee4de91f09b88382e6b2d55236b1f1e3e93dc6ec" ||
+				source.CheckoutCommit != "57d1cc6a9f49389d495ea9be8d986c70de7767bf" ||
+				source.CheckedAt != "2026-11-22" {
+				t.Fatal("check-in donor lost its exact provenance")
+			}
+			for _, path := range []string{"package.json", "index.mjs", "README.md", "checkin.test.mjs"} {
+				if source.CheckedFiles["packages/zcode/"+path] == "" {
+					t.Fatal("check-in port has no checked donor file:", path)
+				}
+			}
+		}
 		if source.ID == "community-zcode-0166" {
 			if source.Commit != "87a8cf03c62fa55ca845c51648e8859ece580336" || source.Version != "0.1.66" ||
 				source.CheckoutCommit != "26ea8faf7793ca66dd8e7a8b90128a5235552a1f" ||
@@ -271,7 +284,7 @@ func TestSourceLockMatchesActualModuleAndNamesImmutableBehaviorSources(t *testin
 		"sdk-base-history9", "vendor-sqlite-history", "rooted-vfs-donor", "sdk-request-policy12", "vendor-request-policy",
 		"community-zcode-20261116-noop-audit", "vendor-zcode-20261116-noop-audit",
 		"vendor-baseline", "vendor-current-audit", "vendor-control-completion", "archived-controller",
-		"community-zcode", "community-zcode-0166", "community-zcode-0168", "community-zcode-current-audit"} {
+		"community-zcode", "community-zcode-0166", "community-zcode-0168", "community-zcode-0169", "community-zcode-current-audit"} {
 		if !seen[id] {
 			t.Fatal("required source lineage omitted:", id)
 		}

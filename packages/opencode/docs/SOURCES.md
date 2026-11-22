@@ -1,9 +1,9 @@
 # OpenCode module source provenance
 
-OpenCode **0.8.3** uses public SDK API **1.12**, native ABI **1**, and the
-Magpie `sessions` panel slot. It keeps the device, API-key, and public flows
-from 0.8.2 in Providers and binds history and Console to the Sessions panel.
-The provider and agent protocol sources below also apply to 0.8.3.
+OpenCode **0.8.4** uses public SDK API **1.12**, native ABI **1**, and the
+Magpie `sessions` panel slot. It retains the Providers sign-in and Sessions
+placement from 0.8.3. Zen service-key names include a short account
+fingerprint. The provider and agent protocol sources remain the same.
 `--compat-api8` builds the 0.8.1 window package at API **1.12**.
 
 The 0.8.1 source review advances OpenCode `2.3.0` from `d33b578333` to

@@ -9,16 +9,35 @@ import (
 
 func ControlManifest() sdk.Manifest {
 	manifest := Manifest()
-	manifest.Version = "0.15.0"
+	manifest.Version = "0.16.0"
 	manifest.Providers[0].MaxConcurrency = new(3)
-	manifest.Contract.Capabilities = append(manifest.Contract.Capabilities, sdk.AgentWiring, sdk.StorageSource, sdk.AgentProcess)
+	manifest.Contract.Capabilities = append(manifest.Contract.Capabilities,
+		sdk.AgentWiring, sdk.StorageSource, sdk.AgentProcess, sdk.ProviderSignIn, sdk.ProviderSavedSignIn)
 	manifest.Processes = []sdk.AgentProcessRecipe{{ID: "native.run", Agent: AgentID, Argv: []string{"app-server", "--stdio"}}}
 	manifest.StorageSources = []sdk.StorageSourceDescriptor{historyDescriptor()}
 	manifest.Agents = []sdk.AgentDescriptor{agentDescriptor()}
 	manifest.Window = &sdk.WindowDescriptor{Metadata: "package.json"}
 	manifest.AuthBindings = []sdk.WindowAuthBindingDescriptor{{
-		ID: "page.signin", From: "window:page", Provider: ProviderID, Reauthorize: true,
-		Methods: []sdk.WindowAuthMethod{{ID: "browser", Mode: "poll"}},
+		ID: "provider.signin", From: sdk.ProviderSignInPart, Provider: ProviderID, Reauthorize: true,
+		Methods: []sdk.WindowAuthMethod{{ID: "browser", Mode: "poll", Label: "Sign in with ZCode", Fields: []sdk.AuthInputField{
+			{Key: "site", Label: "Site", Type: "select", Optional: true, Choices: []sdk.AuthInputChoice{
+				{Value: "zai", Label: "Z.ai"}, {Value: "bigmodel", Label: "BigModel"}, {Value: "zai_cn", Label: "Z.ai China (BigModel)"},
+			}},
+			{Key: "kind", Label: "Plan", Type: "select", Optional: true, Choices: []sdk.AuthInputChoice{
+				{Value: "auto", Label: "Automatic"}, {Value: "individual", Label: "Personal"}, {Value: "team", Label: "Team"}, {Value: "start", Label: "Start"},
+			}},
+			{Key: "organization", Label: "Organization ID", Type: "text", Optional: true},
+			{Key: "project", Label: "Project ID", Type: "text", Optional: true},
+			{Key: "product", Label: "Product ID", Type: "text", Optional: true},
+			{Key: "apiKeyId", Label: "API key ID", Type: "text", Optional: true},
+		}}, {ID: apiKeySignIn, Mode: "poll", Label: "GLM Coding Plan API key", Fields: []sdk.AuthInputField{
+			{Key: "site", Label: "Site", Type: "select", Optional: true, Choices: []sdk.AuthInputChoice{
+				{Value: "zai", Label: "Z.ai"}, {Value: "bigmodel", Label: "BigModel"},
+			}},
+			{Key: "key", Label: "API key", Type: "secret"},
+		}}, {ID: sdk.SavedSignInMethod, Mode: "poll", Label: "Import saved ZCode sign-in", Fields: []sdk.AuthInputField{
+			{Key: "record", Label: "Saved sign-in", Type: "secret"},
+		}}},
 	}}
 	manifest.Actions = append(manifest.Actions, sdk.ActionDescriptor{
 		ID: "execution.summary", InputSchema: json.RawMessage(`{"type":"object","additionalProperties":false}`), Effect: "read",
@@ -44,7 +63,7 @@ func ControlManifest() sdk.Manifest {
 		{"page.native-stop", "native.stop"},
 	} {
 		manifest.Bindings = append(manifest.Bindings, sdk.BindingDescriptor{
-			ID: value.id, From: "window:page", Action: value.action, Provider: ProviderID,
+			ID: value.id, From: "window:panel:0", Action: value.action, Provider: ProviderID,
 		})
 	}
 	return manifest

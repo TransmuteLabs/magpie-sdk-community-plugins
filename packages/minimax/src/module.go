@@ -18,7 +18,7 @@ import (
 )
 
 const ModuleID = "minimax"
-const Version = "0.1.0"
+const Version = "0.1.1"
 const China = "minimax-code"
 const Global = "minimax-code-global"
 
@@ -117,16 +117,15 @@ func coreManifest() sdk.Manifest {
 		Schema: 1, ID: ModuleID, Version: Version, Runtime: "native", Entry: entry,
 		Contract: sdk.Contract{
 			Version:      sdk.APIVersion{Major: 1, Minor: 12},
-			Capabilities: []sdk.Capability{sdk.AccountAuth, sdk.OutboundExecutor, sdk.ModelDiscovery, sdk.UsageReporter, sdk.ModuleRPC, sdk.RequestPolicy},
+			Capabilities: []sdk.Capability{sdk.AccountAuth, sdk.OutboundExecutor, sdk.ModelDiscovery, sdk.UsageReporter, sdk.ModuleRPC, sdk.RequestPolicy, sdk.ProviderSignIn},
 		},
 		Compatibility: &sdk.Compatibility{HostAPI: "^1.12", NativeABI: 1},
 		Actions:       []sdk.ActionDescriptor{{ID: "account.checkin", Effect: "write", InputSchema: json.RawMessage(`{"type":"object","properties":{"day":{"type":"string"},"proxy":{"type":"string"}},"required":["day"],"additionalProperties":false}`)}},
-		Window:        &sdk.WindowDescriptor{Metadata: "package.json"},
 	}
 	for _, id := range []string{China, Global} {
 		result.AuthBindings = append(result.AuthBindings, sdk.WindowAuthBindingDescriptor{
-			ID: "page.auth." + id, From: "window:page", Provider: id, Reauthorize: true,
-			Methods: []sdk.WindowAuthMethod{{ID: "device", Mode: "poll"}},
+			ID: "provider.signin." + id, From: sdk.ProviderSignInPart, Provider: id, Reauthorize: true,
+			Methods: []sdk.WindowAuthMethod{{ID: "device", Mode: "poll", Label: "Device authorization"}},
 		})
 		result.Providers = append(result.Providers, sdk.ProviderDescriptor{
 			ID: id, Name: DefaultSites()[id].Name,

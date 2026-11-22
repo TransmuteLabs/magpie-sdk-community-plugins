@@ -67,13 +67,21 @@ func (fixture *moduleFixture) send(frame sdk.Frame) {
 }
 
 func (fixture *moduleFixture) call(method string, input any, auth json.RawMessage) (json.RawMessage, []sdk.Frame, error) {
+	scope := sdk.Scope{Plugin: ModuleID, Provider: ProviderID, Account: "fixture-account", Generation: 1}
+	if (method == sdk.MethodAuthStart || method == sdk.MethodAuthFinish) && auth == nil {
+		scope.Account, scope.Generation = "", 0
+	}
+	return fixture.callScoped(method, scope, input, auth)
+}
+
+func (fixture *moduleFixture) callScoped(method string, scope sdk.Scope, input any, auth json.RawMessage) (json.RawMessage, []sdk.Frame, error) {
 	fixture.t.Helper()
 	fixture.next++
 	id := fmt.Sprintf("call-%d", fixture.next)
+	scope.Operation = id
 	body, _ := json.Marshal(input)
 	fixture.send(sdk.Frame{Kind: sdk.KindCall, ID: id, Method: method, Params: body, Auth: auth,
-		Scope:    sdk.Scope{Plugin: ModuleID, Provider: ProviderID, Account: "fixture-account", Generation: 1, Operation: id},
-		Deadline: time.Now().Add(10 * time.Second).UnixMilli()})
+		Scope: scope, Deadline: time.Now().Add(10 * time.Second).UnixMilli()})
 	var events []sdk.Frame
 	for fixture.reader.Scan() {
 		var frame sdk.Frame

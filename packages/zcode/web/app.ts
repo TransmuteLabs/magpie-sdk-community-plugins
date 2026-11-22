@@ -1,6 +1,5 @@
 import { ui } from "./sdk-ui.js";
 import { mountControlPage } from "./page.js";
-import { mountAuthentication } from "./auth.js";
 
 async function start(): Promise<void> {
   try {
@@ -17,8 +16,7 @@ async function start(): Promise<void> {
       dialog.addEventListener("close", () => resolve(dialog.returnValue === "confirm"), { once: true });
       dialog.showModal();
     }));
-    const authentication = mountAuthentication(document, page);
-    window.addEventListener("pagehide", () => { authentication.dispose(); page.dispose(); }, { once: true });
+    window.addEventListener("pagehide", () => page.dispose(), { once: true });
     await page.ready;
   } catch {
     document.getElementById("status")!.textContent = "Связь с Magpie недоступна. Откройте страницу заново.";

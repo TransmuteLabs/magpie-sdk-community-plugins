@@ -1,7 +1,6 @@
 go 1.26.8
 
 use (
-	./packages/claude-desktop/src
 	./packages/commandcode/src
 	./packages/devin/src
 	./packages/minimax/src

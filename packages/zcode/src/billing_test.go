@@ -20,7 +20,7 @@ func actionInput(action string, input any) sdk.ModuleCallRequest {
 
 func TestBillingClaimFencesTheSameVendorUserAcrossAccountSelections(t *testing.T) {
 	var claims atomic.Int32
-	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+	_, options := newCompletionServer(t, func(writer http.ResponseWriter, request *http.Request) {
 		writer.Header().Set("Content-Type", "application/json")
 		switch request.URL.Path {
 		case "/api/v1/oauth/profile":
@@ -38,9 +38,8 @@ func TestBillingClaimFencesTheSameVendorUserAcrossAccountSelections(t *testing.T
 			t.Errorf("unexpected billing fixture: owner=%s method=%s host=%q path=%q remote=%q agent=%q authorization=%t",
 				t.Name(), request.Method, request.Host, request.URL.Path, request.RemoteAddr, request.UserAgent(), request.Header.Get("Authorization") != "")
 		}
-	}))
-	defer server.Close()
-	h := newHarnessConfigured(t, endpointOptions(server), moduleConfig{DataDir: filepath.Join(t.TempDir(), "state")})
+	})
+	h := newHarnessConfigured(t, options, moduleConfig{DataDir: filepath.Join(t.TempDir(), "state")})
 	personal := nativeCredentials()
 	team := renewableCredentials("team")
 	team.SessionToken, team.SessionExpiresAt = "another-session-same-user", fixtureNow.Add(time.Hour).UnixMilli()

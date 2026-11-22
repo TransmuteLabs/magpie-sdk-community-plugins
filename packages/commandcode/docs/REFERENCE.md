@@ -1,6 +1,7 @@
 # CommandCode detailed reference
 
-The current unpublished runtime requires API1.12 for shared request policy.
+The current runtime requires API 1.12 with `request-policy` and
+`provider-signin`.
 [REQUEST-POLICY.md](REQUEST-POLICY.md) supersedes the prior API1.9 floor and
 acceptance description below. Remaining detailed parity notes are preserved
 pre-adoption context, not current request-policy verification.
@@ -24,17 +25,17 @@ One package contains the native Go controller, Provider API Chat, Responses
 and Messages forwarding, Go-plan `/alpha/generate` conversion, API-key and
 loopback browser authorization, explicit CLI-key import, plan-aware model
 discovery, usage, ZDR, Jev/SystemOne decisions, checked agent configuration
-and a TS page. All implemented capabilities ship in the default package;
-no build variant or runtime flag enables the ordinary provider, Go-plan,
-decision, agent or UI adapter.
+and a TS Usage panel. All implemented capabilities ship in the default package.
 It has no additional provider/auth plugin or npm runtime dependency.
 
-Browser sign-in shows a read-only HTTPS approval URL using the public SDK's
-auth-link presenter. Choose **Select URL to copy**, copy it into a browser
-tab, approve there, then return and choose **Check sign-in**. This works in
-the host's scripts-only page sandbox without popup or clipboard permissions.
-Finished, canceled and expired flows clear the address. The package includes
-the browser helper; it does not need an installed SDK package at runtime.
+The Command Code subscription declares API key, browser approval and CLI import
+in the ordinary Providers sign-in broker. Reauthorization must confirm the
+same vendor user and publish the selected SDK account ID with a new generation.
+For older credentials without a vendor user ID, only the already saved key
+can establish identity. Successful verification records the available name.
+An explicit 401 or 403 from `/alpha/whoami` requires sign-in again while temporary verification failures
+remain unavailable. The Usage panel retains plan, period, balances, ZDR and
+System One details for the chosen account and generation.
 
 Messages token-count requests preserve `/messages/count_tokens` on the
 Provider API. The Go-plan lane refuses token counting before acceptance;
@@ -147,12 +148,10 @@ The [contract record](SYSTEMONE-SDK-CONTRACT.md) retains the historical
 decision proposal. The API 1.9 record describes the negotiated metadata
 projection, checked configuration and remaining final-parent acceptance.
 The independent first deployment with zero plugins remains separate.
-Only local HTTP fixtures and synthetic account data are verification
-evidence. Live vendor access, real browser approval, actual CLI continuation,
-real credentials and non-Linux execution remain unverified. The packaged
-auth page is checked with synthetic bridge responses in Chromium under the
-host's actual sandbox. WebKit could not launch on the verification host due
-to missing system libraries. This is not live vendor approval or a full
-host GUI/auth-persistence end-to-end test. Run `tests/auth_ui.test.cjs`
-against the built package with `CC_UI_ROOT` and frozen `CC_HOST_ROOT` using
-the isolated usbox browser runner and pinned existing Playwright tools.
+Run `tests/provider_signin_host.py --host HOST --distribution DIST --output NEW_DIR`
+with the bounded usbox network guard to exercise the packaged native module
+through Plugins Add, Providers, and Usage. The verification uses local HTTP
+fixtures and synthetic account data.
+Live vendor approval, actual CLI continuation and native macOS or Windows
+execution remain open. `tests/account_details_ui.test.cjs` checks the packaged
+Usage panel with synthetic bridge responses under the host's sandbox.

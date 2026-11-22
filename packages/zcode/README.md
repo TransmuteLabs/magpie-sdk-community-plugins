@@ -1,8 +1,8 @@
 # ZCode
 
-One native package with the ZCode provider, controller, agent profile, static
-control page and rooted CLI history. The default artifact is **0.15.0**,
-public SDK minimum **1.12**, native ABI **1**. SQLite and runtime behavior are
+One native package with the ZCode provider, controller, agent profile, a Settings
+control panel and rooted CLI history. The default artifact is **0.16.0**,
+public SDK minimum **1.20**, native ABI **1**. SQLite and runtime behavior are
 preserved from the independently reviewed standalone source.
 
 From the monorepo root, in the isolated offline environment on regular usbox:
@@ -31,11 +31,20 @@ For an optional release archive, the direct builder also accepts
 `--archive /tmp/zcode-archives`; this writes the platform ZIP and checksums
 outside the installable directory.
 
-The provider-only **0.7.3** composition remains explicit: add `--headless`
+The provider-only **0.7.4** composition remains explicit: add `--headless`
 and use a separate output directory. Both current compositions require
-SDK **1.12** with `request-handoff` for local queue exhaustion. Historical
-API 1.4/1.9 receipts describe their original snapshots. Installation is a
-separate operation.
+SDK **1.20** for confirmed check-in pauses and `request-handoff` for local
+queue exhaustion. Update Magpie to a host supporting SDK 1.20 before
+installing either composition. Historical receipts describe their original
+SDK floors.
+
+The full composition also requires `provider-signin` and `provider-saved-signin`.
+Use **Providers → Add → Subscriptions** for browser or GLM Coding Plan API
+key sign-in. The account controls there include selected sign-in and sign-out.
+Eligible saved subscriptions move through Magpie's `auth import` and
+`auth transfer` commands. Desktop-follow subscriptions stay with Community
+while proof of the same desktop identity and key is unavailable.
+[Saved sign-in reference](docs/REFERENCE.md#settings-panel-and-subscription-sign-in)
 
 The host owns ordinary Messages transport retry admission, bounded waits and
 sibling selection. The adapter supplies actual bounded response facts and
@@ -44,7 +53,7 @@ polling and durable financial journals retain their existing owners.
 [Policy plan](docs/REQUEST-POLICY-PLAN.md) records scope and verification.
 
 The full package also adopts existing API1.10 source resume and foreground
-AgentProcess control. Its page exposes one confirmed CLI input and a matching
+AgentProcess control. Its Settings panel exposes one confirmed CLI input and a matching
 stop through selected-account bindings. Workspace configuration, durable
 uncertainty and synthetic verification limits are in
 [Native foreground](docs/NATIVE-FOREGROUND.md). This starts an owned CLI child;

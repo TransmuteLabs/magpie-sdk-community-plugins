@@ -37,7 +37,7 @@ def main():
             "default package omits the ready agent/UI composition"
         assert manifest["agents"][0]["id"] == "zcode-native"
         assert [value["id"] for value in manifest["providers"]] == ["zcode"]
-        assert manifest["contract"]["version"] == {"major": 1, "minor": 12}
+        assert manifest["contract"]["version"] == {"major": 1, "minor": 20}
         assert "request-policy" in manifest["contract"]["capabilities"]
         assert manifest["providers"][0]["maxConcurrency"] == 3
         assert manifest["providers"][0]["maxAccounts"] == 2
@@ -54,7 +54,7 @@ def main():
         assert not any(name.startswith(("node_modules/", "packages/", "runtime/")) for name in names)
         provenance = json.loads(archive.read("source-lock.json"))
         assert provenance["plugin"] == {"id": "zcode", "version": manifest["version"],
-                                        "sdkMinimum": "1.12", "nativeABI": 1}
+                                        "sdkMinimum": "1.20", "nativeABI": 1}
     print("default full ZCode package passed", report["artifactSHA256"], flush=True)
 
 

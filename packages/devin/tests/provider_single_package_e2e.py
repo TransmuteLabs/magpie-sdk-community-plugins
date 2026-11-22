@@ -181,7 +181,29 @@ def run(magpie, distribution, artifacts):
                 require(item["id"] == expected and item["name"] == "Devin [" + expected[:12] + "]",
                         "fallback identity was not stable and private")
                 require(gateway.sign_in_key(key, item["id"])["id"] == item["id"], "reauthentication changed identity")
+            replacement = server_thread(stack, DenyProxy())
+            snapshot = json.loads(gateway.command("plugin", "sdk", "config", "devin-inbound"))
+            gateway.command("plugin", "sdk", "config", "devin-inbound",
+                            json.dumps({"server": f"http://127.0.0.1:{replacement.server_port}"}),
+                            "--expected", snapshot["version"])
+            accounts_command = ("plugin", "sdk", "accounts", "devin-inbound", "devin", "--json")
+            remaining = {item["id"]: item["generation"] for item in json.loads(gateway.command(*accounts_command))}
+            account_id = anonymous[0]["id"]
+            stale = subprocess.run([str(gateway.magpie), "plugin", "sdk", "auth", "logout", "devin-inbound",
+                                    "devin", account_id, "--scope", json.dumps({"generation": remaining[account_id] - 1})],
+                                   cwd=home, env=gateway.env, capture_output=True, text=True, timeout=45)
+            require(stale.returncode != 0 and "SDK account generation changed" in stale.stderr,
+                    "sign-out admitted a stale account generation")
+            for item in anonymous:
                 gateway.command("plugin", "sdk", "auth", "logout", "devin-inbound", "devin", item["id"])
+                del remaining[item["id"]]
+                require({item["id"]: item["generation"] for item in json.loads(gateway.command(*accounts_command))}
+                        == remaining, "sign-out changed another account")
+            require(not replacement.requests, "sign-out contacted the replacement server")
+            snapshot = json.loads(gateway.command("plugin", "sdk", "config", "devin-inbound"))
+            gateway.command("plugin", "sdk", "config", "devin-inbound", json.dumps({"server": origin}),
+                            "--expected", snapshot["version"])
+            result["checks"].append("selected local sign-out after changing the vendor server")
             gateway.browser_sign_in(account["id"])
             result["checks"].append("native API-key/session identity, scoped reauth/logout, PKCE mismatch/replay controls")
             usage = gateway.usage(account["id"])

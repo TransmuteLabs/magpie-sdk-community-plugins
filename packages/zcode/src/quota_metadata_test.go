@@ -25,7 +25,7 @@ func quotaWire(t *testing.T, value any) map[string]any {
 func TestQuotaMetadataFullPackageDeclaresDonorDefaults(t *testing.T) {
 	full := ControlManifest()
 	descriptor := quotaWire(t, full.Providers[0])
-	if full.Contract.Version.Minor != 12 || full.Compatibility.HostAPI != "^1.12" ||
+	if full.Contract.Version.Minor != 20 || full.Compatibility.HostAPI != "^1.20" ||
 		descriptor["maxConcurrency"] != float64(3) || descriptor["maxAccounts"] != nil ||
 		len(full.Agents) != 1 || full.Window == nil {
 		t.Fatal("ordinary full package lacks API9 donor defaults or its agent/UI")

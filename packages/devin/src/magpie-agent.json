@@ -1,12 +1,12 @@
 {
   "schema": 1,
   "id": "devin-inbound",
-  "version": "0.8.2",
+  "version": "0.8.3",
   "runtime": "native",
   "entry": "plugin.so",
   "contract": {
     "version": {"major": 1, "minor": 12},
-    "capabilities": ["inbound-codec", "outbound-executor", "account-auth", "model-discovery", "usage-reporter", "agent-wiring", "module-rpc", "native-account-operations", "request-policy"]
+    "capabilities": ["inbound-codec", "outbound-executor", "account-auth", "model-discovery", "usage-reporter", "agent-wiring", "module-rpc", "native-account-operations", "request-policy", "provider-signin", "provider-saved-signin"]
   },
   "compatibility": {
     "hostAPI": "^1.12",
@@ -17,10 +17,17 @@
       "windows/amd64", "windows/arm64"
     ]
   },
-  "window": {"metadata":"package.json"},
   "authBindings": [{
-    "id":"page.auth.devin","from":"window:page","provider":"devin","reauthorize":true,
-    "methods":[{"id":"browser","mode":"poll"}]
+    "id":"provider.devin","from":"provider:signin","provider":"devin","reauthorize":true,
+    "methods":[
+      {"id":"browser","mode":"poll","label":"Sign in with Devin"},
+      {"id":"api-key","mode":"poll","label":"Use API key","fields":[
+        {"key":"key","label":"Devin API key or session token","type":"secret"}
+      ]},
+      {"id":"saved-signin","mode":"poll","label":"Import saved Devin sign-in","fields":[
+        {"key":"record","label":"One saved Devin sign-in record","type":"secret"}
+      ]}
+    ]
   }],
   "providers": [{
     "id": "devin", "name": "Devin", "protocols": ["chat", "anthropic"],

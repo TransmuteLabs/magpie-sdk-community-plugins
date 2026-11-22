@@ -38,12 +38,12 @@ func TestAgentSlicePreservesPairedContractAndDeclaresExplicitProfile(t *testing.
 		t.Fatal(err)
 	}
 	module := agentModuleFixture(t)
-	if paired.Manifest.Version != "0.5.0" || paired.Manifest.Contract.Version.Minor != 12 || !paired.Manifest.Contract.Has(sdk.RequestPolicy) ||
+	if paired.Manifest.Version != "0.5.1" || paired.Manifest.Contract.Version.Minor != 12 || !paired.Manifest.Contract.Has(sdk.RequestPolicy) ||
 		len(paired.Manifest.Agents) != 0 || paired.Manifest.Contract.Has(sdk.AgentWiring) ||
 		paired.Handlers[sdk.MethodAgentPlan] != nil {
 		t.Fatal("agent slice changed the paired distribution")
 	}
-	if module.Manifest.Contract.Version.Minor != 12 || !module.Manifest.Contract.Has(sdk.RequestPolicy) || !module.Manifest.Contract.Has(sdk.AgentWiring) ||
+	if module.Manifest.Version != "0.8.3" || module.Manifest.Contract.Version.Minor != 12 || !module.Manifest.Contract.Has(sdk.RequestPolicy) || !module.Manifest.Contract.Has(sdk.AgentWiring) ||
 		module.Manifest.ID != paired.Manifest.ID || len(module.Manifest.Agents) != 1 {
 		t.Fatal("agent slice did not declare its own negotiation floor")
 	}

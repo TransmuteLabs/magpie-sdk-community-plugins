@@ -4,6 +4,86 @@ The machine-readable source of truth is `source-lock.json`, schema 1.
 It pins immutable commits and artifact SHA256s, not branch names or latest
 releases. Sources are read-only evidence, not packages installed at runtime.
 
+Devin 0.8.3 uses public `provider-signin` from Magpie
+`c5d5404f716b0eb2d38b3a0e43a5afd83ce0ee70`. Its community record adapter
+uses the `packages/devin/index.mjs` format from
+`836f2e4e4cd899318c422d67cc1b2b30baaf1e06` (Devin 0.1.45). That
+package tree matches `324acd6007`. `success`, `cliSignIn` and `live` separate
+static API records from CLI-follow records. The latter can replace both the
+credential and its server on read. `success` records the saved key and
+optional team, organization and server. The UID is absent. The SDK verifies
+the saved key and the current CLI key against the same configured origin.
+Linked accounts use explicit host refresh to follow later rotations of the
+same subject.
+
+Devin's provider variants also require `provider-saved-signin`. The
+`savedSignInContract` entry in `source-lock.json` pins the public SDK overlay
+used for this capability. Magpie's `plugin sdk auth import` and `auth
+activate` commands own source selection, staging and account publication.
+The installed fixture exercises those commands with the native package and
+preserves the source record. [Import guide](ONBOARDING.md#import-a-saved-community-sign-in)
+
+The matching local `Agents/devinapp` baseline is
+`82853544a914da2673172e6d37788fc45e3b5fd9`, reconstructed CLI
+`3000.11.228`. The committed auth, Connect and bootstrap sources match
+`7cb52e1caa3b74ce18ba5d0db81953fa7d6dcba6`. The successor adds Git
+batch-check and MCP import tests. The `UserStatus` descriptor in `w25_mech6.rs` identifies
+`user_id` as field 7. The SDK uses the JSON `userId` in GetUserStatus for
+account binding. The bounded Connect comparison keeps the known RPC and
+frame shapes. `RecordTrajectorySegmentEvents` still lacks a complete
+request/response schema.
+
+`reference/crates/chisel-api/src/credentials_slots.rs` lists the flat
+`credentials.toml` fields and `chisel-agent-bin/src/plugin_context.rs`
+identifies the XDG path and API origin default. The migration uses the
+official `windsurf_api_key` and `api_server_url` fields.
+
+The local `Agents/devinapp` comparison through
+`b86869df66dc5e9ac11f1c7dd199c50a8333a920` preserves the watched credential,
+status, `GetChatMessage` and `AssignModel` definitions. `29b76a0b` adds the example
+`windsurf-api-client/examples/get_chat_message_live.rs` and its
+`src/live_request.rs` encoder. The example calls the unary transport and
+decodes only the first response message. It encodes the prompt role as
+text. The community donor's Chat stream uses a framed body, the role enum
+and a terminal Connect frame. Keep the donor's streaming contract until an
+official-client capture establishes a wire change. `8764971f` adds a
+standalone `registry_cache_behavior.rs` for model registry freshness.
+The subsequent backend state, remote-config disk cache and local-tool
+service changes leave the saved credential and Connect exchange contracts
+unchanged. Saved sign-in verification uses current status for each
+credential.
+
+The follow-up through `cca74526fa64da113282c0cd1c6ea43fa9b3286b` adds
+REPL organization switching, bundle self-update, and ACP relay session state
+to the reconstruction. The credential, bootstrap and Connect sources used
+by the plugin are unchanged from `b86869df`.
+
+The committed delta to `789ea99e4a55b721fb9bc332b5bd712ce438a566` adds
+REPL feedback handling, a local-tools grant parser, and WebSocket error
+categories. The watched credential, bootstrap and Connect definitions
+remain byte-identical. Uncommitted ACP recovery work was outside this
+comparison.
+
+The committed follow-up through `12bde35fd67c73ade965c1a0e9faf7d2bf3bc1e2`
+adds ACP server dispatch and session finalization, deployment URL and
+cache handling, and native plugin installation. The watched credential,
+bootstrap, and Connect definitions are unchanged. Deployment discovery
+belongs to the native CLI. Magpie still uses the configured origin and
+verifies the saved credential against it. The comparison covers
+committed reconstruction files.
+
+The recovered stop enum names value 4 `MIN_LOG_PROB`, and
+`reference/crates/provider-proxy/src/openai.rs` maps it to Chat `stop`.
+Community Devin 0.1.45 maps that completion to Messages `end_turn`.
+Both canonical renderers accept value 4 after a valid Connect terminal
+and include usage arriving after the stop. A complete tool call uses the
+existing tool completion reason. The canonical SDK result and measured
+usage preserve `failed_precondition`, and host classification receives
+the original bounded failure facts. The `provider.execute` regressions
+in `src/provider_completion_test.go` cover JSON and SSE, late usage,
+missing and conflicting completion, and a refusal on either side of
+the first delta with one vendor dispatch.
+
 CLIProxyAPI commit `061ffe6fbc222b43e7bfd39fc77536e3b1e93858`
 (`v8.0.53-2-g061ffe6fb`) records Claude Code's mid-conversation effort
 directive in `internal/thinking/claude_effort_directive.go` and the
@@ -309,8 +389,8 @@ host identities and pins exact committed descriptor hashes.
 
 | Distribution | Version / minimum SDK | Implemented surface |
 | --- | --- | --- |
-| Default / `--agent`, source `magpie-agent.json` | 0.8.2 / 1.12 | Paired ingress/outbound/auth/models/usage/Facts/diagnostics, agent/bootstrap, managed bundle lookup and default-off paid account task |
-| `--paired-only`, source `magpie-plugin.json` | 0.5.0 / 1.12 | Paired ingress, Chat/Messages, auth/models/usage/Facts/diagnostics and request policy |
+| Default / `--agent`, source `magpie-agent.json` | 0.8.3 / 1.12 with `provider-signin` and `provider-saved-signin` | Paired ingress/outbound/Providers sign-in/models/usage/Facts/diagnostics, agent/bootstrap, managed bundle lookup and default-off paid account task |
+| `--paired-only`, source `magpie-plugin.json` | 0.5.1 / 1.12 with `provider-signin` and `provider-saved-signin` | Paired ingress, Chat/Messages, Providers sign-in/models/usage/Facts/diagnostics and request policy |
 | `--inbound-only` | 0.2.0 / 1.1 | Canonical Chat/model converter; no provider or account sign-in |
 
 All variants use native ABI 1 and are alternative installs of the same
@@ -318,7 +398,7 @@ module ID, not simultaneous owners. The default builder registers `NewAgent`
 from `cmd/native-agent`; `New`/`NewModule` and the repository
 `magpie-plugin.json` retain their paired compatibility contract for explicit
 `--paired-only` builds and historical fixtures. The emitted standard artifact
-is always named `magpie-plugin.json` and contains the full0.8 declaration.
+is always named `magpie-plugin.json` and contains the full declaration.
 Source needs the final API9 decision-model DTO/validator and account-task
 methods plus the earlier Facts and diagnostics public packages.
 The native SDK's existing `golang.org/x/sys v0.49.0`

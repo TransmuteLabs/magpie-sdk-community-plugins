@@ -7,13 +7,14 @@ source, completed verification, pending donor updates and release readiness.
 
 | Package | Purpose |
 | --- | --- |
-| [Claude Desktop](packages/claude-desktop/README.md) | macOS agent configuration for the application's bundled third-party gateway mode |
 | [Command Code](packages/commandcode/README.md) | Provider, agent and decision models |
 | [Devin](packages/devin/README.md) | Native protocol, provider and agent |
 | [MiniMax](packages/minimax/README.md) | MiniMax Code China and Global providers, tools, media and search |
 | [OMP](packages/omp/README.md) | Session conversion and history sources |
 | [OpenCode](packages/opencode/README.md) | Provider, agent, history and interface |
 | [ZCode](packages/zcode/README.md) | Native protocol, provider, agent and interface |
+
+Connect Claude Desktop from Magpie's built-in Agents settings.
 
 Each package has the same entry points:
 
@@ -43,7 +44,6 @@ The default SDK checkout is the sibling `../magpie`; `MAGPIE_SDK_SOURCE` or `--s
 `build.py all` uses Go's effective GOOS/GOARCH and reports packages skipped by
 their registry platform restrictions. An explicit unsupported package fails
 before creating output; `check.py` still runs its platform-independent checks.
-Claude Desktop currently builds only for `darwin/arm64` and `darwin/amd64`.
 
 Native Go builds disable automatic VCS stamping: changing local Git metadata
 does not change the native output or prevent a build in an unpublished

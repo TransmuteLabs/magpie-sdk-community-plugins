@@ -1,4 +1,4 @@
-"""First-account admission through the actual GUI page and poll broker."""
+"""First-account admission through the actual Providers poll broker."""
 
 import argparse
 import base64
@@ -8,7 +8,7 @@ import http.cookiejar
 import importlib.util
 import json
 from pathlib import Path
-import shutil
+import secrets
 import subprocess
 import tempfile
 import threading
@@ -27,15 +27,26 @@ require = fixture.require
 
 class GuiEndpoint(policy.PolicyEndpoint):
     def dispatch(self, path, value, region):
+        region = fixture.HOSTS[self.authority]
         if path == "/oauth2/device/code":
             device = "device-" + region + "-" + str(len(self.server.devices) + 1)
             self.server.devices[device] = value["code_challenge"]
             self.reply({"device_code": device, "user_code": "GUI-" + str(len(self.server.devices)),
-                        "verification_uri": "https://account.minimax.io/device",
+                        "verification_uri": "https://" + self.authority + "/device",
                         "expires_in": 300, "interval": 0.01})
             return
         if path == "/oauth2/token":
+            if value["grant_type"] == "refresh_token":
+                source, region_from_token = self.server.refreshes[value["refresh_token"]]
+                require(region == region_from_token, "refresh crossed regions")
+                access = source + "-renewed"
+                refresh = "synthetic-gui-refresh-" + access
+                self.server.tokens[access] = self.server.tokens[source]
+                self.server.refreshes[refresh] = (access, region)
+                self.reply({"access_token": access, "refresh_token": refresh, "expires_in": 3600})
+                return
             device = value["device_code"]
+            require(device.startswith("device-" + region + "-"), "device exchange crossed regions")
             challenge = base64.urlsafe_b64encode(hashlib.sha256(
                 value["code_verifier"].encode()).digest()).decode().rstrip("=")
             require(challenge == self.server.devices[device], "GUI device verifier changed")
@@ -47,43 +58,52 @@ class GuiEndpoint(policy.PolicyEndpoint):
                 require(self.server.release.wait(15), "held GUI exchange did not release")
             identity = device.removeprefix("device-")
             access = "synthetic-gui-access-" + identity
-            self.server.tokens[access] = identity
-            self.reply({"access_token": access, "refresh_token": "synthetic-gui-refresh-" + identity,
+            refresh = "synthetic-gui-refresh-" + identity
+            self.server.tokens[access] = (region, self.server.identity or region, self.server.name or region + "@example.invalid")
+            self.server.refreshes[refresh] = (access, region)
+            self.reply({"access_token": access, "refresh_token": refresh,
                         "token_type": "Bearer", "expires_in": 3600})
             return
+        if not self.authority.startswith("account."):
+            token = self.headers["Authorization"].removeprefix("Bearer ")
+            expected_region, identity, name = self.server.tokens[token]
+            require(region == expected_region, "selected account credential crossed regions")
+            if path == "/v1/api/user/info":
+                self.reply({"statusInfo": {"code": 0}, "data": {"userInfo": {"realUserID": identity, "userEmail": name}}})
+                return
         super().dispatch(path, value, region)
 
 
 fixture.EndpointHandler = GuiEndpoint
 
 
-def run(host_binary, worker, package, sdk, output):
+def run(host_binary, distribution, output):
     require(not output.exists(), "GUI evidence must use a new directory")
     output.mkdir()
-    distribution = output / "exec-test-package"
-    (distribution / "bin").mkdir(parents=True)
-    shutil.copy2(worker, distribution / "bin/minimax")
-    declaration = subprocess.check_output([str(worker), "--manifest"], timeout=10)
-    (distribution / "magpie-plugin.json").write_bytes(declaration)
-    fixture.copy_window_assets(distribution, package, sdk)
-    report = {"test": "TestInstalledMiniMaxGUIFirstAccount", "cases": [],
-              "hostSHA256": fixture.sha256(host_binary), "workerSHA256": fixture.sha256(worker),
-              "runtime": "actual GUI HTTP routes and actual handlers in exec harness; no rendered browser"}
+    manifest = json.loads((distribution / "magpie-plugin.json").read_text())
+    metadata = json.loads((distribution / "package.json").read_text())
+    require(manifest["runtime"] == "native" and not manifest.get("window") and not manifest.get("agents")
+            and not (distribution / "web").exists(), "MiniMax must supply providers without a duplicate window or agent")
+    require(manifest["version"] == metadata["version"] and metadata["magpie"]["name"] == "MiniMax",
+            "MiniMax distribution metadata does not match the native module")
+    report = {"test": "TestInstalledMiniMaxProviderSignIn", "cases": [],
+              "hostSHA256": fixture.sha256(host_binary),
+              "librarySHA256": fixture.sha256(distribution / manifest["entry"]),
+              "runtime": "actual Providers routes and packaged native handlers; no external vendor"}
     try:
         with ExitStack() as stack:
             home = Path(stack.enter_context(tempfile.TemporaryDirectory(prefix="mm-gui-")))
             ca, context = fixture.certificate(output, {"HOME": str(home), "PATH": "/usr/bin:/bin"})
-            shutil.copy2(ca, distribution / "bin/fixture-ca.pem")
             proxy = fixture.Fixture(context)
             proxy.mode, proxy.primary, proxy.devices, proxy.tokens = "gui", None, {}, {}
+            proxy.refreshes, proxy.identity, proxy.name = {}, "", ""
             proxy.authorized, proxy.success_format = False, "negotiated"
             proxy.hold, proxy.arrived, proxy.release = False, threading.Event(), threading.Event()
             proxy.start(stack)
             stack.callback(proxy.release.set)
-            host = policy.PolicyHost(host_binary, distribution, home, output,
-                                     "http://127.0.0.1:" + str(proxy.server_port), ca)
+            host = fixture.Host(host_binary, distribution, home, output,
+                                "http://127.0.0.1:" + str(proxy.server_port), ca)
             stack.callback(host.close)
-            host.install()
             host.env["MAGPIE_WEB_KEY"] = "synthetic-minimax-gui-entry-key"
             host.env["MAGPIE_ADDR"] = "127.0.0.1:0"
             host.log = (output / "host.log").open("w")
@@ -117,31 +137,42 @@ def run(host_binary, worker, package, sdk, output):
                     return None
 
             def accounts(provider):
-                return json.loads(host.command("plugin", "sdk", "accounts", fixture.MODULE, provider, "--json"))
+                saved = json.loads(host.command("plugin", "sdk", "accounts", fixture.MODULE, provider, "--json"))
+                return [{**item, "generation": str(item["generation"])} for item in saved or []]
 
+            installed = request("/api/plugins/add", {"spec": str(distribution)})
+            require(len(installed["plugins"]) == 1 and installed["plugins"][0]["version"] == manifest["version"],
+                    "ordinary Plugins Add did not install the MiniMax distribution")
             require(not accounts(fixture.GLOBAL) and not accounts(fixture.CN), "fixture must start with zero accounts")
-            pages = request("/api/plugin-pages")
-            matches = [page for page in pages if page["name"] == fixture.MODULE]
-            require(len(matches) == 1, "FIRST-ACCOUNT: installed MiniMax has no ordinary GUI sign-in page")
-            page = matches[0]
-            for asset in ("index.html", "app.js", "style.css", "sdk-ui.js"):
-                address = page["url"].rsplit("/", 1)[0] + "/" + asset
-                with opener.open(origin + address, timeout=10) as response:
-                    require(response.status == 200 and response.read(), "packaged GUI asset missing: " + asset)
-            report["cases"].append({"case": "zero-account-page", "passed": True})
-            parent = "a" * 64
-            sequence = 0
+            regions = (fixture.GLOBAL, fixture.CN)
+            ids = {provider: fixture.gateway_provider(provider) for provider in regions}
 
-            def auth(operation, provider, flow="", selected_parent=parent, ref=None, success=True):
-                nonlocal sequence
-                sequence += 1
-                value = {"ref": ref or page["ref"], "binding": "page.auth." + provider,
-                         "parent": selected_parent, "request": format(sequence, "064x"), "operation": operation}
+            def subscriptions():
+                listed = request("/api/providers")
+                return {provider: row for provider, identifier in ids.items()
+                        for row in listed.get("sdkSubscriptions", []) if row["id"] == identifier}
+
+            rows = subscriptions()
+            require(set(rows) == set(regions) and all(row["reauthorize"] and row["revision"] and not row.get("page")
+                        and len(row["methods"]) == 1 and row["methods"][0]["id"] == "device"
+                        and row["methods"][0]["mode"] == "poll" and not row["methods"][0].get("fields") for row in rows.values()),
+                    "both empty regions must offer first-class device authorization")
+            require(not any(row["name"] == fixture.MODULE for row in request("/api/plugin-pages")),
+                    "MiniMax appeared as a duplicate sidebar page")
+            report["cases"].append({"case": "zero-account-subscriptions", "passed": True})
+            parent = secrets.token_hex(16)
+
+            def auth(operation, provider, flow="", selected_parent=parent, revision=None, selected=None, success=True):
+                value = {"id": ids[provider], "revision": revision or rows[provider]["revision"],
+                         "parent": selected_parent, "request": secrets.token_hex(16), "operation": operation}
                 if operation == "start":
                     value["options"] = {"method": "device"}
+                    if selected is not None:
+                        value["options"]["account"] = {"id": selected["id"],
+                                                       "expectedGeneration": selected["generation"]}
                 else:
                     value["flow"] = flow
-                result = request("/api/plugin-pages/auth", value, success)
+                result = request("/api/provider/sdk-signin", value, success)
                 if result is not None:
                     public = json.dumps(result)
                     require(not any(secret in public for secret in ("synthetic-gui-access-", "synthetic-gui-refresh-",
@@ -151,7 +182,8 @@ def run(host_binary, worker, package, sdk, output):
             def exchanges():
                 return len([row for row in proxy.snapshot() if row["path"] == "/oauth2/token"])
 
-            for provider in (fixture.GLOBAL, fixture.CN):
+            signed_in = {}
+            for provider in regions:
                 proxy.authorized = False
                 view = auth("start", provider)
                 require(view["state"] == "waiting" and view["userCode"], "device challenge not projected")
@@ -171,7 +203,47 @@ def run(host_binary, worker, package, sdk, output):
                 repeated = auth("finish", provider, view["flow"])
                 require(repeated["state"] == "complete" and exchanges() == before,
                         "GUI completion exchanged a token again")
+                signed_in[provider] = complete["account"]
+                require(complete["account"]["generation"] == "1", "first sign-in must start at generation 1")
                 report["cases"].append({"case": "first-account-" + provider, "passed": True})
+
+            def account_name(provider, account, name):
+                listed = request("/api/providers")
+                row, = [row for row in listed["providers"] if row["id"] == ids[provider]]
+                visible = row.get("accountUsers", {}).get(account["id"])
+                require(visible == name, f"Providers showed {visible!r} for MiniMax account named {name!r}")
+                require(any(login.get("extensionGeneration") == account["generation"]
+                            for login in row["account"]["logins"]), "Providers did not show the selected generation")
+
+            for provider, first in signed_in.items():
+                account_name(provider, first, provider + "@example.invalid")
+                proxy.name = "renewed-" + provider + "@example.invalid"
+                view = auth("start", provider, selected=first)
+                time.sleep(view["retryAfterMs"] / 1000 + 0.05)
+                changed = auth("finish", provider, view["flow"])["account"]
+                require(changed["id"] == first["id"] and changed["generation"] == "2" and len(accounts(provider)) == 1,
+                        "reauthorization must update the selected MiniMax account")
+                account_name(provider, changed, proxy.name)
+                report["cases"].append({"case": "named-reauthorization-" + provider, "passed": True})
+                refreshed = json.loads(host.command("plugin", "sdk", "auth", "refresh", fixture.MODULE, provider, first["id"]))
+                require(refreshed["name"] == proxy.name and refreshed["id"] == first["id"],
+                        "rotating refresh lost the selected account identity or published name")
+                changed["generation"] = accounts(provider)[0]["generation"]
+                require(changed["generation"] == "3", "rotating refresh did not advance exactly one generation")
+                account_name(provider, changed, proxy.name)
+                signed_in[provider] = changed
+                report["cases"].append({"case": "named-refresh-" + provider, "passed": True})
+
+            proxy.identity = "wrong-subject"
+            view = auth("start", fixture.GLOBAL, selected=signed_in[fixture.GLOBAL])
+            time.sleep(view["retryAfterMs"] / 1000 + 0.05)
+            rejected = auth("finish", fixture.GLOBAL, view["flow"], success=None)
+            require(rejected is None or rejected["state"] != "complete", "foreign identity replaced the selected account")
+            require(accounts(fixture.GLOBAL)[0]["generation"] == signed_in[fixture.GLOBAL]["generation"],
+                    "foreign identity changed the selected account generation")
+            report["cases"].append({"case": "conflicting-reauthorization", "passed": True})
+            proxy.identity = ""
+
             proxy.authorized = False
             view = auth("start", fixture.GLOBAL)
             before = exchanges()
@@ -183,16 +255,16 @@ def run(host_binary, worker, package, sdk, output):
             require(ended["state"] == "canceled" and exchanges() == before, "canceled flow resumed")
             report["cases"].append({"case": "cancel-foreign-parent-region", "passed": True})
             view = auth("start", fixture.GLOBAL)
-            old_ref = page["ref"]
+            old_revision = rows[fixture.GLOBAL]["revision"]
             snapshot = json.loads(host.command("plugin", "sdk", "config", fixture.MODULE))
             host.command("plugin", "sdk", "config", fixture.MODULE, "{}",
                          "--expected", snapshot["version"])
             before = exchanges()
-            auth("finish", fixture.GLOBAL, view["flow"], ref=old_ref, success=False)
-            page = next(item for item in request("/api/plugin-pages") if item["name"] == fixture.MODULE)
-            require(page["ref"] != old_ref and exchanges() == before,
-                    "stale configuration reused a GUI page or dispatched")
-            report["cases"].append({"case": "stale-config-page", "passed": True})
+            auth("finish", fixture.GLOBAL, view["flow"], revision=old_revision, success=False)
+            rows = subscriptions()
+            require(rows[fixture.GLOBAL]["revision"] != old_revision and exchanges() == before,
+                    "stale configuration reused a subscription grant or dispatched")
+            report["cases"].append({"case": "stale-config-revision", "passed": True})
             host.command("accounts", "discovery", "off")
             before = exchanges()
             auth("start", fixture.GLOBAL, success=False)
@@ -224,12 +296,27 @@ def run(host_binary, worker, package, sdk, output):
             host.command("accounts", "discovery", "on")
             require(len(accounts(fixture.GLOBAL)) == 1, "revoked GUI exchange published a new account")
             report["cases"].append({"case": "discovery-off-held-exchange", "passed": True})
+
+            def logout(provider, account, success=True):
+                return request("/api/login/forget", {"agent": ids[provider], "account": {
+                    "id": account["id"], "expectedGeneration": account["generation"],
+                }}, success)
+
+            expired = {**signed_in[fixture.GLOBAL], "generation": "1"}
+            logout(fixture.GLOBAL, expired, success=False)
+            require(len(accounts(fixture.GLOBAL)) == 1, "stale logout removed the current account")
+            for provider, account in signed_in.items():
+                logout(provider, account)
+                require(not accounts(provider) and provider in subscriptions(),
+                        "ordinary sign-out did not restore the empty subscription")
+            report["cases"].append({"case": "generation-bound-sign-out", "passed": True})
             host.command("plugin", "sdk", "off", fixture.MODULE)
             auth("start", fixture.GLOBAL, success=False)
-            require(not [item for item in request("/api/plugin-pages") if item["name"] == fixture.MODULE],
-                    "disabled GUI page remained published")
-            report["cases"].append({"case": "disabled-stale-page", "passed": True})
+            require(not subscriptions(), "disabled module's subscriptions remained published")
+            report["cases"].append({"case": "disabled-stale-subscription", "passed": True})
             require(not proxy.failures, "synthetic GUI endpoint assertions failed")
+            require(not (host.config / "plugins.json").exists() and not (host.config / "plugins/node_modules").exists(),
+                    "MiniMax depended on an additional plugin or runtime install")
         report["status"] = "passed"
     except Exception as error:
         report["status"], report["failure"] = "failed", str(error)
@@ -241,7 +328,7 @@ def run(host_binary, worker, package, sdk, output):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    for option in ("host", "worker", "package", "sdk", "output"):
+    for option in ("host", "distribution", "output"):
         parser.add_argument("--" + option, type=Path, required=True)
     options = parser.parse_args()
-    run(*(getattr(options, name).resolve() for name in ("host", "worker", "package", "sdk", "output")))
+    run(*(getattr(options, name).resolve() for name in ("host", "distribution", "output")))

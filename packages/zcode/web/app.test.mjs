@@ -39,8 +39,6 @@ test("actual compiled app uses an HTML dialog through the public browser bridge"
     "executions", "billing", "resets", "offers", "checkin", "claim", "reset",
     "reset-opportunity", "reset-reconcile", "reset-ack", "reset-resolve", "opportunity-resolve",
     "confirm-dialog", "confirm-text", "confirm-cancel", "confirm-accept",
-    "signin", "reauthorize", "auth-poll", "auth-cancel", "auth-site", "auth-kind",
-    "auth-status", "auth-link", "auth-organization", "auth-project", "auth-product", "auth-apiKeyId",
     "native-session", "native-command", "native-model", "native-text", "native-run", "native-stop", "native-status"];
   const elements = Object.fromEntries(ids.map((id) => [id, new Element()]));
   const calls = [];

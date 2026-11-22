@@ -251,18 +251,26 @@ class DistributionTests(unittest.TestCase):
             self.assertEqual(manifest["compatibility"]["hostAPI"], "^" + floor)
             self.assertEqual(manifest["entry"], "plugin.so")
             self.assertEqual(manifest["compatibility"]["platforms"], ["linux/amd64"])
-            if manifest.get("window"):
-                self.assertEqual(manifest["window"], {"metadata": "package.json"})
-                self.assertEqual((destination / "package.json").read_bytes(),
-                                 (repository / "web/package.json").read_bytes())
-                self.assertEqual((destination / "web/auth.js").read_bytes(),
-                                 (repository / "web/auth.js").read_bytes())
-                for name in ("sdk-ui.js", "account-selection.js", "errors.js"):
-                    self.assertEqual((destination / "web" / name).read_text(), "export {};\n")
-                self.assertEqual(manifest["authBindings"][0]["methods"], [{"id": "browser", "mode": "poll"}])
+            self.assertNotIn("window", manifest)
+            self.assertFalse((destination / "web").exists())
+            presentation = json.loads((destination / "package.json").read_text())
+            self.assertEqual((presentation["name"], presentation["version"]),
+                             (manifest["id"], manifest["version"]))
+            self.assertEqual(presentation["magpie"], {"name": "Devin", "icon": "devin"})
+            if "providers" in manifest:
+                binding, = manifest["authBindings"]
+                self.assertEqual((binding["provider"], binding["from"], binding["reauthorize"]),
+                                 ("devin", "provider:signin", True))
+                self.assertEqual([(method["id"], method["mode"]) for method in binding["methods"]],
+                                 [("browser", "poll"), ("api-key", "poll"), ("saved-signin", "poll")])
+                self.assertIn("provider-saved-signin", manifest["contract"]["capabilities"])
+                saved = binding["methods"][-1]["fields"]
+                self.assertEqual([(field["key"], field.get("optional", False)) for field in saved],
+                                 [("record", False)])
+                self.assertTrue(all(field["type"] == "secret"
+                                    for method in binding["methods"] for field in method.get("fields", [])))
             else:
-                self.assertFalse((destination / "web").exists())
-                self.assertFalse((destination / "package.json").exists())
+                self.assertNotIn("authBindings", manifest)
             for name in ("SOURCES.md", "ONBOARDING.md", "EXECUTION-FACTS.md", "DONOR-MATRIX.md", "PROVIDER-PARITY.md", "CLIPROXY-PROVIDER-CHECK.md", "DELIVERY-EVIDENCE.md",
                          "CACHE-KEEPALIVE.md", "CACHE-KEEPALIVE-EVIDENCE.md", "GEMINI-SIGNATURE-EVIDENCE.md",
                          "DOMAIN-COMPLETION-EVIDENCE.md"):
@@ -277,6 +285,7 @@ class DistributionTests(unittest.TestCase):
         self.assertEqual(manifest["contract"]["capabilities"], [
             "inbound-codec", "outbound-executor", "account-auth", "model-discovery",
             "usage-reporter", "agent-wiring", "module-rpc", "native-account-operations", "request-policy",
+            "provider-signin", "provider-saved-signin",
         ])
         self.assertEqual(manifest["agents"][0]["id"], "devin-native")
         self.assertEqual(manifest["providers"][0]["protocols"], ["chat", "anthropic"])
@@ -303,8 +312,9 @@ class DistributionTests(unittest.TestCase):
 
     def test_explicit_compatibility_distributions_keep_their_floors(self):
         for options, version, floor, entry, capabilities in [
-            ({"agent": False}, "0.5.0", "1.12", "./cmd/native",
-             ["inbound-codec", "outbound-executor", "account-auth", "model-discovery", "usage-reporter", "request-policy"]),
+            ({"agent": False}, "0.5.1", "1.12", "./cmd/native",
+             ["inbound-codec", "outbound-executor", "account-auth", "model-discovery", "usage-reporter", "request-policy",
+              "provider-signin", "provider-saved-signin"]),
             ({"inbound_only": True}, "0.2.0", "1.1", "./cmd/native-inbound", ["inbound-codec", "model-discovery"]),
         ]:
             with self.subTest(version=version):
@@ -323,7 +333,7 @@ class DistributionTests(unittest.TestCase):
         for mode, version, entry in [
             ("", default_version, "./cmd/native-agent"),
             ("--agent", default_version, "./cmd/native-agent"),
-            ("--paired-only", "0.5.0", "./cmd/native"),
+            ("--paired-only", "0.5.1", "./cmd/native"),
             ("--inbound-only", "0.2.0", "./cmd/native-inbound"),
         ]:
             with self.subTest(mode=mode):

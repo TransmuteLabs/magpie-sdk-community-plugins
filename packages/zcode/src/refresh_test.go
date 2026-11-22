@@ -49,6 +49,11 @@ func TestPATRefreshUsesBusinessRoleAndReturnsOnlyReplacement(t *testing.T) {
 			defer server.Close()
 			h := newHarness(t, endpointOptions(server))
 			account := renewableCredentials(kind)
+			expectedName := "fixture-user · ZCode zai individual"
+			if kind == "team" {
+				account.DisplayName = "fixture@example.invalid"
+				expectedName = "fixture@example.invalid · ZCode zai team"
+			}
 			account.ExpiresAt = fixtureNow.Add(-time.Minute).UnixMilli()
 			frame, _ := h.call(sdk.MethodAuthRefresh, refreshScope(account), sdk.AuthRefreshRequest{}, raw(account))
 			var result sdk.AuthResult
@@ -56,7 +61,7 @@ func TestPATRefreshUsesBusinessRoleAndReturnsOnlyReplacement(t *testing.T) {
 			if frame.Error != nil || json.Unmarshal(frame.Result, &result) != nil || json.Unmarshal(result.Credentials, &replacement) != nil {
 				t.Fatalf("PAT refresh failed: %+v", frame.Error)
 			}
-			if result.ID != account.AccountID() || replacement.ProjectToken != "replacement-pat" ||
+			if result.Name != expectedName || result.ID != account.AccountID() || replacement.ProjectToken != "replacement-pat" ||
 				result.ExpiresAt != fixtureNow.Add(10*time.Minute).UnixMilli() || replacement.ExpiresAt != result.ExpiresAt ||
 				replacement.BusinessToken != account.BusinessToken || replacement.BusinessExpiresAt != account.BusinessExpiresAt ||
 				replacement.AccountID() != account.AccountID() || h.accepted.Load() || calls.Load() != 1 {
@@ -160,12 +165,16 @@ func TestPATRefreshRequiresTransactionalHostFloor(t *testing.T) {
 	manifest := Manifest()
 	old := sdk.FullContract()
 	old.Version.Minor = 2
-	if old.Check(manifest.Contract) == nil || manifest.Compatibility.HostAPI != "^1.12" {
+	if old.Check(manifest.Contract) == nil || manifest.Compatibility.HostAPI != "^1.20" {
 		t.Fatal("a host without transactional refresh can admit this module")
 	}
 	old.Version.Minor = 3
 	if old.Check(manifest.Contract) == nil {
 		t.Fatal("a host without model-scoped quotas and business cancellation can admit this module")
+	}
+	old.Version.Minor = 19
+	if old.Check(manifest.Contract) == nil {
+		t.Fatal("a host without typed rate-limited check-in can admit this module")
 	}
 }
 

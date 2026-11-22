@@ -65,11 +65,9 @@ class BuildSelectionTests(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, "target"):
                     _workspace.select_build_packages(self.entries, "all", target)
 
-    def test_registered_platforms_do_not_filter_package_or_check_discovery(self):
+    def test_built_in_desktop_has_no_separate_package(self):
         entries = _workspace.packages()
-        self.assertEqual(entries["claude-desktop"]["platforms"], ["darwin/arm64", "darwin/amd64"])
-        self.assertEqual(list(_workspace.packages("claude-desktop")), ["claude-desktop"])
-        self.assertIn("claude-desktop", entries)
+        self.assertNotIn("claude-desktop", entries)
 
     def test_effective_target_uses_offline_go_environment_and_pins_the_builder(self):
         with patch.dict(os.environ, {"GOOS": "", "GOARCH": "", "GOTOOLCHAIN": "auto"}):

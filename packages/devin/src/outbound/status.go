@@ -25,6 +25,7 @@ type Window struct {
 type Status struct {
 	Email           string
 	Name            string
+	UserID          string
 	TeamID          string
 	OrgID           string
 	OrgName         string
@@ -65,6 +66,7 @@ func ParseStatus(payload []byte, freeIDs []string) (Status, error) {
 		Status *struct {
 			Email     string `json:"email"`
 			Name      string `json:"name"`
+			UserID    string `json:"userId"`
 			TeamID    string `json:"teamId"`
 			TeamName  string `json:"teamName"`
 			TeamsTier string `json:"teamsTier"`
@@ -95,7 +97,7 @@ func ParseStatus(payload []byte, freeIDs []string) (Status, error) {
 		return Status{}, errors.New("invalid native account status")
 	}
 	source := reply.Status
-	out := Status{Email: source.Email, Name: source.Name, TeamID: source.TeamID, OrgID: source.Plan.Info.Devin.OrgID,
+	out := Status{Email: source.Email, Name: source.Name, UserID: source.UserID, TeamID: source.TeamID, OrgID: source.Plan.Info.Devin.OrgID,
 		OrgName: source.Plan.Info.Devin.Name, Plan: source.Plan.Info.Name}
 	if out.OrgName == "" {
 		out.OrgName = source.Plan.Info.TeamName

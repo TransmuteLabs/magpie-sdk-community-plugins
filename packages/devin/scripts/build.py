@@ -3,7 +3,6 @@
 import argparse
 import json
 from pathlib import Path
-import shutil
 import subprocess
 import sys
 
@@ -41,6 +40,9 @@ def build(destination, inbound_only=False, agent=True, sdk=None):
     manifest["entry"] = entry
     manifest["compatibility"]["platforms"] = [platform]
     (destination / "magpie-plugin.json").write_text(json.dumps(manifest, indent=2) + "\n")
+    metadata = json.loads((PACKAGE / "package.json").read_text())
+    metadata["version"] = manifest["version"]
+    (destination / "package.json").write_text(json.dumps(metadata, indent=2) + "\n")
     for name in ("LICENSE", "docs/SOURCES.md", "docs/ONBOARDING.md", "docs/EXECUTION-FACTS.md", "docs/DONOR-MATRIX.md",
                  "docs/PROVIDER-PARITY.md", "docs/CLIPROXY-PROVIDER-CHECK.md",
                  "docs/history/DELIVERY-EVIDENCE.md", "docs/CACHE-KEEPALIVE.md",
@@ -48,12 +50,6 @@ def build(destination, inbound_only=False, agent=True, sdk=None):
                  "docs/history/DOMAIN-COMPLETION-EVIDENCE.md"):
         (destination / Path(name).name).write_bytes((PACKAGE / name).read_bytes())
     (destination / "source-lock.json").write_text(json.dumps(provenance, indent=2) + "\n")
-    if not inbound_only:
-        shutil.copytree(PACKAGE / "web", destination / "web")
-        shutil.copy2(PACKAGE / "web/package.json", destination / "package.json")
-        for name in ("ui.js", "account-selection.js", "errors.js"):
-            shutil.copy2(env["MAGPIE_SDK_SOURCE"] + "/sdk/js/" + name,
-                         destination / "web" / ("sdk-ui.js" if name == "ui.js" else name))
     (destination / "plugin.h").unlink(missing_ok=True)
     print(json.dumps({"directory": str(destination), "platform": platform, "entry": entry}))
 

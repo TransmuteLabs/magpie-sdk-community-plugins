@@ -133,7 +133,7 @@ func (owner *module) refresh(ctx context.Context, call sdk.Call, stream *sdk.Str
 	if err != nil {
 		return nil, refreshFailure()
 	}
-	return sdk.AuthResult{ID: account.AccountID(), Name: "ZCode " + account.Site + " " + account.Kind,
+	return sdk.AuthResult{ID: account.AccountID(), Name: account.accountName(),
 		Credentials: credentials, ExpiresAt: expiresAt}, nil
 }
 

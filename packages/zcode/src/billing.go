@@ -114,12 +114,18 @@ func (owner *module) billingClaim(ctx context.Context, call sdk.Call, stream *sd
 	}
 	var result json.RawMessage
 	err = store.Locked(ctx, principal, func(transaction *controller.Transaction) error {
+		now := owner.options.Now()
+		checkin, _ := ctx.Value(checkinCallKey{}).(*checkinClaim)
+		day, name := zcodeCheckinDay(now), request.PlanID
+		if checkin != nil {
+			day, name = checkin.day, checkin.name
+		}
 		old, exists := transaction.Journal.Claims[request.PlanID]
-		if transaction.Journal.ClaimHoldUntil > owner.options.Now().UnixMilli() {
+		if transaction.Journal.ClaimHoldUntil > now.UnixMilli() {
 			result, _ = json.Marshal(map[string]any{"outcome": "rate_limited", "until": transaction.Journal.ClaimHoldUntil})
 			return nil
 		}
-		if exists && old.State == "refused" && old.RetryAt > owner.options.Now().UnixMilli() {
+		if exists && old.State == "refused" && old.RetryAt > now.UnixMilli() {
 			result = old.Result
 			return nil
 		}
@@ -127,9 +133,12 @@ func (owner *module) billingClaim(ctx context.Context, call sdk.Call, stream *sd
 			result = old.Result
 			return nil
 		}
-		if exists && old.State == "confirmed" && old.EndsAt > owner.options.Now().UnixMilli() {
-			result = old.Result
-			return nil
+		if exists && old.State == "confirmed" {
+			settled := claimAnswer(old.Result)
+			if settled.Day == day || old.EndsAt > now.UnixMilli() || checkin != nil && settled.Day == "" {
+				result = old.Result
+				return nil
+			}
 		}
 		plans, err := owner.plans(ctx, stream, account)
 		if err != nil {
@@ -152,7 +161,7 @@ func (owner *module) billingClaim(ctx context.Context, call sdk.Call, stream *sd
 				allExpired = false
 			}
 			if exists && old.BaselineKnown && (old.State == "pending" || old.State == "unknown") && !containsString(old.Baseline, userPlan) {
-				observed, _ := json.Marshal(map[string]any{"outcome": "observed", "plan": plan})
+				observed, _ := json.Marshal(map[string]any{"outcome": "observed", "plan": plan, "checkinDay": day, "checkinName": name})
 				old.State, old.Result, old.EndsAt = "observed", observed, planEnd(plan)
 				transaction.Journal.Claims[request.PlanID] = old
 				if err := transaction.Save(); err != nil {
@@ -169,7 +178,7 @@ func (owner *module) billingClaim(ctx context.Context, call sdk.Call, stream *sd
 			result = old.Result
 			return nil
 		}
-		if ctx.Value(checkinCallKey{}) != true {
+		if checkin == nil {
 			if err := owner.claimPolicy(ctx, stream, account); err != nil {
 				return err
 			}
@@ -184,10 +193,16 @@ func (owner *module) billingClaim(ctx context.Context, call sdk.Call, stream *sd
 		if err := transaction.Save(); err != nil {
 			return invalid("Billing claim could not be durably fenced")
 		}
-		if ctx.Value(checkinCallKey{}) != true {
-			if err := stream.Emit(ctx, "accepted", sdk.AcceptedEvent{OperationID: call.Scope.Operation,
-				Reference: json.RawMessage(`{"reference":"` + reference + `"}`)}); err != nil {
+		if checkin == nil || !checkin.accepted {
+			event := sdk.AcceptedEvent{OperationID: call.Scope.Operation}
+			if checkin == nil {
+				event.Reference = json.RawMessage(`{"reference":"` + reference + `"}`)
+			}
+			if err := stream.Emit(ctx, "accepted", event); err != nil {
 				return uncertain("The billing claim was fenced but acceptance was not acknowledged")
+			}
+			if checkin != nil {
+				checkin.accepted = true
 			}
 		}
 		if err := invalidateUsage(ctx, stream); err != nil {
@@ -198,6 +213,9 @@ func (owner *module) billingClaim(ctx context.Context, call sdk.Call, stream *sd
 			}
 			transaction.Save()
 			return err
+		}
+		if checkin != nil {
+			checkin.posted = true
 		}
 		status, body, headers, callErr := owner.controlDetailed(ctx, stream, account, "", http.MethodPost,
 			"/api/v1/zcode-plan/billing/claim", map[string]string{"plan_id": request.PlanID})
@@ -216,6 +234,7 @@ func (owner *module) billingClaim(ctx context.Context, call sdk.Call, stream *sd
 			return uncertain("The billing claim response is unconfirmed or belongs to another plan; it will not be replayed")
 		}
 		claim.State, claim.EndsAt = "confirmed", planEnd(plan)
+		received := owner.options.Now()
 		outcome := "claimed"
 		if valid && code == 0 {
 			outcome = "confirmed"
@@ -224,20 +243,22 @@ func (owner *module) billingClaim(ctx context.Context, call sdk.Call, stream *sd
 		} else if code == 1004 || code == 3002 || code == 3007 {
 			outcome = map[float64]string{1004: "ineligible", 3002: "rate_limited", 3007: "captcha"}[code]
 			claim.State = "refused"
-			claim.RetryAt = owner.options.Now().Add(30 * time.Minute).UnixMilli()
+			claim.RetryAt = received.Add(30 * time.Minute).UnixMilli()
 			if code == 3002 {
-				delay := retryDelay(headers, owner.options.Now(), time.Duration(transaction.Journal.ClaimHoldDelay)*time.Millisecond*2)
-				claim.RetryAt = owner.options.Now().Add(delay).UnixMilli()
-				transaction.Journal.ClaimHoldUntil, transaction.Journal.ClaimHoldDelay = claim.RetryAt, delay.Milliseconds()
+				delay := retryDelay(headers, received, time.Duration(transaction.Journal.ClaimHoldDelay)*time.Millisecond*2)
+				claim.RetryAt = transaction.MergeClaimHold(received.UnixMilli(), received.Add(delay).UnixMilli(), delay.Milliseconds())
 			}
 			if code == 3007 {
-				claim.RetryAt = owner.options.Now().Add(24 * time.Hour).UnixMilli()
+				claim.RetryAt = received.Add(24 * time.Hour).UnixMilli()
 			}
 		}
 		if code != 3002 {
-			transaction.Journal.ClaimHoldUntil, transaction.Journal.ClaimHoldDelay = 0, 0
+			transaction.MergeClaimHold(received.UnixMilli(), 0, 0)
 		}
 		value := map[string]any{"outcome": outcome, "refreshUsage": true}
+		if claim.State == "confirmed" || outcome == "captcha" {
+			value["checkinDay"], value["checkinName"] = day, name
+		}
 		if valid {
 			value["plan"] = plan
 		}

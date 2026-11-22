@@ -228,7 +228,7 @@ func (owner *module) waitTicket(ctx context.Context, stream *sdk.Stream, account
 	return entry, nil
 }
 
-func (owner *module) executeLane(ctx context.Context, call sdk.Call, stream *sdk.Stream, account Credentials, request executeInput, lane string) (any, error) {
+func (owner *module) executeLane(ctx context.Context, call sdk.Call, stream *sdk.Stream, account Credentials, request sdk.ExecuteRequest, lane string) (any, error) {
 	state, err := currentInstance(ctx)
 	if err != nil {
 		return nil, err

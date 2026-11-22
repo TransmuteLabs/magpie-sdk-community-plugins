@@ -364,7 +364,7 @@ func TestInstalledZCodeForegroundWindowRouteAndStop(t *testing.T) {
 	input := json.RawMessage(`{"sessionId":"session-9","commandId":"cmd-window","model":"native-fixture/fixture-model","text":"fixture"}`)
 	call := func(ctx context.Context, binding string, body json.RawMessage, selected sdk.WindowCallOptions) zcodeNativeReply {
 		raw, err := fixture.manager.CallWindowBindingWithOptions(ctx, "zcode", revision,
-			"window:page", binding, body, selected)
+			"window:panel:0", binding, body, selected)
 		return zcodeNativeReply{raw: raw, err: err}
 	}
 	for _, invalid := range []struct {

@@ -86,6 +86,11 @@ func (controller *controller) read(ctx context.Context, stream *sdk.Stream, endp
 	if err != nil {
 		return nil, &sdk.Error{Code: "unavailable", Message: "CommandCode account endpoint is unavailable"}
 	}
+	if endpoint == "/alpha/whoami" && (response.StatusCode == http.StatusUnauthorized ||
+		response.StatusCode == http.StatusForbidden) {
+		response.Body.Close()
+		return nil, &sdk.Error{Code: "unauthenticated", Message: "Command Code rejected this API key"}
+	}
 	return readAllBounded(response, 4<<20)
 }
 

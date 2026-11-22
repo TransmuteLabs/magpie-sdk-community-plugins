@@ -25,14 +25,14 @@ not install a community/OpenCode auth plugin or run a Bun backend.
 
 | Distribution | Version | Minimum SDK | Contents |
 | --- | --- | --- | --- |
-| Ordinary full package | 0.8.3 | 1.12 | Providers sign-in, agent wiring, Go + Zen OAuth/key/public, Console HTTP bindings and a Sessions panel for SQLite/WAL history |
+| Ordinary full package | 0.8.4 | 1.12 | Providers sign-in, agent wiring, Go + Zen OAuth/key/public, Console HTTP bindings and a Sessions panel for SQLite/WAL history |
 | Previous release | 0.8.2 | 1.12 | Providers sign-in plus the standalone OpenCode page |
 | Full compatibility artifact | 0.8.1 | 1.12 | Explicit legacy `--compat-api8` flag with the previous window-only sign-in declarations |
 | Provider compatibility artifact | 0.2.0 | 1.12 | Historical Go OAuth, four models, Chat/Gemini, quota |
 | Agent compatibility artifact | 0.3.0 | 1.12 | Historical provider plus declared profile, config planner and launch metadata |
 
 Update Magpie to a build that supports the `sessions` panel slot before
-installing or updating to 0.8.3. The Add and Update paths validate panel
+installing or updating to 0.8.4. The Add and Update paths validate panel
 metadata before activating the package.
 
 The panel supports rendered history through the optional

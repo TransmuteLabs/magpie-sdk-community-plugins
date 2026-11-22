@@ -428,7 +428,7 @@ def main():
                 assert not observed["errors"], observed["errors"]
             print(json.dumps({
                 "passed": True, "hostSHA256": hashlib.sha256(Path(host).read_bytes()).hexdigest(),
-                "nativeABI": 1, "minimumHostAPI": "1.12", "generationBefore": 1,
+                "nativeABI": 1, "minimumHostAPI": "1.20", "generationBefore": 1,
                 "generationAfter": 2, "credentialsExpiryReceiptAtomic": True,
                 "businessAndPATPublishedTogether": True,
                 "candidateReadinessDidNotCreateDataDir": True,

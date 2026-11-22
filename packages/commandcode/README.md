@@ -2,13 +2,19 @@
 
 One complete native package: Provider API Chat/Responses/Messages, Go-plan
 conversion, account sign-in, models, usage, SystemOne decisions, checked agent
-configuration and the browser page. Module `protocol-commandcode`, version
-`0.1.4`, negotiates SDK API1.12 and native ABI1, including shared request policy.
+configuration and an account details panel. Module `protocol-commandcode`,
+version `0.1.5`, requires SDK API 1.12, native ABI 1, shared request policy
+and the `provider-signin` capability.
+
+Open **Providers → Add → Subscriptions → Command Code** and choose an API key,
+browser approval or import from the local Command Code CLI. Use the account's
+reauthorization or sign-out action in Providers to manage a saved account.
+The Usage panel reads details for the selected account.
+
 The [policy boundaries](docs/REQUEST-POLICY.md) describe proved final refusals,
-the named read-only preflight and flows that remain fenced. The audited auth, transport and
-safe approval-link behavior is preserved; no optional variant is needed.
+the named read-only preflight and flows that remain fenced.
 Zero Data Retention is an ordinary Providers → Command Code switch with the
-donor's cost/no-upstream confirmation. The custom page displays its saved status.
+donor's cost/no-upstream confirmation. Usage displays its saved status.
 The [current closure](docs/LOCAL-CLOSURE-20261116.md) records the strict-SDK
 common-host and browser/API evidence separately from historical checkpoints.
 

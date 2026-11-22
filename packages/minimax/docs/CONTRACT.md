@@ -37,16 +37,23 @@ resets consecutive temporary-failure counts on pending, and honors slow_down.
 Three consecutive temporary failures may be followed by another poll; the
 fourth ends the workflow. A consumed or ambiguous exchange cannot be replayed.
 
-The package window declares one device/poll auth binding for each region.
-Its page requires an explicit region, including when neither provider has an
-account. The page uses only the existing public `auth.start`, `auth.finish`
-and `auth.cancel` broker with host flow handles; the region remains fixed
-during an active flow. The private device continuation and token exchange
-remain in the existing module handlers and host account publication owner.
-Page disposal cancels an active or late-returning flow. The builder includes
-the window metadata, page assets and public SDK URL presentation helper.
-Foreign parent/region, stale configuration/page, disabled package and account
-discovery revocation cannot publish a new account through an old page flow.
+The manifest declares one `provider:signin` binding with a device poll method
+for each region. Each subscription appears in Providers before its first
+account. The host's broker owns public flow handles, cancellation and account
+publication. The grant fixes the region and the selected account generation
+throughout the exchange. Foreign parent or region, stale revisions, disabled
+packages and account discovery revocation cannot publish a new account through
+a revoked flow. Reauthorization keeps the account ID if a comparable vendor
+user ID or token subject matches. A conflicting identity refuses publication.
+A temporary profile error preserves the account's known name. A rotating
+refresh can recover a missing name using the newly obtained token for the
+same region. A conflicting profile stops publication after that exchange.
+
+`tests/provider_signin_host.py --host HOST --distribution DIST --output NEW_DIR`
+exercises the built native module through ordinary Plugins Add and the
+Providers broker. The local TLS fixture checks both regions, selected
+reauthorization and refresh, authorization cancellation and revocation, and
+generation-bound sign-out. Sign-out removes that account from Magpie.
 
 Account API signatures retain donor query ordering and exact JSON bytes.
 Requests follow only redirects within the exact scheme and host. Cross-region

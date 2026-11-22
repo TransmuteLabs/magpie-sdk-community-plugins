@@ -1,10 +1,12 @@
 {
   "name": "magpie-sdk-plugin-protocol-commandcode",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "private": true,
   "files": ["magpie-plugin.json", "lib", "web", "README.md", "SOURCES.md", "source-lock.json", "REQUEST-POLICY.md", "CONTRACT-PLAN.md", "SYSTEMONE-SDK-CONTRACT.md", "SYSTEMONE-SDK-FIXTURES.json", "OWN-MODEL-METADATA-API9.md", "THIRD_PARTY_NOTICES"],
   "magpie": {
-    "page": {"title": "Command Code", "file": "web/index.html"},
+    "name": "Command Code",
+    "icon": "commandcode",
+    "panels": [{"slot": "usage", "title": "Command Code account details", "file": "web/index.html"}],
     "permissions": []
   }
 }

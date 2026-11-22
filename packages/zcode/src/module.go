@@ -17,7 +17,7 @@ import (
 )
 
 const ProviderID = "zcode"
-const Version = "0.7.3"
+const Version = "0.7.4"
 
 type ModuleOptions struct {
 	Endpoints   Endpoints
@@ -50,12 +50,15 @@ func Manifest() sdk.Manifest {
 	return sdk.Manifest{
 		Schema: sdk.ManifestSchema, ID: ProviderID, Version: Version, Runtime: "native", Entry: entry,
 		Contract: sdk.Contract{
-			Version:      sdk.APIVersion{Major: 1, Minor: 12},
+			Version:      sdk.APIVersion{Major: 1, Minor: sdk.AccountCheckinRateLimitAPIMinor},
 			Capabilities: []sdk.Capability{sdk.AccountAuth, sdk.ModelDiscovery, sdk.OutboundExecutor, sdk.UsageReporter, sdk.OperationControl, sdk.ModuleRPC, sdk.ToolProvider, sdk.SessionMigration, sdk.RequestPolicy, sdk.RequestHandoff},
 		},
-		Compatibility: &sdk.Compatibility{HostAPI: "^1.12", NativeABI: 1, Platforms: []string{runtime.GOOS + "/" + runtime.GOARCH}},
-		Providers:     []sdk.ProviderDescriptor{{ID: ProviderID, Name: "ZCode native", Protocols: []codec.Protocol{codec.Messages}, Models: append(Models(), aliasModels()...)}},
-		Tools:         toolDescriptors(),
+		Compatibility: &sdk.Compatibility{HostAPI: "^1.20", NativeABI: 1, Platforms: []string{runtime.GOOS + "/" + runtime.GOARCH}},
+		Providers: []sdk.ProviderDescriptor{{
+			ID: ProviderID, Name: "ZCode native", Protocols: []codec.Protocol{codec.Messages}, Models: append(Models(), aliasModels()...),
+			Checkin: &sdk.AccountCheckinDescriptor{Action: accountCheckinAction, Recheck: true},
+		}},
+		Tools: toolDescriptors(),
 		Sessions: []sdk.SessionDescriptor{
 			{ID: historyAdapterID, Name: "ZCode offline source-preserving history converter"},
 			{ID: sqliteAdapterID, Name: "ZCode immutable SQLite snapshot converter"},
@@ -69,6 +72,7 @@ func Manifest() sdk.Manifest {
 			{ID: "billing.claim", InputSchema: json.RawMessage(`{"type":"object","properties":{"planId":{"type":"string"}},"required":["planId"],"additionalProperties":false}`), Effect: "write"},
 			{ID: "billing.offers", InputSchema: json.RawMessage(`{"type":"object","properties":{"locale":{"type":"string","enum":["zh-CN","en-US","ja-JP","ru-RU","ko-KR"]}},"additionalProperties":false}`), Effect: "read"},
 			{ID: "billing.checkin", InputSchema: json.RawMessage(`{"type":"object","properties":{"locale":{"type":"string","enum":["zh-CN","en-US","ja-JP","ru-RU","ko-KR"]}},"additionalProperties":false}`), Effect: "write"},
+			{ID: accountCheckinAction, InputSchema: json.RawMessage(`{"type":"object","properties":{"day":{"type":"string"},"proxy":{"type":"string"}},"required":["day"],"additionalProperties":false}`), Effect: "write"},
 			{ID: "reset.status", InputSchema: json.RawMessage(`{"type":"object","additionalProperties":false}`), Effect: "read"},
 			{ID: "reset.summary", InputSchema: json.RawMessage(`{"type":"object","additionalProperties":false}`), Effect: "read"},
 			{ID: "reset.reconcile", InputSchema: json.RawMessage(`{"type":"object","additionalProperties":false}`), Effect: "write"},
@@ -118,7 +122,7 @@ func newModule(options ModuleOptions, manifest sdk.Manifest) sdk.Module {
 		Actions: map[string]sdk.Handler{"execution.list": owner.executionList, "execution.settle": owner.settle,
 			"execution.reconcile": owner.reconcile, "execution.abandon": owner.abandon,
 			"billing.status": owner.billingStatus, "billing.claim": owner.billingClaim,
-			"billing.offers": owner.billingOffers, "billing.checkin": owner.billingCheckin,
+			"billing.offers": owner.billingOffers, "billing.checkin": owner.billingCheckin, accountCheckinAction: owner.accountCheckin,
 			"reset.status": owner.resetStatus, "reset.use": owner.resetUse, "reset.resolve": owner.resetResolve,
 			"reset.summary": owner.resetSummary, "reset.reconcile": owner.resetReconcile,
 			"reset.opportunity": owner.resetOpportunity, "reset.opportunity.resolve": owner.resetOpportunityResolve,
@@ -206,12 +210,27 @@ func (owner *module) authFinish(ctx context.Context, call sdk.Call, stream *sdk.
 		return nil, unsupported("Snapshot import does not exchange authorization codes")
 	}
 	var credentials Credentials
-	if decode(request.Input, &credentials) != nil || credentials.Validate(owner.options.Now()) != nil {
-		return nil, invalid("Import requires a valid unexpired ZCode credential snapshot")
+	if decode(request.Input, &credentials) != nil {
+		var err error
+		credentials, err = communitySnapshot(request.Input, owner.options.Now())
+		if err != nil {
+			return nil, communityImportError(err)
+		}
+	}
+	return owner.snapshotResult(call, credentials)
+}
+
+func (owner *module) snapshotResult(call sdk.Call, credentials Credentials) (sdk.AuthResult, error) {
+	if credentials.Validate(owner.options.Now()) != nil || call.Scope.Account != "" && call.Scope.Account != credentials.AccountID() {
+		return sdk.AuthResult{}, invalid("Import requires a valid unexpired ZCode credential snapshot")
+	}
+	rawCredentials, err := json.Marshal(credentials)
+	if err != nil {
+		return sdk.AuthResult{}, err
 	}
 	return sdk.AuthResult{
-		ID: credentials.AccountID(), Name: "ZCode " + credentials.Site + " " + credentials.Kind,
-		Credentials: bytes.Clone(request.Input), ExpiresAt: credentials.ExpiresAt,
+		ID: credentials.AccountID(), Name: credentials.accountName(),
+		Credentials: rawCredentials, ExpiresAt: credentials.ExpiresAt,
 	}, nil
 }
 
@@ -295,23 +314,12 @@ type executeOptions struct {
 	RequestID   string          `json:"requestId"`
 }
 
-type executeInput struct {
-	Protocol    string          `json:"protocol"`
-	Operation   string          `json:"operation,omitempty"`
-	Body        []byte          `json:"body,omitempty"`
-	Headers     http.Header     `json:"headers,omitempty"`
-	Model       string          `json:"model"`
-	OperationID string          `json:"operationId,omitempty"`
-	Credentials json.RawMessage `json:"credentials,omitempty"`
-	Options     json.RawMessage `json:"options,omitempty"`
-}
-
 func (owner *module) execute(ctx context.Context, call sdk.Call, stream *sdk.Stream) (any, error) {
 	credentials, err := owner.selected(call)
 	if err != nil {
 		return nil, err
 	}
-	var request executeInput
+	var request sdk.ExecuteRequest
 	if err := decode(call.Params, &request); err != nil {
 		return nil, err
 	}

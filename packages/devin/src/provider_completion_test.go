@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/json"
+	"fmt"
 	"io"
 	"math"
 	"net/http"
@@ -75,6 +76,163 @@ func TestProviderDimensionUsageFactsKeepSparsePresence(t *testing.T) {
 	progress := cachePingProgress{}
 	if progress.keep(cacheKeepalivePolicy{Enabled: true, MaxPings: 6}, 200, summary.Usage) {
 		t.Fatal("incomplete dimension measurements authorized another paid ping")
+	}
+}
+
+func canonicalFixtureRequest(protocol string, streaming bool) sdk.ExecuteRequest {
+	body := fmt.Appendf(nil, `{"model":"fixture-model","stream":%t,"max_tokens":10,"messages":[{"role":"user","content":"hello"}]}`, streaming)
+	request := fixtureExecute(body, sdk.ExecuteOptions{CallerID: "fixture-caller"})
+	if protocol == "anthropic" {
+		request.Protocol = protocol
+		request.Options, _ = json.Marshal(sdk.ExecuteOptions{Method: "POST", Path: "/v1/messages", CallerID: "fixture-caller"})
+	}
+	return request
+}
+
+func canonicalFixtureBody(t *testing.T, events []sdk.Frame) string {
+	t.Helper()
+	var body strings.Builder
+	for _, event := range events {
+		if event.Event == "data" {
+			var data []byte
+			if err := json.Unmarshal(event.Data, &data); err != nil {
+				t.Fatal(err)
+			}
+			body.Write(data)
+		}
+	}
+	return body.String()
+}
+
+func TestProviderMinLogProbabilityCompletesCanonicalReply(t *testing.T) {
+	usage := nativeFields(nativeNumber(2, 7), nativeNumber(3, 3), nativeNumber(4, 5), nativeNumber(5, 11))
+	reply := nativeFields(nativeFrame(0, nativeText(3, "fixture answer")), nativeFrame(0, nativeNumber(5, 4)),
+		nativeFrame(0, nativeText(7, string(usage))))
+	terminal := nativeFrame(2, []byte(`{}`))
+	for _, protocol := range []struct {
+		name, stop, usage, streamEnd string
+	}{
+		{"chat", `"finish_reason":"stop"`, `"completion_tokens":3`, "data: [DONE]\n\n"},
+		{"anthropic", `"stop_reason":"end_turn"`, `"output_tokens":3`, "data: {\"type\":\"message_stop\"}\n\n"},
+	} {
+		for _, completion := range []struct {
+			name      string
+			streaming bool
+			tail      []byte
+			wantOK    bool
+		}{
+			{"json", false, terminal, true},
+			{"sse", true, terminal, true},
+			{"missing-terminal", true, nil, false},
+			{"conflicting-stop", true, nativeFields(nativeFrame(0, nativeNumber(5, 2)), terminal), false},
+		} {
+			t.Run(protocol.name+"/"+completion.name, func(t *testing.T) {
+				var sends atomic.Int32
+				server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+					sends.Add(1)
+					writer.Header().Set("Content-Type", "application/connect+proto")
+					writer.Write(reply)
+					writer.Write(completion.tail)
+				}))
+				defer server.Close()
+				peer, _ := providerPeer(t, server.URL)
+				selectAccount(peer, server.URL)
+				result, events := peer.call(t, sdk.MethodProviderExecute, canonicalFixtureRequest(protocol.name, completion.streaming))
+				body := canonicalFixtureBody(t, events)
+				if sends.Load() != 1 {
+					t.Fatal("canonical reply was replayed", sends.Load())
+				}
+				if !completion.wantOK {
+					if result.Error == nil || result.Error.Code != "data_loss" || result.Error.Outcome != "uncertain" ||
+						strings.Contains(body, protocol.stop) || strings.Contains(body, protocol.streamEnd) {
+						t.Fatal("invalid Connect completion acquired a successful finish", result.Error, body)
+					}
+					return
+				}
+				var final sdk.ExecuteResult
+				if result.Error != nil || json.Unmarshal(result.Result, &final) != nil || final.Outcome != "completed" ||
+					final.Status != http.StatusOK || final.Usage == nil || final.Usage.Facts == nil ||
+					final.Usage.Facts.Stop == nil || *final.Usage.Facts.Stop != "MIN_LOG_PROB" {
+					t.Fatal("MIN_LOG_PROB did not complete or lost the measured stop", result.Error, string(result.Result))
+				}
+				if !strings.Contains(body, "fixture answer") || !strings.Contains(body, protocol.stop) || !strings.Contains(body, protocol.usage) ||
+					completion.streaming && !strings.HasSuffix(body, protocol.streamEnd) ||
+					!completion.streaming && !json.Valid([]byte(body)) {
+					t.Fatal("canonical body lost the reply, late usage or terminator", body)
+				}
+			})
+		}
+	}
+}
+
+func TestProviderConnectPreconditionRetainsCanonicalFailure(t *testing.T) {
+	const message = "Fixture private vendor precondition"
+	for _, protocol := range []string{"chat", "anthropic"} {
+		for _, content := range []struct {
+			name  string
+			delta []byte
+		}{
+			{"before-delta", nil},
+			{"after-delta", nativeFrame(0, nativeFields(nativeText(3, "partial reply"), nativeText(7, string(nativeNumber(2, 7)))))},
+		} {
+			t.Run(protocol+"/"+content.name, func(t *testing.T) {
+				var sends atomic.Int32
+				server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+					sends.Add(1)
+					writer.Header().Set("Content-Type", "application/connect+proto")
+					writer.Write(content.delta)
+					writer.Write(nativeFrame(2, []byte(`{"error":{"code":"failed_precondition","type":"fixture_type","message":"`+message+`"}}`)))
+				}))
+				defer server.Close()
+				peer, store := providerPeer(t, server.URL)
+				selectAccount(peer, server.URL)
+				var classified []sdk.RequestRecoveryRequest
+				peer.host = func(frame sdk.Frame) (any, error) {
+					if frame.Method != sdk.MethodRequestRecover {
+						return store.host(frame)
+					}
+					var request sdk.RequestRecoveryRequest
+					if err := json.Unmarshal(frame.Params, &request); err != nil {
+						t.Fatal(err)
+					}
+					classified = append(classified, request)
+					return sdk.RequestRecoveryResult{Step: request.Step, Action: "stop"}, nil
+				}
+				result, events := peer.call(t, sdk.MethodProviderExecute, canonicalFixtureRequest(protocol, true))
+				if result.Error == nil || result.Error.Code != "failed_precondition" || result.Error.Outcome != "uncertain" ||
+					strings.Contains(result.Error.Message, message) || sends.Load() != 1 {
+					t.Fatal("canonical terminal lost its public type, leaked details or replayed", result.Error, sends.Load())
+				}
+				if len(classified) != 1 {
+					t.Fatal("terminal did not classify its observed response once", classified)
+				}
+				facts := classified[0].Facts
+				if classified[0].Evidence != "" || facts.Code != "failed_precondition" || facts.Type != "fixture_type" ||
+					facts.Message != message || facts.Status != http.StatusOK || !facts.Complete ||
+					facts.Operation != sdk.MethodProviderExecute || facts.Phase != "response" {
+					t.Fatal("terminal altered observed failure facts or invented replay evidence", classified[0])
+				}
+				body := canonicalFixtureBody(t, events)
+				if strings.Contains(body, message) || strings.Contains(body, "[DONE]") || strings.Contains(body, "message_stop") ||
+					strings.Contains(body, "partial reply") != (content.delta != nil) {
+					t.Fatal("canonical body lost partial output, leaked details or fabricated a finish", body)
+				}
+				if content.delta != nil {
+					var last sdk.Usage
+					for _, event := range events {
+						if event.Event == "usage" {
+							if err := json.Unmarshal(event.Data, &last); err != nil {
+								t.Fatal(err)
+							}
+						}
+					}
+					if last.Facts == nil || last.Facts.InputTokens == nil || *last.Facts.InputTokens != 7 ||
+						last.Facts.ErrorType == nil || *last.Facts.ErrorType != "failed_precondition" {
+						t.Fatal("partial response lost measured usage or its typed terminal", last.Facts)
+					}
+				}
+			})
+		}
 	}
 }
 

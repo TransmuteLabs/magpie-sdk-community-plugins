@@ -9,8 +9,6 @@ export function mountControlPage(
   ready: Promise<void>;
   reload: () => Promise<void>;
   selection: () => ReturnType<ZcodeControl["snapshot"]>["selected"];
-  canAuthenticate: () => boolean;
-  lockAuthentication: (locked: boolean) => void;
   dispose: () => void;
 } {
   const element = <T extends HTMLElement>(id: string): T => {
@@ -48,7 +46,6 @@ export function mountControlPage(
   const control = new ZcodeControl(backend);
   const listeners: Array<() => void> = [];
   let pending = false;
-  let authentication = false;
   let disposed = false;
   let nativeActive = false;
   let nativeStopping = false;
@@ -56,9 +53,9 @@ export function mountControlPage(
   const render = () => {
     if (disposed) return;
     const state = control.snapshot();
-    account.disabled = pending || state.busy || authentication;
-    reload.disabled = pending || state.busy || authentication;
-    plan.disabled = pending || state.busy || authentication || !state.selected;
+    account.disabled = pending || state.busy;
+    reload.disabled = pending || state.busy;
+    plan.disabled = pending || state.busy || !state.selected;
     window.disabled = plan.disabled;
     for (const button of Object.values(actions)) button.disabled = plan.disabled;
     for (const input of [nativeSession, nativeCommand, nativeModel, nativeText]) input.disabled = plan.disabled;
@@ -67,7 +64,7 @@ export function mountControlPage(
     account.value = state.selected?.id ?? "";
   };
   const run = async (work: () => Promise<unknown>, success: string) => {
-    if (pending || disposed || authentication) return;
+    if (pending || disposed) return;
     pending = true;
     status.textContent = "Выполняется…";
     render();
@@ -93,7 +90,7 @@ export function mountControlPage(
     const options = state.accounts.map((value) => {
       const option = document.createElement("option");
       option.value = value.id;
-      option.textContent = value.id;
+      option.textContent = value.name || value.id;
       return option;
     });
     account.replaceChildren(placeholder, ...options);
@@ -103,7 +100,7 @@ export function mountControlPage(
     listeners.push(() => target.removeEventListener(event, handler));
   };
   listen(account, "change", () => {
-    if (pending || disposed || authentication) return;
+    if (pending || disposed) return;
     try {
       control.select(account.value);
       status.textContent = "Счёт выбран. Загрузите нужное состояние.";
@@ -114,7 +111,7 @@ export function mountControlPage(
   });
   listen(reload, "click", () => { void load(); });
   listen(actions.nativeRun, "click", () => {
-    if (pending || disposed || authentication || !control.snapshot().selected) return;
+    if (pending || disposed || !control.snapshot().selected) return;
     const selected = control.snapshot().selected!;
     const input = { sessionId: nativeSession.value, commandId: nativeCommand.value,
       model: nativeModel.value, text: nativeText.value };
@@ -147,7 +144,7 @@ export function mountControlPage(
   listen(actions.resets, "click", () => { void run(() => control.read("resetSummary"), "Состояние сбросов и ожидающих подтверждения действий загружено."); });
   listen(actions.offers, "click", () => { void run(() => control.read("billingOffers"), "Доступные предложения загружены."); });
   listen(actions.checkin, "click", () => {
-    if (pending || disposed || authentication || !control.snapshot().selected) return;
+    if (pending || disposed || !control.snapshot().selected) return;
     const selected = control.snapshot().selected!;
     void run(async () => {
       if (!await confirmWrite(`Проверить предложения и запросить доступные подарочные планы для счёта ${selected.id}?`) || disposed) return cancelled;
@@ -155,7 +152,7 @@ export function mountControlPage(
     }, "Ответ на check-in получен. Проверьте результат.");
   });
   listen(actions.reset, "click", () => {
-    if (pending || disposed || authentication || !control.snapshot().selected) return;
+    if (pending || disposed || !control.snapshot().selected) return;
     if (window.value !== "FIVE_HOUR" && window.value !== "WEEK") {
       status.textContent = "Выберите пятичасовое или недельное окно.";
       return;
@@ -169,7 +166,7 @@ export function mountControlPage(
     }, "Ответ на сброс получен. Проверьте результат.");
   });
   listen(actions.claim, "click", () => {
-    if (pending || disposed || authentication || !control.snapshot().selected) return;
+    if (pending || disposed || !control.snapshot().selected) return;
     const planId = plan.value;
     if (!planId || planId.trim() !== planId || planId.length > 128 || /[\u0000-\u001f\u007f]/u.test(planId)) {
       status.textContent = "Введите точный ID плана из состояния планов.";
@@ -196,7 +193,7 @@ export function mountControlPage(
   ];
   for (const entry of resetControls) {
     listen(entry.button, "click", () => {
-      if (pending || disposed || authentication || !control.snapshot().selected) return;
+      if (pending || disposed || !control.snapshot().selected) return;
       const selected = control.snapshot().selected!;
       void run(async () => {
         if (!await confirmWrite(`${entry.confirmation} для счёта ${selected.id}?`) || disposed) return cancelled;
@@ -209,8 +206,6 @@ export function mountControlPage(
     ready: load(),
     reload: load,
     selection: () => pending || disposed ? undefined : control.snapshot().selected,
-    canAuthenticate: () => !pending && !disposed && !control.snapshot().busy,
-    lockAuthentication(locked) { authentication = locked; render(); },
     dispose() {
       disposed = true;
       for (const remove of listeners) remove();

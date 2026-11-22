@@ -44,8 +44,11 @@ def main():
                 and any(native.startswith(signature) for signature in signatures.get(PurePosixPath(manifest["entry"]).suffix, ())),
                 "Missing native controller for declared platform")
         require(set(manifest["contract"]["capabilities"]) == {
-            "outbound-executor", "model-discovery", "usage-reporter", "account-auth", "module-rpc", "agent-wiring", "request-policy"
+            "outbound-executor", "model-discovery", "usage-reporter", "account-auth", "module-rpc",
+            "agent-wiring", "request-policy", "provider-signin"
         }, "Default package omits an implemented capability")
+        require(set(lock["plugin"]["requiredCapabilities"]) <= set(manifest["contract"]["capabilities"]),
+                "Packaged capability requirements differ from provenance")
         providers = manifest.get("providers", [])
         require(len(providers) == 1 and providers[0]["id"] == "commandcode-native"
                 and set(providers[0]["protocols"]) == {"chat", "responses", "anthropic"}
@@ -57,9 +60,17 @@ def main():
         require(len(manifest.get("agents", [])) == 1 and manifest["agents"][0]["id"] == "commandcode-sdk"
                 and manifest["agents"][0].get("profile", {}).get("target") == "commandcode",
                 "Default package omits the checked agent adapter")
-        require(manifest.get("window", {}).get("metadata") == "package.json"
-                and metadata.get("magpie", {}).get("page", {}).get("file") == "web/index.html"
-                and "web/app.js" in inventory, "Default package omits its implemented UI")
+        launch, = manifest["authBindings"]
+        require(launch["from"] == "provider:signin" and launch["provider"] == providers[0]["id"]
+                and launch["reauthorize"] is True, "Default package omits ordinary provider sign-in")
+        require({method["id"]: (method["mode"], method.get("fields", [])) for method in launch["methods"]} == {
+            "api-key": ("poll", [{"key": "apiKey", "label": "API key", "type": "secret"}]),
+            "browser": ("poll", []), "cli-import": ("poll", []),
+        }, "Packaged sign-in methods or input fields differ")
+        window = metadata["magpie"]
+        require(manifest.get("window", {}).get("metadata") == "package.json" and "page" not in window
+                and window.get("panels") == [{"slot": "usage", "title": "Command Code account details", "file": "web/index.html"}]
+                and "web/app.js" in inventory, "Default package must contribute an account details panel in Usage")
         require(not metadata.get("dependencies") and not metadata.get("optionalDependencies"), "Additional runtime package dependency")
         declared = metadata["files"] + ["package.json", "inventory.json"]
         for name in names:

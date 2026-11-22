@@ -237,7 +237,7 @@ func (renderer *MessagesRenderer) Validate(summary codec.NativeSummary) error {
 	if renderer.finished || len(renderer.blocks) == 0 {
 		return errors.New("Messages response has no content")
 	}
-	if summary.Stop != 2 && summary.Stop != 3 && summary.Stop != 10 {
+	if summary.Stop != 2 && summary.Stop != 3 && summary.Stop != 4 && summary.Stop != 10 {
 		return errors.New("native stop reason has no Messages mapping")
 	}
 	if summary.Stop == 10 && len(renderer.tools) == 0 {
@@ -264,8 +264,8 @@ func (renderer *MessagesRenderer) Finish(summary codec.NativeSummary) error {
 	if err := renderer.Validate(summary); err != nil {
 		return err
 	}
-	stop := map[uint64]string{2: "end_turn", 3: "max_tokens", 10: "tool_use"}[summary.Stop]
-	if summary.Stop == 2 && len(renderer.tools) > 0 {
+	stop := map[uint64]string{2: "end_turn", 3: "max_tokens", 4: "end_turn", 10: "tool_use"}[summary.Stop]
+	if stop == "end_turn" && len(renderer.tools) > 0 {
 		stop = "tool_use"
 	}
 	if err := renderer.start(); err != nil {

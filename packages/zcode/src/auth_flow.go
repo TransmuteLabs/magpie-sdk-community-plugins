@@ -12,6 +12,8 @@ import (
 	sdk "github.com/yetone/magpie/pkg/extension"
 )
 
+const apiKeySignIn = "api-key"
+
 type authSelection struct {
 	Site          string `json:"site,omitempty"`
 	LoginProvider string `json:"loginProvider,omitempty"`
@@ -32,6 +34,7 @@ type authContinuation struct {
 
 type authFlow struct {
 	Selection        authSelection   `json:"selection"`
+	SavedSignIn      string          `json:"savedSignIn,omitempty"`
 	PollToken        string          `json:"pollToken"`
 	FlowID           string          `json:"flowId"`
 	Device           string          `json:"device"`
@@ -49,29 +52,45 @@ type authFlow struct {
 }
 
 func flowKey(id string) (string, error) {
-	if len(id) != 32 {
+	identity, saved := strings.CutPrefix(id, savedSignInPrefix)
+	if len(identity) != 32 {
 		return "", invalid("Invalid authorization continuation")
 	}
-	for _, character := range id {
+	for _, character := range identity {
 		if !strings.ContainsRune("0123456789abcdef", character) {
 			return "", invalid("Invalid authorization continuation")
 		}
 	}
+	if saved {
+		return "auth.saved-signin", nil
+	}
 	return "auth." + id, nil
 }
 
-func readFlow(ctx context.Context, stream *sdk.Stream, id string) (authFlow, string, error) {
+func loadFlowState(ctx context.Context, stream *sdk.Stream, id string) (sdk.StateValue, error) {
 	key, err := flowKey(id)
+	if err != nil {
+		return sdk.StateValue{}, err
+	}
+	var value sdk.StateValue
+	err = stream.HostCall(ctx, sdk.MethodStateGet, sdk.StateGetRequest{Key: key}, &value)
+	return value, err
+}
+
+func readFlow(ctx context.Context, stream *sdk.Stream, id string) (authFlow, string, error) {
+	value, err := loadFlowState(ctx, stream, id)
 	if err != nil {
 		return authFlow{}, "", err
 	}
-	var value sdk.StateValue
-	if err := stream.HostCall(ctx, sdk.MethodStateGet, sdk.StateGetRequest{Key: key}, &value); err != nil {
-		return authFlow{}, "", err
-	}
 	var flow authFlow
-	if !value.Found || decode(value.Value, &flow) != nil || flow.Deadline <= 0 || flow.PollToken == "" ||
-		flow.FlowID == "" || flow.Device == "" || flow.Interval < 1000 {
+	if !value.Found || decode(value.Value, &flow) != nil || flow.Deadline <= 0 {
+		return authFlow{}, "", invalid("Authorization continuation is missing or unreadable")
+	}
+	if strings.HasPrefix(id, savedSignInPrefix) {
+		if flow.SavedSignIn != id {
+			return authFlow{}, "", invalid("Saved sign-in has been superseded")
+		}
+	} else if flow.PollToken == "" || flow.FlowID == "" || flow.Device == "" || flow.Interval < 1000 {
 		return authFlow{}, "", invalid("Authorization continuation is missing or unreadable")
 	}
 	return flow, value.Version, nil
@@ -104,6 +123,12 @@ func (owner *module) authStart(ctx context.Context, call sdk.Call, stream *sdk.S
 	if err := decode(call.Params, &request); err != nil {
 		return nil, err
 	}
+	if request.Method == sdk.SavedSignInMethod {
+		return owner.startSavedSignIn(ctx, call, stream, request)
+	}
+	if request.Method == apiKeySignIn {
+		return owner.startAPIKeySignIn(ctx, call, stream, request)
+	}
 	if request.Method == "snapshot" {
 		if request.RedirectURI != "" || len(request.Input) != 0 {
 			return nil, invalid("Snapshot import does not create an authorization flow")
@@ -120,6 +145,9 @@ func (owner *module) authStart(ctx context.Context, call sdk.Call, stream *sdk.S
 		if err != nil {
 			return nil, err
 		}
+		if current.Kind == "legacy-key" {
+			return nil, invalid("Use GLM Coding Plan API key to sign in again to this account")
+		}
 		existing = &current
 		selection.Site, selection.Kind, selection.LoginProvider = current.Site, current.Kind, current.LoginProvider
 	}
@@ -127,6 +155,9 @@ func (owner *module) authStart(ctx context.Context, call sdk.Call, stream *sdk.S
 		if err := decode(request.Input, &selection); err != nil {
 			return nil, err
 		}
+	}
+	if selection.Site == "zai_cn" && (selection.LoginProvider == "" || selection.LoginProvider == "zai_cn") {
+		selection.Site, selection.LoginProvider = "bigmodel", "zai_cn"
 	}
 	if selection.Site != "zai" && selection.Site != "bigmodel" ||
 		!loginProviderMatches(selection.Site, selection.LoginProvider) ||
@@ -141,7 +172,7 @@ func (owner *module) authStart(ctx context.Context, call sdk.Call, stream *sdk.S
 	flow := authFlow{Selection: selection, Phase: "awaiting"}
 	if call.Scope.Account != "" {
 		current := *existing
-		if current.Site != selection.Site || selection.Kind != "auto" && selection.Kind != current.Kind {
+		if current.Site != selection.Site || (current.LoginProvider == "zai_cn") != (selection.LoginProvider == "zai_cn") || selection.Kind != "auto" && selection.Kind != current.Kind {
 			return nil, invalid("Renewal must keep the selected account's site and plan")
 		}
 		flow.Selection = authSelection{Site: current.Site, Kind: current.Kind, LoginProvider: selection.LoginProvider,
@@ -205,6 +236,38 @@ func (owner *module) authStart(ctx context.Context, call sdk.Call, stream *sdk.S
 	return sdk.AuthStartResult{URL: address.String(), PollAfterMs: flow.Interval, Continuation: continuation}, nil
 }
 
+func (owner *module) startAPIKeySignIn(ctx context.Context, call sdk.Call, stream *sdk.Stream, request sdk.AuthStartRequest) (any, error) {
+	var input struct {
+		Site string `json:"site,omitempty"`
+		Key  string `json:"key"`
+	}
+	if request.RedirectURI != "" || decode(request.Input, &input) != nil {
+		return nil, invalid("Select a supported site and enter a GLM Coding Plan API key")
+	}
+	account := Credentials{Site: "zai", Kind: "legacy-key"}
+	if call.Scope.Account != "" {
+		current, err := owner.identity(call)
+		if err != nil {
+			return nil, err
+		}
+		if current.Kind != account.Kind || current.Key != input.Key || input.Site != "" && input.Site != current.Site {
+			return nil, invalid("Use the selected account's API key and site, or add a new account")
+		}
+		account = current
+	}
+	if input.Site != "" {
+		account.Site = input.Site
+	}
+	account.Key = input.Key
+	if account.Validate(owner.options.Now()) != nil {
+		return nil, invalid("Select a supported site and enter a GLM Coding Plan API key")
+	}
+	if _, err := owner.readPaidUsage(ctx, stream, account, ""); err != nil {
+		return nil, &sdk.Error{Code: "authentication_failed", Message: "Could not verify the API key with the selected site's quota service", Outcome: "not-started"}
+	}
+	return owner.startSnapshotSignIn(ctx, call, stream, account)
+}
+
 func (owner *module) finishFlow(ctx context.Context, call sdk.Call, stream *sdk.Stream, request sdk.AuthFinishRequest) (any, error) {
 	var continuation authContinuation
 	if decode(request.Continuation, &continuation) != nil || request.Code != "" || len(request.Input) != 0 &&
@@ -217,6 +280,9 @@ func (owner *module) finishFlow(ctx context.Context, call sdk.Call, stream *sdk.
 	}
 	if flow.TargetAccount != call.Scope.Account || flow.TargetGeneration != call.Scope.Generation {
 		return nil, &sdk.Error{Code: "permission_denied", Message: "Authorization continuation belongs to another selected account", Outcome: "not-started"}
+	}
+	if flow.SavedSignIn != "" {
+		return owner.finishSavedSignIn(ctx, call, stream, continuation.ID, version, flow)
 	}
 	if flow.Deadline <= owner.options.Now().UnixMilli() {
 		return nil, invalid("Authorization expired; start a new explicit flow")

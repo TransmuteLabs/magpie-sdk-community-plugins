@@ -19,6 +19,7 @@ type signInFlow struct {
 	Server      string               `json:"server"`
 	Deadline    time.Time            `json:"deadline"`
 	Credentials outbound.Credentials `json:"credentials,omitempty"`
+	CLIImport   *cliImportIdentity   `json:"cliImport,omitempty"`
 	PKCE        outbound.PKCE        `json:"pkce,omitempty"`
 	CallbackID  string               `json:"callback,omitempty"`
 	Instance    string               `json:"instance,omitempty"`
@@ -86,11 +87,19 @@ func (owner *providerOwner) authStart(ctx context.Context, call sdk.Call, stream
 		}
 	}()
 	switch request.Method {
-	case "api-key":
+	case "api-key", sdk.SavedSignInMethod:
 		if request.RedirectURI != "" {
 			return nil, &sdk.Error{Code: "invalid_params", Message: "API-key sign-in has no redirect"}
 		}
-		if err := decodeParams(request.Input, &flow.Credentials); err != nil || flow.Credentials.Validate() != nil || flow.Credentials.Due(owner.options.Now()) {
+		if request.Method == sdk.SavedSignInMethod {
+			flow.Credentials, flow.CLIImport, err = importedSignIn(request.Input, state.server)
+		} else {
+			err = decodeParams(request.Input, &flow.Credentials)
+		}
+		if err != nil {
+			return nil, err
+		}
+		if flow.Credentials.Validate() != nil || flow.Credentials.Due(owner.options.Now()) {
 			return nil, &sdk.Error{Code: "invalid_params", Message: "An explicit unexpired Devin key is required"}
 		}
 	case "browser":
@@ -118,7 +127,7 @@ func (owner *providerOwner) authStart(ctx context.Context, call sdk.Call, stream
 			return nil, &sdk.Error{Code: "invalid_params", Message: "Browser sign-in requires a 127.0.0.1 callback URL"}
 		}
 	default:
-		return nil, &sdk.Error{Code: "unsupported", Message: "Use Devin api-key or browser sign-in"}
+		return nil, &sdk.Error{Code: "unsupported", Message: "Use Devin browser, API key, or saved sign-in"}
 	}
 	handle, err := randomIdentity()
 	if err != nil {
@@ -160,6 +169,35 @@ func (owner *providerOwner) authStart(ctx context.Context, call sdk.Call, stream
 	return result, nil
 }
 
+func importedSignIn(raw json.RawMessage, server string) (outbound.Credentials, *cliImportIdentity, error) {
+	var input struct {
+		Record string `json:"record"`
+	}
+	var record struct {
+		Type      string                     `json:"type"`
+		Key       string                     `json:"key"`
+		AccountID string                     `json:"accountId"`
+		Email     string                     `json:"email"`
+		Metadata  map[string]json.RawMessage `json:"metadata"`
+	}
+	if decodeParams(raw, &input) != nil || len(input.Record) > 16<<10 ||
+		decodeParams(json.RawMessage(input.Record), &record) != nil || record.Type != "api" {
+		return outbound.Credentials{}, nil, &sdk.Error{Code: "invalid_params", Message: "Provide one saved Devin API sign-in record"}
+	}
+	origin := outbound.DefaultServer
+	if value, exists := record.Metadata["server"]; exists {
+		origin = ""
+		if json.Unmarshal(value, &origin) != nil || origin == "" {
+			return outbound.Credentials{}, nil, &sdk.Error{Code: "invalid_params", Message: "Saved Devin sign-in has an invalid server"}
+		}
+	}
+	if strings.TrimRight(origin, "/") != server {
+		return outbound.Credentials{}, nil, &sdk.Error{Code: "invalid_params", Message: "Saved Devin sign-in belongs to a different server"}
+	}
+	identity, err := cliImportFrom(record.Metadata)
+	return outbound.Credentials{Key: record.Key}, identity, err
+}
+
 func (owner *providerOwner) authFinish(ctx context.Context, call sdk.Call, stream *sdk.Stream) (any, error) {
 	if err := scopeProvider(call, false); err != nil {
 		return nil, err
@@ -167,6 +205,13 @@ func (owner *providerOwner) authFinish(ctx context.Context, call sdk.Call, strea
 	state, err := currentProviderState(ctx)
 	if err != nil {
 		return nil, err
+	}
+	var previous accountCredentials
+	if call.Scope.Account != "" {
+		previous, _, err = selectedAccount(ctx, call)
+		if err != nil {
+			return nil, err
+		}
 	}
 	var request sdk.AuthFinishRequest
 	if err := decodeParams(call.Params, &request); err != nil {
@@ -222,8 +267,10 @@ func (owner *providerOwner) authFinish(ctx context.Context, call sdk.Call, strea
 	}
 	credentials := flow.Credentials
 	pkce := flow.PKCE
+	cliImport := flow.CLIImport
 	flow.State = "exchanging"
 	flow.Credentials = outbound.Credentials{}
+	flow.CLIImport = nil
 	flow.PKCE = outbound.PKCE{}
 	version, err = swapState(ctx, stream, key, version, flow)
 	if err != nil {
@@ -243,24 +290,34 @@ func (owner *providerOwner) authFinish(ctx context.Context, call sdk.Call, strea
 		}
 		credentials = exchanged.Credentials
 	}
-	status, err := client.Status(ctx, credentials, nil)
-	if err != nil {
-		return nil, moduleFailure(err, "uncertain")
+	var status outbound.Status
+	if cliImport != nil {
+		credentials, status, err = cliImport.verify(ctx, client, state.server, credentials)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		status, err = client.Status(ctx, credentials, nil)
+		if err != nil {
+			return nil, moduleFailure(err, "uncertain")
+		}
 	}
-	account := credentials.AccountID(state.server)
-	if call.Scope.Account != "" && call.Scope.Account != account {
-		return nil, &sdk.Error{Code: "permission_denied", Message: "Devin sign-in changed the explicitly selected account"}
+	subject := accountSubject(state.server, status)
+	if flow.Kind == sdk.SavedSignInMethod && subject == "" {
+		return nil, &sdk.Error{
+			Code: "reauthorization_required", Message: "Devin did not return a verified identity for the saved sign-in",
+			Outcome: "not-started",
+		}
 	}
-	name := status.Email
-	if name == "" {
-		name = status.Name
+	account := subject
+	if call.Scope.Account != "" {
+		if !sameAccount(ctx, client, state.server, previous, credentials, subject, owner.options.Now()) {
+			return nil, &sdk.Error{Code: "permission_denied", Message: "Could not verify the same Devin user and organization for the selected account"}
+		}
+		account = call.Scope.Account
 	}
-	name = strings.TrimSpace(name)
-	if name == "" {
-		name = "Devin [" + account[:12] + "]"
-	}
-	if organization := strings.TrimSpace(status.OrgName); organization != "" && !strings.EqualFold(name, organization) {
-		name += " · " + organization
+	if account == "" {
+		account = credentials.AccountID(state.server)
 	}
 	flow.State = "complete"
 	flow.Credentials = outbound.Credentials{}
@@ -268,24 +325,49 @@ func (owner *providerOwner) authFinish(ctx context.Context, call sdk.Call, strea
 	if _, err := swapState(ctx, stream, key, version, flow); err != nil {
 		return nil, err
 	}
-	auth, _ := json.Marshal(credentials)
-	expires := int64(0)
-	if !credentials.ExpiresAt.IsZero() {
-		expires = credentials.ExpiresAt.UnixMilli()
-	}
-	return sdk.AuthResult{ID: account, Name: name, Credentials: auth, ExpiresAt: expires}, nil
+	return accountResult(account, state.server, subject, credentials, status, cliImport != nil), nil
 }
 
-func (owner *providerOwner) authRefresh(ctx context.Context, call sdk.Call, _ *sdk.Stream) (any, error) {
-	if _, _, err := selectedCredentials(ctx, call); err != nil {
+func (owner *providerOwner) authRefresh(ctx context.Context, call sdk.Call, stream *sdk.Stream) (any, error) {
+	account, state, err := selectedAccount(ctx, call)
+	if err != nil {
 		return nil, err
 	}
-	return nil, &sdk.Error{Code: "unsupported", Message: "Devin keys and session tokens have no recovered renewal endpoint; sign in again"}
+	followsCLI := account.Binding != nil && account.Binding.FollowCLI
+	credentials := account.Credentials
+	if followsCLI {
+		credentials, err = readCLICredentials(state.server)
+		if err != nil {
+			return nil, err
+		}
+	} else if account.Due(owner.options.Now()) {
+		return nil, &sdk.Error{Code: "unsupported", Message: "This Devin credential is expiring; sign in again", Outcome: "not-started"}
+	}
+	client, err := owner.client(state, stream)
+	if err != nil {
+		return nil, moduleFailure(err, "not-started")
+	}
+	status, err := client.Status(ctx, credentials, nil)
+	if err != nil {
+		return nil, moduleFailure(err, "not-started")
+	}
+	subject := accountSubject(state.server, status)
+	if followsCLI && cliSubject(state.server, status) != account.Binding.Subject {
+		return nil, cliIdentityNotVerified()
+	}
+	if account.Binding != nil && account.Binding.Subject != subject {
+		return nil, &sdk.Error{Code: "permission_denied", Message: "Devin status changed the selected account identity", Outcome: "not-started"}
+	}
+	return accountResult(call.Scope.Account, state.server, subject, credentials, status, followsCLI), nil
 }
 
-func (owner *providerOwner) authLogout(ctx context.Context, call sdk.Call, _ *sdk.Stream) (any, error) {
-	if _, _, err := selectedCredentials(ctx, call); err != nil {
+func (owner *providerOwner) authLogout(_ context.Context, call sdk.Call, _ *sdk.Stream) (any, error) {
+	if err := scopeProvider(call, true); err != nil {
 		return nil, err
+	}
+	var account accountCredentials
+	if decodeParams(call.Auth, &account) != nil || account.Validate() != nil || !account.matchesStoredSlot(call.Scope.Account) {
+		return nil, &sdk.Error{Code: "permission_denied", Message: "The selected Devin account generation does not match its credentials", Outcome: "not-started"}
 	}
 	return nil, nil
 }

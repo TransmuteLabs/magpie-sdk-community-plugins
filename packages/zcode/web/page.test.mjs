@@ -134,6 +134,31 @@ test("page starts unselected and renders hostile-looking IDs as text", async () 
   assert.ok(Object.values(elements).every((value) => value.handlers.size === 0));
 });
 
+test("account names label the picker without changing write identity", async () => {
+  const name = "<Named account>";
+  const legacy = { id: "legacy-account", generation: "2" };
+  const calls = [];
+  const confirmations = [];
+  const { page, elements } = fixture({
+    accounts: async () => [{ ...account, name }, legacy],
+    call: async (...args) => { calls.push(args); return {}; },
+  }, (message) => { confirmations.push(message); return true; });
+  await page.ready;
+  assert.deepEqual(elements.account.children.slice(1).map((option) => [option.value, option.textContent]), [
+    [account.id, name], [legacy.id, legacy.id],
+  ]);
+  select(elements);
+  elements.plan.value = "named-plan";
+  elements.claim.dispatch("click");
+  await tick();
+  assert.equal(confirmations.length, 1);
+  assert.ok(confirmations[0].includes(account.id));
+  assert.deepEqual(calls, [["page.billing-claim", { planId: "named-plan" }, {
+    account: { id: account.id, expectedGeneration: account.generation },
+  }]]);
+  page.dispose();
+});
+
 test("declined financial confirmation cannot dispatch", async () => {
   let calls = 0;
   const confirmations = [];
@@ -354,10 +379,6 @@ test("offers and explicit check-in retain one selected generation and confirmati
   assert.deepEqual(calls[1], ["page.billing-checkin", {}, {
     account: { id: account.id, expectedGeneration: account.generation },
   }]);
-  assert.equal(calls.length, 2);
-  page.lockAuthentication(true);
-  elements.checkin.dispatch("click");
-  await tick();
   assert.equal(calls.length, 2);
   page.dispose();
 });

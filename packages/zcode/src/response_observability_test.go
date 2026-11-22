@@ -77,12 +77,12 @@ func controlHarness(t *testing.T, options ModuleOptions) *harness {
 }
 
 func TestObservability7JSONKeepsOnlySourceBackedSparseFacts(t *testing.T) {
-	vendor, server := newCompletionVendor(t)
+	vendor, options := newCompletionVendor(t)
 	vendor.answer = `{"type":"message","id":"observed-response","model":"GLM-5.3","content":[],"stop_reason":"end_turn",
 		"usage":{"input_tokens":0,"output_tokens":5,"cache_read_input_tokens":11,"cache_creation_input_tokens":3,
 		"cache_creation":{"ephemeral_5m_input_tokens":1,"ephemeral_1h_input_tokens":2},
 		"completion_tokens_details":{"reasoning_tokens":0},"service_tier":"standard"}}`
-	h := controlHarness(t, endpointOptions(server))
+	h := controlHarness(t, options)
 	account := giftAccount()
 	frame, _ := h.call(sdk.MethodProviderExecute, scope(account), giftRequest("GLM-5.3"), raw(account))
 	var result sdk.ExecuteResult
@@ -108,7 +108,7 @@ func TestObservability7JSONKeepsOnlySourceBackedSparseFacts(t *testing.T) {
 func TestObservability7StreamRetainsFailedTerminalFactsAndMeasuredZero(t *testing.T) {
 	for _, terminal := range []string{"complete", "truncated", "error", "zero"} {
 		t.Run(terminal, func(t *testing.T) {
-			vendor, server := newCompletionVendor(t)
+			vendor, options := newCompletionVendor(t)
 			vendor.media = "text/event-stream"
 			vendor.answer = "event: message_start\ndata: {\"type\":\"message_start\",\"message\":{\"type\":\"message\",\"id\":\"stream-response\",\"model\":\"GLM-5.3\",\"content\":[],\"usage\":{\"input_tokens\":7,\"output_tokens\":0,\"cache_creation\":{\"ephemeral_5m_input_tokens\":1,\"ephemeral_1h_input_tokens\":2}}}}\n\n" +
 				"event: message_delta\ndata: {\"type\":\"message_delta\",\"usage\":{\"output_tokens\":5,\"reasoning_tokens\":2}}\n\n"
@@ -120,7 +120,7 @@ func TestObservability7StreamRetainsFailedTerminalFactsAndMeasuredZero(t *testin
 			case "zero":
 				vendor.answer += "event: message_delta\ndata: {\"type\":\"message_delta\",\"usage\":{\"output_tokens\":0,\"reasoning_tokens\":0}}\n\nevent: message_stop\ndata: {\"type\":\"message_stop\"}\n\n"
 			}
-			h := controlHarness(t, endpointOptions(server))
+			h := controlHarness(t, options)
 			account := giftAccount()
 			frame, body := h.call(sdk.MethodProviderExecute, scope(account), giftRequest("GLM-5.3-Trial"), raw(account))
 			failed := terminal == "truncated" || terminal == "error"
@@ -161,10 +161,10 @@ func TestObservability7StreamRetainsFailedTerminalFactsAndMeasuredZero(t *testin
 func TestObservability7UnsupportedCurrencyCreditsAndMalformedCountsStayUnknown(t *testing.T) {
 	for _, currency := range []string{"USD", "EUR", "CNY", "credits"} {
 		t.Run(currency, func(t *testing.T) {
-			vendor, server := newCompletionVendor(t)
+			vendor, options := newCompletionVendor(t)
 			vendor.answer = `{"type":"message","content":[],"usage":{"input_tokens":0,
 				"cost":12,"cost_units":3,"credits":4,"currency":"` + currency + `"}}`
-			h := controlHarness(t, endpointOptions(server))
+			h := controlHarness(t, options)
 			account := giftAccount()
 			frame, body := h.call(sdk.MethodProviderExecute, scope(account), giftRequest("GLM-5.3"), raw(account))
 			var result sdk.ExecuteResult
@@ -182,9 +182,9 @@ func TestObservability7UnsupportedCurrencyCreditsAndMalformedCountsStayUnknown(t
 	for _, counters := range []string{`{"input_tokens":-1}`, `{"input_tokens":1.5}`,
 		`{"input_tokens":9007199254740992}`, `{"cache_creation_input_tokens":2,"cache_creation":{"ephemeral_1h_input_tokens":3}}`} {
 		t.Run(counters, func(t *testing.T) {
-			vendor, server := newCompletionVendor(t)
+			vendor, options := newCompletionVendor(t)
 			vendor.answer = `{"type":"message","content":[],"usage":` + counters + `}`
-			h := controlHarness(t, endpointOptions(server))
+			h := controlHarness(t, options)
 			account := giftAccount()
 			frame, _ := h.call(sdk.MethodProviderExecute, scope(account), giftRequest("GLM-5.3"), raw(account))
 			var result sdk.ExecuteResult
@@ -198,9 +198,9 @@ func TestObservability7UnsupportedCurrencyCreditsAndMalformedCountsStayUnknown(t
 func TestObservability7DiagnosticsAreScopedCodesAndNeverChangeExecution(t *testing.T) {
 	for _, reject := range []bool{false, true} {
 		t.Run(map[bool]string{false: "recorded", true: "sink-failed"}[reject], func(t *testing.T) {
-			vendor, server := newCompletionVendor(t)
+			vendor, options := newCompletionVendor(t)
 			vendor.answer = `{"type":"message","content":[{"type":"text","text":"private-output-canary"}],"usage":{"input_tokens":0}}`
-			h := controlHarness(t, endpointOptions(server))
+			h := controlHarness(t, options)
 			h.rejectDiagnostics = reject
 			account := giftAccount()
 			request := giftRequest("GLM-5.3")
@@ -234,7 +234,7 @@ func TestObservability7DiagnosticsAreScopedCodesAndNeverChangeExecution(t *testi
 func TestObservability7FailedDiagnosticsKeepOnlyFiniteOutcomes(t *testing.T) {
 	for _, terminal := range []string{"rejected", "uncertain"} {
 		t.Run(terminal, func(t *testing.T) {
-			vendor, server := newCompletionVendor(t)
+			vendor, options := newCompletionVendor(t)
 			vendor.answer = `{"type":"error","error":{"type":"overloaded_error","message":"private-error-canary"}}`
 			code, status := "execution.rejected", 503
 			if terminal == "uncertain" {
@@ -242,7 +242,7 @@ func TestObservability7FailedDiagnosticsKeepOnlyFiniteOutcomes(t *testing.T) {
 				vendor.answer = "event: message_start\ndata: {\"type\":\"message_start\",\"message\":{\"type\":\"message\",\"content\":[],\"usage\":{\"input_tokens\":0}}}\n\n"
 				code, status = "execute.uncertain", 0
 			}
-			h := controlHarness(t, endpointOptions(server))
+			h := controlHarness(t, options)
 			account := giftAccount()
 			frame, _ := h.call(sdk.MethodProviderExecute, scope(account), giftRequest("GLM-5.3"), raw(account))
 			if terminal == "uncertain" && (frame.Error == nil || frame.Error.Outcome != "uncertain") ||

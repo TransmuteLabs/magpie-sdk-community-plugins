@@ -120,7 +120,7 @@ def unchanged_release_inputs(before):
             raise ValueError(f"Package {name} version decreased from {previous} to {current}")
         inputs = [metadata, f"{path}/src", f"{path}/web", f"{path}/docs",
                   f"{path}/scripts", f"{path}/LICENSE", f"{path}/THIRD_PARTY_NOTICES"]
-        if name in {"claude-desktop", "commandcode"}:
+        if name == "commandcode":
             inputs.append(f"{path}/README.md")
         changed = subprocess.check_output([
             *git, "diff", "--no-renames", "--name-only", "-z", before, "HEAD", "--",

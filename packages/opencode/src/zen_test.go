@@ -62,11 +62,12 @@ func TestZenKeyPublicFlowAndRefreshKeepSeparateAuthority(t *testing.T) {
 	harness := serveHarness(t, NewWindowModule(ModuleOptions{Endpoints: Endpoints{Console: server.URL + "/console", Inference: server.URL},
 		HTTPFactory: func(string) (Doer, func(), error) { return server.Client(), nil, nil }}), raw(moduleConfig{}))
 	for _, test := range []struct {
-		Provider, Method string
-		Input            any
+		Provider, Method, Name string
+		Input                  any
 	}{
-		{ProviderZen, "key", map[string]string{"key": "PRIVATE-service-key"}},
-		{ProviderZenPublic, "public", nil},
+		{ProviderZen, "key", "OpenCode Zen service key [053930e67fda]", map[string]string{"key": "PRIVATE-service-key"}},
+		{ProviderZen, "key", "OpenCode Zen service key [a7b0d0ec04ab]", map[string]string{"key": "PRIVATE-service-key-another"}},
+		{ProviderZenPublic, "public", "OpenCode Zen public", nil},
 	} {
 		scope := sdk.Scope{Provider: test.Provider}
 		frame, _ := harness.invoke(sdk.MethodAuthStart, scope, sdk.AuthStartRequest{Method: test.Method, Input: raw(test.Input)}, nil)
@@ -80,6 +81,9 @@ func TestZenKeyPublicFlowAndRefreshKeepSeparateAuthority(t *testing.T) {
 		if frame.Error != nil || json.Unmarshal(frame.Result, &result) != nil || json.Unmarshal(result.Credentials, &identity) != nil ||
 			identity.Validate(test.Provider) != nil || result.ID != identity.AccountID(test.Provider) {
 			t.Fatal("flow published the wrong identity", frame.Error)
+		}
+		if result.Name != test.Name {
+			t.Fatalf("account %q has label %q, wanted %q", result.ID, result.Name, test.Name)
 		}
 		frame, _ = harness.invoke(sdk.MethodAuthFinish, scope, sdk.AuthFinishRequest{Continuation: start.Continuation}, nil)
 		if frame.Error == nil {

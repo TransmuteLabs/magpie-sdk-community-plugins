@@ -9,10 +9,10 @@ import (
 )
 
 func TestCompletionUsageJSONPreservesUncachedInputAndCacheBreakdown(t *testing.T) {
-	vendor, server := newCompletionVendor(t)
+	vendor, options := newCompletionVendor(t)
 	vendor.answer = `{"type":"message","model":"GLM-5.3","content":[],"usage":{"input_tokens":7,"output_tokens":5,"cache_read_input_tokens":11,
 		"cache_creation_input_tokens":3,"cache_creation":{"ephemeral_5m_input_tokens":1,"ephemeral_1h_input_tokens":2}}}`
-	h := newHarness(t, endpointOptions(server))
+	h := newHarness(t, options)
 	account := giftAccount()
 	frame, body := h.call(sdk.MethodProviderExecute, scope(account), giftRequest("GLM-5.3-Trial"), raw(account))
 	var result sdk.ExecuteResult
@@ -26,7 +26,7 @@ func TestCompletionUsageJSONPreservesUncachedInputAndCacheBreakdown(t *testing.T
 func TestCompletionUsageStreamUsesCumulativeTotalsAndRetainsPartialObservation(t *testing.T) {
 	for _, complete := range []bool{true, false} {
 		t.Run(map[bool]string{true: "complete", false: "truncated"}[complete], func(t *testing.T) {
-			vendor, server := newCompletionVendor(t)
+			vendor, options := newCompletionVendor(t)
 			vendor.media = "text/event-stream"
 			vendor.answer = "event: message_start\ndata: {\"type\":\"message_start\",\"message\":{\"type\":\"message\",\"model\":\"GLM-5.3\",\"content\":[],\"usage\":{\"input_tokens\":7,\"output_tokens\":0,\"cache_read_input_tokens\":11,\"cache_creation_input_tokens\":3}}}\n\n" +
 				"event: message_delta\ndata: {\"type\":\"message_delta\",\"usage\":{\"output_tokens\":2}}\n\n" +
@@ -34,7 +34,7 @@ func TestCompletionUsageStreamUsesCumulativeTotalsAndRetainsPartialObservation(t
 			if complete {
 				vendor.answer += "event: message_stop\ndata: {\"type\":\"message_stop\"}\n\n"
 			}
-			h := newHarness(t, endpointOptions(server))
+			h := newHarness(t, options)
 			account := giftAccount()
 			frame, _ := h.call(sdk.MethodProviderExecute, scope(account), giftRequest("GLM-5.3-Trial"), raw(account))
 			if complete && frame.Error != nil || !complete && (frame.Error == nil || frame.Error.Outcome != "uncertain") {
@@ -61,9 +61,9 @@ func TestCompletionUsageMissingAndMalformedNeverBecomeMeasuredZero(t *testing.T)
 	for _, usage := range []string{`null`, `{}`, `{"input_tokens":-1}`, `{"input_tokens":1.5}`,
 		`{"input_tokens":"7"}`, `{"input_tokens":9223372036854775808}`} {
 		t.Run(usage, func(t *testing.T) {
-			vendor, server := newCompletionVendor(t)
+			vendor, options := newCompletionVendor(t)
 			vendor.answer = `{"type":"message","content":[],"usage":` + usage + `}`
-			h := newHarness(t, endpointOptions(server))
+			h := newHarness(t, options)
 			account := giftAccount()
 			frame, _ := h.call(sdk.MethodProviderExecute, scope(account), giftRequest("GLM-5.3-Trial"), raw(account))
 			var result sdk.ExecuteResult

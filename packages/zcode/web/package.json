@@ -1,13 +1,21 @@
 {
   "name": "magpie-zcode-control",
-  "version": "0.15.0",
+  "version": "0.16.0",
   "private": true,
   "type": "module",
   "magpie": {
-    "page": {
-      "title": "ZCode",
-      "file": "web/index.html"
-    },
+    "name": "ZCode",
+    "icon": "zcode",
+    "panels": [
+      {
+        "slot": "settings",
+        "title": "ZCode account controls",
+        "titles": {
+          "ru": "Управление счетами ZCode"
+        },
+        "file": "web/index.html"
+      }
+    ],
     "permissions": []
   }
 }

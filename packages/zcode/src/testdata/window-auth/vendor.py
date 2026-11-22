@@ -6,8 +6,10 @@ import time
 
 
 class Vendor:
-    def __init__(self):
+    def __init__(self, request_marker=None):
         self.lock = threading.Lock()
+        self.request_marker = request_marker
+        self.rejected_requests = 0
         self.expiry = int(time.time()) + 3600
         self.issued = {"zcode": [], "opencode": []}
         self.observed_usage = {"zcode": [], "opencode": []}
@@ -19,6 +21,10 @@ class Vendor:
         self.errors = []
         self.started = {"zcode": 0, "opencode": 0}
         self.polled = {"zcode": 0, "opencode": 0}
+        self.zcode_profiles = []
+        self.zcode_key = "private-zcode-plan-key"
+        self.zcode_quota_reads = 0
+        self.zcode_paid_inferences = 0
         self.release = threading.Event()
         self.on_disable = None
         self.on_account = None
@@ -28,6 +34,15 @@ class Vendor:
             def log_message(self, *args):
                 pass
 
+            def admits_request(self):
+                if owner.request_marker is None or self.headers.get_all("X-ZCode-Fixture") == [owner.request_marker]:
+                    return True
+                with owner.lock:
+                    owner.rejected_requests += 1
+                self.send_response(404)
+                self.end_headers()
+                return False
+
             def answer(self, value, status=200):
                 raw = json.dumps(value).encode()
                 self.send_response(status)
@@ -36,10 +51,33 @@ class Vendor:
                 self.end_headers()
                 self.wfile.write(raw)
 
+            def messages(self, stream, text):
+                content = {"type": "text", "text": text}
+                message = {"type": "message", "id": "fixture", "role": "assistant", "model": "GLM-5.3",
+                           "content": [], "usage": {"input_tokens": 1, "output_tokens": 0}}
+                if not stream:
+                    return self.answer({**message, "content": [content], "stop_reason": "end_turn",
+                                        "usage": {"input_tokens": 1, "output_tokens": 1}})
+                events = [
+                    {"type": "message_start", "message": message},
+                    {"type": "content_block_start", "index": 0, "content_block": content},
+                    {"type": "content_block_stop", "index": 0},
+                    {"type": "message_delta", "delta": {"stop_reason": "end_turn"}, "usage": {"output_tokens": 1}},
+                    {"type": "message_stop"},
+                ]
+                body = "".join(f"event: {event['type']}\ndata: {json.dumps(event)}\n\n" for event in events).encode()
+                self.send_response(200)
+                self.send_header("Content-Type", "text/event-stream")
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+
             def do_CONNECT(self):
                 self.send_error(403)
 
             def do_POST(self):
+                if not self.admits_request():
+                    return
                 body = json.loads(self.rfile.read(int(self.headers.get("Content-Length", "0"))))
                 if self.path == "/__fixture__/mode":
                     with owner.lock:
@@ -97,9 +135,12 @@ class Vendor:
                     owner.inferences["zcode"] += 1
                     if self.headers.get("Authorization") != "Bearer " + owner.issued["zcode"][-1]:
                         owner.errors.append("stale ZCode inference snapshot")
-                    return self.answer({"type": "message", "id": "fixture", "role": "assistant",
-                                        "model": "GLM-5.3", "content": [{"type": "text", "text": "fixture"}],
-                                        "stop_reason": "end_turn", "usage": {"input_tokens": 1, "output_tokens": 1}})
+                    return self.messages(body.get("stream"), "fixture")
+                if self.path == "/zai":
+                    owner.zcode_paid_inferences += 1
+                    if self.headers.get("Authorization") != "Bearer " + owner.zcode_key:
+                        owner.errors.append("wrong ZCode coding-plan API key")
+                    return self.messages(body.get("stream"), "API key fixture")
                 if self.path == "/inference/go/openai/v1/chat/completions":
                     owner.inferences["opencode"] += 1
                     if self.headers.get("Authorization") != "Bearer " + owner.current_access:
@@ -137,7 +178,7 @@ class Vendor:
                         owner.issued[kind].append(token)
                     return self.answer({"code": 0, "data": {
                         "status": "ready", "token": token,
-                        "user": {"user_id": "zcode-user"},
+                        "user": {"user_id": "zcode-user", "email": "fixture@example.invalid"},
                     }})
                 with owner.lock:
                     owner.issued[kind].append("private-opencode-access-" + identity)
@@ -148,6 +189,10 @@ class Vendor:
                 })
 
             def do_GET(self):
+                if self.path.split("?", 1)[0] == "/updates":
+                    return self.answer({}, 404)
+                if not self.admits_request():
+                    return
                 if self.path == "/__fixture__/state":
                     with owner.lock:
                         return self.answer({
@@ -158,6 +203,20 @@ class Vendor:
                         })
                 if self.path.startswith("/api/v1/oauth/cli/poll/"):
                     return self.poll(self.path.rsplit("/", 1)[1], "zcode")
+                if self.path == "/api/v1/oauth/profile":
+                    token = (self.headers.get("Authorization") or "").removeprefix("Bearer ")
+                    if token not in owner.issued["zcode"]:
+                        owner.errors.append("ZCode profile credential channel")
+                        return self.answer({}, 401)
+                    owner.zcode_profiles.append(token)
+                    return self.answer({"code": 0, "data": {"user": {"user_id": "zcode-user"}}})
+                if self.path == "/quota":
+                    if self.headers.get("Authorization") != owner.zcode_key:
+                        return self.answer({}, 401)
+                    owner.zcode_quota_reads += 1
+                    return self.answer({"code": 0, "data": {"limits": [
+                        {"type": "TOKENS_LIMIT", "unit": 3, "number": 5, "percentage": 23},
+                    ]}})
                 if self.path.startswith("/api/v1/zcode-plan/billing/balance?"):
                     latest = owner.issued["zcode"][-1] if owner.issued["zcode"] else ""
                     if self.headers.get("Authorization") != "Bearer " + latest:
@@ -192,8 +251,7 @@ class Vendor:
                         owner.errors.append("OpenCode selected usage credential channel")
                     owner.observed_usage["opencode"].append(self.headers.get("Authorization"))
                     return self.answer({"usage": {"rolling": {"percent": 23}}})
-                if self.path.split("?", 1)[0] != "/updates":
-                    owner.errors.append("unexpected vendor GET " + self.path.split("?", 1)[0][:200])
+                owner.errors.append("unexpected vendor GET " + self.path.split("?", 1)[0][:200])
                 self.answer({}, 404)
 
         self.server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
@@ -208,7 +266,8 @@ class Vendor:
     def secrets(self):
         return [*[self.zcode_token(f"private-zcode-flow-{number}") for number in range(1, 21)],
                 "private-zcode-", "private-opencode-", "private-pkce-canary",
-                "private-error-canary", "private-credential-canary"]
+                "private-error-canary", "private-credential-canary",
+                *([self.request_marker] if self.request_marker else [])]
 
     def zcode_token(self, identity):
         payload = base64.urlsafe_b64encode(json.dumps({

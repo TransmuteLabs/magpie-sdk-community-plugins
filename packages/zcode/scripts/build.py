@@ -108,7 +108,7 @@ def main():
     parser.add_argument("--output", required=True, type=Path, help="new or empty installable distribution directory")
     parser.add_argument("--archive", type=Path, help="also write ZIP/checksums outside the installable output")
     parser.add_argument("--sdk", type=Path, help="Magpie SDK checkout (or MAGPIE_SDK_SOURCE)")
-    parser.add_argument("--headless", action="store_true", help="build the explicit provider-only composition (SDK 1.12)")
+    parser.add_argument("--headless", action="store_true", help="build the explicit provider-only composition (SDK 1.20)")
     args = parser.parse_args()
     with build_environment(PACKAGE, args.sdk) as (env, sdk_root):
         build(args, env, sdk_root)

@@ -15,16 +15,14 @@ python3 -I scripts/build.py minimax --output /tmp/plugins --sdk /path/to/magpie
 The root builder creates `/tmp/plugins/minimax`. The direct package builder uses
 the exact output directory: `python3 -I packages/minimax/scripts/build.py
 --output /tmp/minimax --sdk /path/to/magpie`. Output must be empty or absent.
-Install that directory through Magpie's SDK plugin installer, then authorize the
-matching region. Credentials and refresh transactions remain host-owned.
+Install that directory through Magpie's SDK plugin installer. In
+**Providers → Add → Subscriptions**, choose **MiniMax Code** for China or
+**MiniMax Code (Global)**, then approve the displayed device code. Providers
+also offers reauthorization and sign-out for stored accounts. Credentials
+and refresh transactions remain host-owned. See the [account contract](docs/CONTRACT.md).
 
-The installed package also publishes a sign-in page with an explicit China or
-Global choice. It starts device authorization with no existing account through
-the host's public poll broker. Approve the displayed device code using the
-selectable authorization URL, then check sign-in or cancel. No credentials are
-entered into the package page. See the [first-account contract](docs/CONTRACT.md).
-
-SDK API 1.12 is required. Complete supported chat refusals project original
+Version `0.1.1` requires SDK API 1.12 with `provider-signin` and native ABI 1.
+Complete supported chat refusals project original
 facts through shared request policy before acceptance/output. The host owns
 bounded waiting and eligible-account fallback; see the
 [supported projection and remaining gaps](docs/REQUEST-POLICY.md).

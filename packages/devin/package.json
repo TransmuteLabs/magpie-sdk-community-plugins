@@ -1,6 +1,7 @@
 {
   "name": "devin-inbound",
-  "version": "0.8.2",
+  "version": "0.8.3",
   "description": "Devin native protocol, provider, and agent integration",
-  "private": true
+  "private": true,
+  "magpie": {"name": "Devin", "icon": "devin"}
 }

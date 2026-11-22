@@ -6,8 +6,8 @@ commands and layout are in [../README.md](../README.md). Source-level names
 elsewhere in the reference are relative to `src/` unless stated otherwise.
 
 External native Go module for `TransmuteLabs/magpie-sdk-plugin-protocol-zcode`.
-The ordinary **0.15.0** package includes provider, controller, owned agent
-and UI in one native installation. It uses the shared SDK **1.12**
+The ordinary **0.16.0** package includes provider, controller, owned agent
+and UI in one native installation. It uses the shared SDK **1.20**
 contract and native ABI **1**, and imports only public SDK packages.
 The SDK owns registration and C glue. No community plugin or Bun worker
 is required. This is a local checkpoint, not a published SDK release or
@@ -27,15 +27,15 @@ The earlier native browser-auth consumer packet is archived unchanged in
 and pending review statements describe that historical checkpoint.
 The SDK host can ship independently. This module consumes the parent's
 shared public contracts and requires no community runtime.
-The explicit `--headless` artifact provides the 0.7.3 provider
-provider-only composition and runtime floor 1.12. Historical API4/API9
+The explicit `--headless` artifact provides the 0.7.4
+provider-only composition and runtime floor 1.20. Historical API4/API9
 verification refers to earlier source snapshots.
 
 The source-proven completion in [MODULE-COMPLETION-PLAN.md](history/MODULE-COMPLETION-PLAN.md)
 uses effective SDK model metadata for the native profile, including routing
 groups, reasoning defaults and later catalog changes. Matching generated
 fields can change; manual rules and user overrides survive repeated syncs.
-The page exposes reset journal status, history reconciliation, opportunity
+The Settings panel exposes reset journal status, history reconciliation, opportunity
 requests, history acknowledgment and separately confirmed uncertainty
 recovery. Reconciliation and recovery never repeat the original vendor
 mutation. Unknown opportunity replies retain debt; only the exact official
@@ -141,16 +141,37 @@ GREEN, donor oracles and causal removals are recorded in
 [DONOR-0166-EVIDENCE.md](history/DONOR-0166-EVIDENCE.md). The donor checkout remains
 unchanged; its runtime is not part of this package.
 
-With a private `dataDir`, the explicit `billing.offers` and
-`billing.checkin` module actions and page controls read the pinned client's marketing feed.
-They accept an optional exact supported `locale`, default `en-US`.
-Check-in claims only declared `claim_zcode_plan` IDs and persists
-acknowledgments, refusals, rate holds and unresolved claims.
-Code 0 without a plan acknowledges the claim; it does not create a
-reported entitlement. No preview endpoint, arbitrary URL/action, captcha
-substitute, automatic schedule or native account operation is implemented.
-Page check-in requires one current account generation and explicit
-confirmation; an uncertain write clears the selection and never repeats.
+With a private `dataDir`, the `billing.offers` and `billing.checkin` actions
+and page controls read the pinned client's marketing feed. They accept an
+optional exact supported `locale`, default `en-US`. Page check-in requires
+one current account generation and explicit confirmation. An uncertain page
+write clears the selection.
+
+The provider advertises `account.checkin` with `recheck: true` for Magpie's
+shared scheduler. A selected ZCode session is required for gift check-in.
+The same controller serves the page and scheduler. It reads only the feed,
+checks the claim policy, and claims only declared `claim_zcode_plan` IDs.
+After a claimed, done, inactive or ineligible result it gives the scheduler
+a recheck boundary at 30 minutes or Beijing midnight, whichever comes first.
+The journal retains acknowledged plans and
+verification holds by verified principal and Beijing day across process
+restarts. A plan that leaves the feed still counts as checked in for that
+day. A completed feed result expires when the Beijing day changes. An
+in-flight check-in, an explicit rate hold and confirmations from an older
+journal without a day keep their existing claim fences.
+
+Code 0 without a plan acknowledges the claim without creating an entitlement.
+Code 1003 settles the plan. Code 1004 permits a later attempt. Code 3007
+requires verification in ZCode. A confirmed rate limit returns its retry
+boundary, including a valid `Retry-After`, as SDK 1.20 `rate-limited`.
+A relative delay starts when the vendor response is received.
+Overlapping feed and claim responses keep the later deadline in the shared
+principal journal. The scheduler holds the receipt until that same deadline.
+A successor can
+claim eligible remaining plans while same-day confirmed claims stay in
+the principal's journal. Acceptance is published after the durable claim
+fence and before the first POST. Unresolved writes remain fenced.
+Native client operations are outside this feed check-in contract.
 This bounded port and its remaining donor differences are recorded in
 [COMMUNITY-PARITY.md](COMMUNITY-PARITY.md) and
 [PARITY-EVIDENCE.md](history/PARITY-EVIDENCE.md).
@@ -234,6 +255,10 @@ Layout:
   vendor; only the entry point's destinations are overlaid.
 - `auth_e2e.py`: native host CLI init/poll/finish, dynamic models,
   same-account Start reauthorization and inference against a loopback vendor.
+- `ui_auth_e2e.py` exercises native host subscription sign-in, selected
+  reauthorization and sign-out, saved-account transfer and rollback through
+  the host HTTP and CLI entry points. It sends ordinary gateway requests
+  decoded by the shared SDK execution envelope, including caller metadata.
 
 SQLite coverage and exact tested source/artifact identities are recorded
 in [SQLITE-EVIDENCE.md](history/SQLITE-EVIDENCE.md). The native driver reuses exact
@@ -248,13 +273,17 @@ toolchain and a C compiler. Pin `GOPATH`, `GOMODCACHE`, `GOCACHE` before
 setting HOME/XDG to a temporary directory. The local `go.mod` replacement
 uses `../../../../magpie` from `src/` (a sibling of this workspace); release consumers must pin an
 available SDK fork revision.
-Building the ordinary package requires the SDK 1.12 public types and
+Building the ordinary package requires the SDK 1.20 public types and
 already installed `tsc` and `bun` as author tools. Its native manifest
-negotiates runtime API 1.12 and includes the ready provider/controller,
+negotiates runtime API 1.20 and includes the ready provider/controller,
 AgentWiring profile and static control page.
-The ordinary Linux installed fixture uses an incoming process-ownership
-boundary; attribution, unchanged strict assertions and causal negatives
-are recorded in [AGENT-INGRESS-EVIDENCE.md](history/AGENT-INGRESS-EVIDENCE.md).
+The Linux installed agent fixture uses an incoming process-ownership check
+(`/proc` and `ss`). Attribution and negative tests are recorded in
+[AGENT-INGRESS-EVIDENCE.md](history/AGENT-INGRESS-EVIDENCE.md).
+The Go completion and subscription-auth fixtures use a per-run HTTP marker on
+their provider transport. The synthetic vendor checks it before dispatch to
+the strict route handler. The native subscription test adds the marker through
+the shared test adapter and retains the ordinary HTTP transport below it.
 The later packaged Chromium admission experiment was withdrawn and archived;
 the fail-closed baseline, independent review and preserved browser REDs are in
 [BROWSER-INGRESS-EVIDENCE.md](history/BROWSER-INGRESS-EVIDENCE.md).
@@ -593,13 +622,13 @@ model aliases and Library; no actual ZCode client startup or browser rendering
 is claimed. See [AGENT-EVIDENCE.md](history/AGENT-EVIDENCE.md) and
 [ONE-BUNDLE-AUDIT.md](ONE-BUNDLE-AUDIT.md).
 
-## SDK 1.5 control-page variant
+## Settings panel and subscription sign-in
 
-The ordinary full package includes the TS/HTML/CSS page. It discovers saved
+The ordinary full package includes the TS/HTML/CSS Settings panel. It discovers saved
 account summaries through the host, requires explicit selection and keeps
 the exact string generation. The host's fixed binding owns provider
 `zcode`; no client provider, free-form scope or credentials are accepted.
-The thirteen bindings expose execution summaries, plan/reset status,
+The fifteen bindings expose execution summaries, plan/reset status,
 explicit reset/claim/check-in and reset opportunity/history/recovery controls.
 The UI-only `execution.summary` action strips
 ticket/card values on the native side without changing headless
@@ -613,13 +642,84 @@ reselection, late reads cannot overwrite a write, and uncertain actions
 are never automatically repeated.
 
 Configure the private `dataDir` separately before using native controls.
-The optional page now exposes new sign-in, selected-account reauthorization
-and explicit poll/cancel through the host-owned broker. Its fixed
-provider/method binding never exposes credentials or continuations.
-Completion requires fresh explicit selection, and lost replies never
-restart an exchange. No credential editor, logout or silent Start renewal
-is invented. `docs/history/prototype/ui-sdk15` now
-re-exports the promoted state layer for its retained regressions.
+Providers → Add → Subscriptions owns sign-in and selected reauthorization. Providers also owns selected sign-out. The Settings panel retains the account selector and financial, recovery and foreground controls.
+
+The full bundle requires `provider-saved-signin` for its `saved-signin`
+method. Magpie uses this method only for local saved-account import. The
+ordinary Providers form offers browser sign-in and **GLM Coding Plan API
+key**. The API key method checks the selected site's quota endpoint. Use
+the same method with the original site and key to sign in again to an
+existing API key account. A replacement key identifies a new account.
+
+A saved API record retains its site and key-derived identity. Preparation
+checks its format. Verify its quota and routing after the transfer. A
+Start-only OAuth snapshot requires
+its stable UID, device, canonical site and base, matching access and session
+token, and an unexpired matching JWT deadline. Completion also checks the UID
+on the vendor profile and confirms an active or pending Start entitlement.
+The import uses one five-minute continuation per account scope. A new explicit
+import supersedes the earlier continuation, and completion consumes and clears
+the pending credential snapshot before it contacts the vendor.
+Preparation returns a public account summary and a ticket. Use the exact
+saved account key for each record. To replace the existing subscription,
+first confirm that every saved account has a supported import format. Keep
+the Community plugin installed and enabled, and start with an empty SDK
+account list for ZCode.
+
+```sh
+magpie plugin sdk auth import zcode zcode '<saved-account-key>'
+```
+
+Repeat import for every saved account, including paused accounts, and review
+the summaries. Pass all valid tickets to `auth transfer` together. Tickets
+expire after ten minutes or at the credential's earlier expiry. For a
+two-account subscription:
+
+```sh
+magpie plugin sdk auth transfer zcode zcode '<first-ticket>' '<second-ticket>'
+magpie plugin sdk auth owners
+```
+
+Confirm an active receipt, one ZCode subscription under the existing public
+ID, the same account aliases, and ordinary Usage and routing. Keep the
+receipt's `publicID` and `revision` and leave the Community sign-ins
+unchanged during these checks.
+
+If the checks fail, roll back before dispatching sign-out, reauthorization or
+refresh. A refresh that the host records as `not-started` still permits
+rollback. The Community plugin must still be installed and enabled.
+
+```sh
+magpie plugin sdk auth rollback '<publicID>' '<revision>'
+```
+
+After a successful transfer and checks, remove the Community plugin only
+when you accept the SDK owner and no longer need rollback. ZCode's saved
+accounts require `auth transfer` to preserve the existing subscription ID
+and policies.
+
+A trusted caller can still pass `auth.finish.input = {"community": <record>}`
+through explicit snapshot import. The caller owns source selection, durable
+publication and any subsequent retirement of the original. The package never
+opens the community credential store. Paid personal and team OAuth require
+browser authorization to recover their native refresh selection.
+
+For `source:"zcode"`, the donor rereads the desktop login and adopts rotated
+credentials when its display identity and, if present on both sides, vendor
+UID match. The saved JWT and paid key alone do not prove that identity and
+key relationship. Community 0.1.68 can decrypt the older desktop v1 format.
+ZCode 3.18.2 can bind v2 credentials to the OS keyring. The SDK package has
+a rooted CLI history reader and no desktop credential broker. Its saved-sign-in
+method returns `reauthorization_required` before it creates a continuation or
+contacts the vendor. Keep a subscription with any Desktop-follow account
+under Community ownership. An ordinary browser sign-in under **Providers →
+Add → Subscriptions → ZCode native** creates an independent SDK account
+for the selected site and plan.
+
+The Settings picker displays an account name from the host when present.
+Selections use the exact account ID and generation. Confirmations include
+the account ID.
+
 See [UI-EVIDENCE.md](history/UI-EVIDENCE.md) for exact source/artifact hashes,
 actual native web-route proof, isolated network verification and the
 distinction between DOM tests and browser rendering.

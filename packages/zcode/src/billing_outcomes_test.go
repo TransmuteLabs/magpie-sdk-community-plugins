@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
-	"net/http/httptest"
 	"path/filepath"
 	"sync/atomic"
 	"testing"
@@ -17,7 +16,7 @@ func TestCheckinRateHoldHonorsRetryAfterAcrossRestartAndOtherPlan(t *testing.T) 
 	for _, duration := range []time.Duration{90 * time.Second, 2 * time.Hour} {
 		t.Run(duration.String(), func(t *testing.T) {
 			var feeds, claims atomic.Int32
-			server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+			_, options := newCompletionServer(t, func(writer http.ResponseWriter, request *http.Request) {
 				switch request.URL.Path {
 				case "/api/v1/oauth/profile":
 					profile(writer, request, "fixture-user")
@@ -32,12 +31,11 @@ func TestCheckinRateHoldHonorsRetryAfterAcrossRestartAndOtherPlan(t *testing.T) 
 				default:
 					t.Errorf("held principal reached unexpected target %s", request.URL.Path)
 				}
-			}))
-			t.Cleanup(server.Close)
+			})
 			config := moduleConfig{DataDir: filepath.Join(t.TempDir(), "state")}
 			account := nativeCredentials()
 			for range 2 {
-				h := newHarnessConfigured(t, endpointOptions(server), config)
+				h := newHarnessConfigured(t, options, config)
 				frame, _ := h.call(sdk.MethodModuleCall, scope(account), actionInput("billing.checkin", map[string]string{}), raw(account))
 				var result struct {
 					Outcome string `json:"outcome"`
@@ -77,7 +75,7 @@ func TestClaimAcknowledgmentsAndDefinitiveRefusalsSurviveRestart(t *testing.T) {
 	} {
 		t.Run(scenario.outcome+scenario.answer, func(t *testing.T) {
 			var claims atomic.Int32
-			server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+			_, options := newCompletionServer(t, func(writer http.ResponseWriter, request *http.Request) {
 				switch request.URL.Path {
 				case "/api/v1/oauth/profile":
 					profile(writer, request, "fixture-user")
@@ -95,12 +93,11 @@ func TestClaimAcknowledgmentsAndDefinitiveRefusalsSurviveRestart(t *testing.T) {
 					t.Errorf("unexpected claim target %s", request.URL.Path)
 					writer.WriteHeader(404)
 				}
-			}))
-			t.Cleanup(server.Close)
+			})
 			config := moduleConfig{DataDir: filepath.Join(t.TempDir(), "state")}
 			account := nativeCredentials()
 			for range 2 {
-				h := newHarnessConfigured(t, endpointOptions(server), config)
+				h := newHarnessConfigured(t, options, config)
 				frame, _ := h.call(sdk.MethodModuleCall, scope(account),
 					actionInput("billing.claim", map[string]string{"planId": "gift"}), raw(account))
 				var result struct {
@@ -124,7 +121,7 @@ func TestClaimAcknowledgmentsAndDefinitiveRefusalsSurviveRestart(t *testing.T) {
 
 func TestCheckinUsesOneFeedAndDurableClaimsWithoutPreviewOrArbitraryActions(t *testing.T) {
 	var feeds, claims atomic.Int32
-	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+	_, options := newCompletionServer(t, func(writer http.ResponseWriter, request *http.Request) {
 		switch request.URL.Path {
 		case "/api/v1/oauth/profile":
 			profile(writer, request, "fixture-user")
@@ -146,12 +143,11 @@ func TestCheckinUsesOneFeedAndDurableClaimsWithoutPreviewOrArbitraryActions(t *t
 			t.Errorf("check-in used unsupported target %s", request.URL.Path)
 			writer.WriteHeader(404)
 		}
-	}))
-	t.Cleanup(server.Close)
+	})
 	config := moduleConfig{DataDir: filepath.Join(t.TempDir(), "state")}
 	account := nativeCredentials()
 	for range 2 {
-		h := newHarnessConfigured(t, endpointOptions(server), config)
+		h := newHarnessConfigured(t, options, config)
 		frame, _ := h.call(sdk.MethodModuleCall, scope(account),
 			actionInput("billing.checkin", map[string]string{"locale": "ru-RU"}), raw(account))
 		var result struct {
@@ -170,7 +166,7 @@ func TestCheckinUnknownFeedNeverClaimsAndUnknownClaimNeverReplays(t *testing.T) 
 	for _, malformed := range []bool{true, false} {
 		t.Run(map[bool]string{true: "feed", false: "claim"}[malformed], func(t *testing.T) {
 			var claims atomic.Int32
-			server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+			_, options := newCompletionServer(t, func(writer http.ResponseWriter, request *http.Request) {
 				switch request.URL.Path {
 				case "/api/v1/oauth/profile":
 					profile(writer, request, "fixture-user")
@@ -190,9 +186,8 @@ func TestCheckinUnknownFeedNeverClaimsAndUnknownClaimNeverReplays(t *testing.T) 
 				default:
 					t.Errorf("unexpected check-in fixture %s", request.URL.Path)
 				}
-			}))
-			t.Cleanup(server.Close)
-			h := newHarnessConfigured(t, endpointOptions(server), moduleConfig{DataDir: filepath.Join(t.TempDir(), "state")})
+			})
+			h := newHarnessConfigured(t, options, moduleConfig{DataDir: filepath.Join(t.TempDir(), "state")})
 			account := nativeCredentials()
 			for range 2 {
 				frame, _ := h.call(sdk.MethodModuleCall, scope(account), actionInput("billing.checkin", map[string]string{}), raw(account))
@@ -216,7 +211,7 @@ func TestClaimMalformedDataNeverBecomesAcknowledgedOrReposted(t *testing.T) {
 		`{"code":0,"data":{"plan":null}}`, `{"code":0,"data":{"plan":{"plan_id":"another-plan"}}}`} {
 		t.Run(answer, func(t *testing.T) {
 			var claims atomic.Int32
-			server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+			_, options := newCompletionServer(t, func(writer http.ResponseWriter, request *http.Request) {
 				switch request.URL.Path {
 				case "/api/v1/oauth/profile":
 					profile(writer, request, "fixture-user")
@@ -230,12 +225,11 @@ func TestClaimMalformedDataNeverBecomesAcknowledgedOrReposted(t *testing.T) {
 				default:
 					t.Errorf("malformed claim reached unexpected target %s", request.URL.Path)
 				}
-			}))
-			t.Cleanup(server.Close)
+			})
 			config := moduleConfig{DataDir: filepath.Join(t.TempDir(), "state")}
 			account := nativeCredentials()
 			for range 2 {
-				h := newHarnessConfigured(t, endpointOptions(server), config)
+				h := newHarnessConfigured(t, options, config)
 				frame, _ := h.call(sdk.MethodModuleCall, scope(account),
 					actionInput("billing.claim", map[string]string{"planId": "gift"}), raw(account))
 				if frame.Error == nil || frame.Error.Outcome != "uncertain" {

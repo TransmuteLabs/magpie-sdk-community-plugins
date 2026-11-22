@@ -136,18 +136,23 @@ func scopeProvider(call sdk.Call, account bool) error {
 }
 
 func selectedCredentials(ctx context.Context, call sdk.Call) (outbound.Credentials, *providerState, error) {
+	account, state, err := selectedAccount(ctx, call)
+	return account.Credentials, state, err
+}
+
+func selectedAccount(ctx context.Context, call sdk.Call) (accountCredentials, *providerState, error) {
 	if err := scopeProvider(call, true); err != nil {
-		return outbound.Credentials{}, nil, err
+		return accountCredentials{}, nil, err
 	}
 	state, err := currentProviderState(ctx)
 	if err != nil {
-		return outbound.Credentials{}, nil, err
+		return accountCredentials{}, nil, err
 	}
-	var credentials outbound.Credentials
-	if decodeParams(call.Auth, &credentials) != nil || credentials.Validate() != nil || credentials.AccountID(state.server) != call.Scope.Account {
-		return outbound.Credentials{}, nil, &sdk.Error{Code: "permission_denied", Message: "The selected Devin account generation does not match its credentials", Outcome: "not-started"}
+	var account accountCredentials
+	if decodeParams(call.Auth, &account) != nil || account.Validate() != nil || !account.matches(state.server, call.Scope.Account) {
+		return accountCredentials{}, nil, &sdk.Error{Code: "permission_denied", Message: "The selected Devin account generation does not match its credentials", Outcome: "not-started"}
 	}
-	return credentials, state, nil
+	return account, state, nil
 }
 
 type sdkTransport struct {

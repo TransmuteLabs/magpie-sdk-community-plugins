@@ -13,9 +13,20 @@
   },
   "plugin": {
     "id": "minimax",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "sdkMinimum": "1.12",
+    "requiredCapabilities": ["provider-signin"],
     "nativeABI": 1
+  },
+  "providerSignInReview": {
+    "checkedAt": "2026-11-21",
+    "communityCommit": "836f2e4e4cd899318c422d67cc1b2b30baaf1e06",
+    "packageTree": "098cf5e689d6df7e675b7b5ef81c9e4780fa4bc7",
+    "communityVersion": "0.2.9",
+    "localHarnessCommit": "3c21163c85a9684030cb147bfef48c6284fa3c46",
+    "oauthCoreTree": "44f72794f1ffa6f5f26aa62ea6c6ea3002e4f396",
+    "oauthCoreVersion": "0.2.1-beta.7",
+    "oauthCorePaths": ["packages/oauth-core/src/endpoint-config.ts", "packages/oauth-core/src/oauth-client.ts", "packages/oauth-core/src/contracts.ts"]
   },
   "mediaRatioReview": {
     "checkedAt": "2026-11-19",

@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"slices"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -15,23 +16,46 @@ import (
 	sdk "github.com/yetone/magpie/pkg/extension"
 )
 
-func TestWindowFirstAccountBrowserBinding(test *testing.T) {
+func TestProviderFirstAccountSignInBinding(test *testing.T) {
 	for _, constructor := range []func(ModuleOptions) (sdk.Module, error){NewModule, NewAgent} {
 		module, err := constructor(ModuleOptions{})
 		if err != nil {
 			test.Fatal(err)
 		}
-		if module.Manifest.Window == nil || module.Manifest.Window.Metadata != "package.json" {
-			test.Fatal("Devin first-account GUI has no declared package page")
+		if module.Manifest.Window != nil || !module.Manifest.Contract.Has(sdk.ProviderSignIn) {
+			test.Fatal("Devin sign-in must use the Providers surface without a duplicate page")
 		}
-		binding, found := module.Manifest.ResolveAuthBinding("page.auth.devin")
-		if !found || binding.Provider != ProviderID || binding.From != "window:page" || !binding.Reauthorize ||
-			len(binding.Methods) != 1 || binding.Methods[0] != (sdk.WindowAuthMethod{ID: "browser", Mode: "poll"}) {
-			test.Fatal("Devin first-account GUI must use its existing browser poll owner")
+		if !module.Manifest.Contract.Has(sdk.ProviderSavedSignIn) {
+			test.Fatal("Devin saved sign-in must require host-owned import and activation")
+		}
+		binding, found := module.Manifest.ResolveAuthBinding("provider.devin")
+		if !found || binding.Provider != ProviderID || binding.From != sdk.ProviderSignInPart || !binding.Reauthorize ||
+			len(binding.Methods) != 3 {
+			test.Fatal("Devin requires a selected-account Providers sign-in binding")
+		}
+		for index, id := range []string{"browser", "api-key", sdk.SavedSignInMethod} {
+			method := binding.Methods[index]
+			if method.ID != id || method.Mode != "poll" {
+				test.Fatalf("sign-in method %q did not retain the polling owner", id)
+			}
+			if index > 0 && (len(method.Fields) != 1 || method.Fields[0].Type != "secret") {
+				test.Fatalf("sign-in method %q exposes its credential input", id)
+			}
+			if id == sdk.SavedSignInMethod && (method.Fields[0].Key != "record" || method.Fields[0].Optional) {
+				test.Fatal("Devin import requires one secret record")
+			}
+		}
+		withoutSavedSignIn := module.Manifest.Clone()
+		withoutSavedSignIn.Contract.Capabilities = slices.DeleteFunc(withoutSavedSignIn.Contract.Capabilities, func(capability sdk.Capability) bool {
+			return capability == sdk.ProviderSavedSignIn
+		})
+		if withoutSavedSignIn.Validate() == nil {
+			test.Fatal("manifest accepted saved sign-in without its required capability")
 		}
 	}
 	inbound, err := NewInbound()
-	if err != nil || inbound.Manifest.Window != nil || len(inbound.Manifest.AuthBindings) != 0 {
+	if err != nil || inbound.Manifest.Window != nil || len(inbound.Manifest.AuthBindings) != 0 ||
+		inbound.Manifest.Contract.Has(sdk.ProviderSavedSignIn) {
 		test.Fatal("codec-only package acquired an authorization surface")
 	}
 }

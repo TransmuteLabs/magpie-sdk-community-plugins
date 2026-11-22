@@ -2,11 +2,41 @@
   "schema": 1,
   "plugin": {
     "id": "zcode",
-    "version": "0.15.0",
-    "sdkMinimum": "1.12",
+    "version": "0.16.0",
+    "sdkMinimum": "1.20",
     "nativeABI": 1
   },
+  "subscriptionsReview": {
+    "communityRef": "836f2e4e4cd899318c422d67cc1b2b30baaf1e06",
+    "communityPackageTree": "91595e647e66e6b45105ce45fcea2291b85d0634",
+    "vendorRef": "fec975905a2abd4c07e35c40d51fa097a2258ec9",
+    "communityPackageVersion": "0.1.68",
+    "profileSource": "packages/zcode/index.mjs:who and uidOf; successful OAuth ready.user",
+    "savedSignInSources": [
+      "packages/zcode/index.mjs:asZCode, stateOf, decrypt and ownStoreUnreadable",
+      "docs/plans/2026-10-29-system-credential-storage.md",
+      "packages/desktop/src/main/desktopHostProcess.ts"
+    ]
+  },
   "sources": [
+    {
+      "id": "community-zcode-0169",
+      "role": "half-hourly-late-gift-feed-recheck-port",
+      "repository": "https://github.com/magpie-community/plugins",
+      "commit": "fdbf261b7d01d1c908220029473d671cc420cab7",
+      "version": "0.1.69",
+      "checkedAt": "2026-11-22",
+      "observedZcodeTree": "ee4de91f09b88382e6b2d55236b1f1e3e93dc6ec",
+      "checkoutCommit": "57d1cc6a9f49389d495ea9be8d986c70de7767bf",
+      "paths": ["packages/zcode/package.json", "packages/zcode/index.mjs", "packages/zcode/README.md", "packages/zcode/checkin.test.mjs"],
+      "checkedFiles": {
+        "packages/zcode/package.json": "ea0e0ffb6c7bfdd33f76f7a9ab7e0d5bb1cd21d7194ab43a383b965c05fe4094",
+        "packages/zcode/index.mjs": "a8c04914e1db84d876efecc00dc7bc5c72d9834f4dcfb987ca4bf765f179813c",
+        "packages/zcode/README.md": "b167d6d8e1caf204db1b4045dace1de11c03e0b8d28d72185abd66bcd1c9c5d9",
+        "packages/zcode/checkin.test.mjs": "2f2e0ba9d8b3fc9d5d6c720994b5e86353d7777c7e3d63b17a787014b54dbf95"
+      },
+      "limits": ["The SDK module shares the existing account scheduler and persists plan answers across restarts. Verified SDK callbacks and fixtures establish no live vendor availability."]
+    },
     {
       "id": "community-zcode-0168",
       "role": "bounded-Start-transport-admission-port-separate-from-original-extraction",
@@ -702,6 +732,12 @@
       "tests": ["src/historydb/sqlite_test.go", "src/historydb/resource_test.go", "src/sessions_test.go", "src/testdata/sqlite-rollback/run.py"]
     },
     {
+      "source": "community-zcode-0169",
+      "paths": ["packages/zcode/index.mjs", "packages/zcode/checkin.test.mjs"],
+      "behaviors": ["late offers after a successful claim", "Beijing-day settled answers", "confirmed rate retry deadline", "preserved claim fences"],
+      "tests": ["src/checkin_recheck_test.go", "src/billing_outcomes_test.go", "src/sources_test.go"]
+    },
+    {
       "source": "community-zcode",
       "paths": ["packages/zcode/index.mjs", "packages/zcode/checkin.test.mjs", "packages/zcode/gift.test.mjs", "packages/zcode/dual.test.mjs", "packages/zcode/inflight.test.mjs", "packages/zcode/toolsearch.test.mjs"],
       "behaviors": ["gift claim acknowledgments", "strict trial pool", "free-first quota isolation", "Start concurrency and network holds", "explicit feed check-in and durable principal rate holds", "ToolSearch roundtrip"],
@@ -714,7 +750,8 @@
     "Pending native commands retain separate durable intent across loss, cancellation and account/config/profile/off revocation. A fresh command ID cannot replace unresolved input for the same configured workspace/session. No native reconciliation/reset action is exposed; operators must preserve the original controller journal.",
     "Historical native lifecycle verification pinned base c11acbc2bebec1fb213ef562900d35188cdf55fe, physical source tree 8fe78ab9df13d733d61462eacce19bff523c1e58 and binary c018c44332ff9238779d1d01340dfd751209c2c694942fd0406e4d6a3c96cc86. Those c8281b6 lineage/native libraries remain historical evidence, not acceptance of the changed foreground package.",
     "Agent options retain and validate public decisionModels separately from chat models. Decision metadata does not configure a ZCode decision client or authorize decision-only models in the chat catalog.",
-    "Both current compositions require SDK 1.12 request-policy. The ordinary full distribution is 0.15.0 with provider/controller/owned-agent/UI and rooted default CLI SQLite history; explicit --headless retains the 0.7.3 provider-only composition. Historical API4/API9 receipts and source locks retain their original identities.",
+    "Both current compositions require SDK 1.20 for the completed rate-limited check-in result and retain SDK 1.12 request-policy. The historical ordinary full distribution was 0.15.0 with provider/controller/owned-agent/UI and rooted default CLI SQLite history; explicit --headless retained the 0.7.3 provider-only composition. Historical API4/API9 receipts and source locks retain their original identities.",
+    "The full 0.16.0 composition requires provider-saved-signin at API 1.12 and uses Magpie's two-step saved-account preparation and activation. The 0.7.4 headless manifest has no provider sign-in binding. Community source 836f2e4e remains the donor for the one-record import shape. Desktop-follow records require interactive authorization.",
     "API1.12 verification uses the frozen e2ca42c6 physical host source. Permit-validation and revoked-diagnostic changes belong to the host owner; final combined host replay is coordinated by parent. No live vendor, actual client, publication or committed-host acceptance is inferred.",
     "The 0.14.0 continuation uses fresh official fec9759 and community 57d1cc6a; the latter's ZCode tree d1be84b4 is identical to the ported 0.1.66. Previous c8281b6 native library acceptance does not establish acceptance of this changed package. Final merged-host pin and actual-client resume/control remain separate.",
     "Wire ClientVersion 3.18.2 accompanies the confirmed unlinked-Start and explicit zai_cn login-channel ports. The bounded vendor audit is not full native-agent parity.",
@@ -722,7 +759,7 @@
     "Gift aliases, dual usage and free-first routing use valid selected ZCode sessions, including manual paid imports. Confirmed inactive paid accounts expose gift-only plain models and Trial; losing gift confirmation never authorizes paid dispatch. Trial never spends paid quota; free-first replays only fully read code 1005/1113 refusals with no output markers and freshly confirmed paid capacity.",
     "Community 0.1.63-0.1.66 were read through exact Git objects without changing the donor checkout. Our manual Start now also requires a current named spendable gift bucket; unknown balance fails closed instead of copying the donor's permissive unknown-balance send. A failed discovered paid-plan read never authorizes either inference path.",
     "A sustained known output-free Start concurrency refusal beside other inflight requests narrows queue capacity; only the next host-permitted dispatch can requeue at the head within one two-minute queue deadline. Retry counts and waits belong to the host. Unclaimed Trial hints retain the three-second read bound and ten-minute selected-session cache; they never claim a plan or create quota.",
-    "billing.offers and billing.checkin require a private dataDir and verified selected principal. The ordinary page has selected-generation offers and explicitly confirmed check-in controls. No automatic scheduler or native-operation integration is declared. Code 0 without a plan acknowledges a claim without inventing an entitlement.",
+    "Gift check-in requires a private dataDir and verified selected principal. The ordinary page and SDK account scheduler share one controller. Acknowledged plans are retained by Beijing day for 30-minute feed rechecks. Code 0 without a plan acknowledges a claim without inventing an entitlement. Native client operations remain separate.",
     "Public RequestWithPolicy replaces local paid/Start transport timers. Fresh RefusedExecution results require independently proved whole-inference rejection with no accepted/output publication. Unknown-scope code 3009 and request-security code 3007 never establish account failover. Native ticket/card inference, transport uncertainty and partial output are never repeated; paid requests remain outside Start holds.",
     "The full API 1.12 module retains API7 source-backed uncached input/output/cache-read/cache-write, one-hour cache subsets, reasoning, model, IDs, stop and tier. The pinned ZCode Messages source supplies no authoritative per-execution credits, monetary amount/currency, deferred counts or upstream-provider fact; lookalike unknown fields remain raw bytes, not measured facts.",
     "API 1.7 adoption is verified against the exact uncommitted 43b7e290 source archive recorded separately from the previous committed host lock. Final shared-host release acceptance remains a separate gate.",

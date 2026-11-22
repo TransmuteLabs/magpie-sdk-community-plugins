@@ -28,35 +28,6 @@
         <button id="offers" type="button" disabled>Доступные предложения</button>
       </div>
     </section>
-    <section aria-labelledby="signin-heading">
-      <h2 id="signin-heading">Вход</h2>
-      <div class="row">
-        <label>Сайт
-          <select id="auth-site"><option value="zai">Z.ai</option><option value="bigmodel">BigModel</option><option value="zai_cn">Z.ai China (Start / BigModel)</option></select>
-        </label>
-        <label>Тип счёта
-          <select id="auth-kind">
-            <option value="auto">Автоматически</option><option value="individual">Personal</option>
-            <option value="team">Team</option><option value="start">Start</option>
-          </select>
-        </label>
-      </div>
-      <details>
-        <summary>Явный выбор Team / ключа</summary>
-        <label for="auth-organization">Organization ID</label><input id="auth-organization" maxlength="256" autocomplete="off">
-        <label for="auth-project">Project ID</label><input id="auth-project" maxlength="256" autocomplete="off">
-        <label for="auth-product">Product ID</label><input id="auth-product" maxlength="256" autocomplete="off">
-        <label for="auth-apiKeyId">API key ID</label><input id="auth-apiKeyId" maxlength="256" autocomplete="off">
-      </details>
-      <div class="row">
-        <button id="signin" type="button">Новый вход</button>
-        <button id="reauthorize" type="button">Повторный вход в выбранный счёт</button>
-        <button id="auth-poll" type="button" disabled>Проверить вход</button>
-        <button id="auth-cancel" type="button" disabled>Отменить вход</button>
-      </div>
-      <p id="auth-status" role="status" aria-live="polite">Вход и сохранение счёта выполняет Magpie.</p>
-      <a id="auth-link" target="_blank" rel="noopener noreferrer" hidden>Открыть страницу подтверждения</a>
-    </section>
     <section aria-labelledby="actions-heading">
       <h2 id="actions-heading">Действия</h2>
       <p class="hint">Сначала проверьте состояние. Каждое действие требует подтверждения и автоматически не повторяется.</p>

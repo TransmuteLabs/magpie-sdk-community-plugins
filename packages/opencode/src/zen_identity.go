@@ -148,9 +148,10 @@ func (owner *module) finishZenIdentity(ctx context.Context, call sdk.Call, strea
 		return nil, err
 	}
 	private, _ := json.Marshal(identity)
-	name := "OpenCode Zen service key"
+	accountID := identity.AccountID(call.Scope.Provider)
+	name := "OpenCode Zen service key [" + accountID[:12] + "]"
 	if identity.Kind == "public" {
 		name = "OpenCode Zen public"
 	}
-	return sdk.AuthResult{ID: identity.AccountID(call.Scope.Provider), Name: name, Credentials: private}, nil
+	return sdk.AuthResult{ID: accountID, Name: name, Credentials: private}, nil
 }

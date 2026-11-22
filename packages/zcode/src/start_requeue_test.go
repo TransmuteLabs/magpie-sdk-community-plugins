@@ -138,16 +138,16 @@ func TestDonor0166StartBesideInflightWaitsInsteadOfReturningCap(t *testing.T) {
 	firstDone := make(chan struct{})
 	secondCap := make(chan struct{})
 	var closeCap sync.Once
-	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+	server := httptest.NewTLSServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		writer.Header().Set("Content-Type", "application/json")
-		if request.URL.Path == "/api/v1/zcode-plan/billing/balance" {
+		if request.Method == http.MethodGet && request.URL.Path == "/api/v1/zcode-plan/billing/balance" {
 			io.WriteString(writer, `{"code":0,"data":{"plans":[{"plan_id":"grant","status":"active"}],"balances":[
 				{"plan_id":"grant","total_units":10,"remaining_units":10,"capabilities":["model:GLM-5.2"]}
 			]}}`)
 			return
 		}
-		if request.URL.Path != "/start" {
-			t.Error("Start requeue reached another endpoint")
+		if request.Method != http.MethodPost || request.URL.Path != "/start" {
+			t.Errorf("Start requeue reached another endpoint: %s %s", request.Method, request.URL.Path)
 			http.NotFound(writer, request)
 			return
 		}
@@ -187,7 +187,18 @@ func TestDonor0166StartBesideInflightWaitsInsteadOfReturningCap(t *testing.T) {
 		}
 		close(firstDone)
 	}()
-	harness := newHarness(t, endpointOptions(server))
+	options := endpointOptions(server)
+	client := server.Client()
+	client.CheckRedirect = func(*http.Request, []*http.Request) error {
+		return http.ErrUseLastResponse
+	}
+	options.HTTPFactory = func(proxy string) (Doer, func(), error) {
+		if proxy != "" {
+			return nil, nil, errors.New("unexpected Start fixture proxy")
+		}
+		return client, func() {}, nil
+	}
+	harness := newHarness(t, options)
 	account := fixtureCredentials("start")
 	sent := make(chan error, 1)
 	go func() {

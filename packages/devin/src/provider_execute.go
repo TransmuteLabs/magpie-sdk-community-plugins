@@ -124,7 +124,7 @@ func (owner *providerOwner) execute(ctx context.Context, call sdk.Call, stream *
 				if errors.As(failure, &scoped) {
 					switch scoped.Code {
 					case "permission_denied", "resource_exhausted", "unauthenticated", "invalid_params",
-						"data_loss", "unimplemented", "deadline_exceeded", "canceled":
+						"data_loss", "unimplemented", "deadline_exceeded", "canceled", "failed_precondition":
 						code = scoped.Code
 					}
 				}

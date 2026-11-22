@@ -55,7 +55,7 @@ func TestPolicyHostDenialStopsTransportAndReturnsFreshWholeRefusal(t *testing.T)
 
 func TestPolicyBothManifestsNegotiatePublicRecovery(t *testing.T) {
 	for _, manifest := range []sdk.Manifest{Manifest(), ControlManifest()} {
-		if manifest.Contract.Version.Minor != 12 || manifest.Compatibility.HostAPI != "^1.12" ||
+		if manifest.Contract.Version.Minor != 20 || manifest.Compatibility.HostAPI != "^1.20" ||
 			!manifest.Contract.Has(sdk.RequestPolicy) {
 			t.Fatalf("runtime uses policy without its SDK floor: %+v", manifest.Contract)
 		}

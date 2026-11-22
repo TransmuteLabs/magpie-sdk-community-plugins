@@ -13,7 +13,7 @@ import (
 	"github.com/yetone/magpie/pkg/protocolext"
 )
 
-const Version = "0.1.4"
+const Version = "0.1.5"
 const ProviderID = "commandcode-native"
 const ModuleID = "protocol-commandcode"
 const cliVersion = "1.91.0"
@@ -51,7 +51,7 @@ func Manifest() sdk.Manifest {
 	return sdk.Manifest{
 		Schema: 1, ID: ModuleID, Version: Version, Runtime: "native", Entry: entry,
 		Contract: sdk.Contract{Version: sdk.APIVersion{Major: 1, Minor: 12}, Capabilities: []sdk.Capability{
-			sdk.OutboundExecutor, sdk.ModelDiscovery, sdk.UsageReporter, sdk.AccountAuth, sdk.ModuleRPC, sdk.AgentWiring, sdk.RequestPolicy,
+			sdk.OutboundExecutor, sdk.ModelDiscovery, sdk.UsageReporter, sdk.AccountAuth, sdk.ModuleRPC, sdk.AgentWiring, sdk.RequestPolicy, sdk.ProviderSignIn,
 		}},
 		Compatibility: &sdk.Compatibility{HostAPI: "^1.12", NativeABI: 1},
 		Providers: []sdk.ProviderDescriptor{{ID: ProviderID, Name: "Command Code", Protocols: []protocolext.Protocol{"chat", "responses", "anthropic"},
@@ -67,9 +67,13 @@ func Manifest() sdk.Manifest {
 			{ID: "systemone", Effect: "read", InputSchema: json.RawMessage(`{"type":"object"}`)},
 		},
 		Window:   &sdk.WindowDescriptor{Metadata: "package.json"},
-		Bindings: []sdk.BindingDescriptor{{ID: "page.status", From: "window:page", Action: "status", Provider: ProviderID}},
-		AuthBindings: []sdk.WindowAuthBindingDescriptor{{ID: "page.auth", From: "window:page", Provider: ProviderID, Reauthorize: true,
-			Methods: []sdk.WindowAuthMethod{{ID: "api-key", Mode: "poll"}, {ID: "browser", Mode: "poll"}, {ID: "cli-import", Mode: "poll"}}}},
+		Bindings: []sdk.BindingDescriptor{{ID: "account.status", From: "window:panel:0", Action: "status", Provider: ProviderID}},
+		AuthBindings: []sdk.WindowAuthBindingDescriptor{{ID: "provider.signin", From: sdk.ProviderSignInPart, Provider: ProviderID, Reauthorize: true,
+			Methods: []sdk.WindowAuthMethod{
+				{ID: "api-key", Mode: "poll", Label: "API key", Fields: []sdk.AuthInputField{{Key: "apiKey", Label: "API key", Type: "secret"}}},
+				{ID: "browser", Mode: "poll", Label: "Browser sign-in"},
+				{ID: "cli-import", Mode: "poll", Label: "Import CLI sign-in"},
+			}}},
 	}
 }
 

@@ -1,5 +1,14 @@
 # CommandCode source provenance
 
+Command Code `0.1.5` uses the SDK provider sign-in broker and keeps its
+account-details panel in Usage. Community `origin/main` at
+`836f2e4e4cd899318c422d67cc1b2b30baaf1e06` has the same `0.1.24` package tree
+as the existing donor. The local CLI installation is `1.88.0`. Its launcher
+matches the pinned `1.91.0` entry point. Its `dist/cli.mjs` differs. The
+`1.91.0` archive remains the recovered wire reference. The current account
+identity and explicit 401/403 handling use the community donor's
+`signedIn` and `keyRefused` behavior.
+
 CommandCode `0.1.4` follows the native `google/gemini-*` nullable-tool adjustment in
 `patlux/pi-commandcode-provider` `0.7.1` at
 `6fd0ac75345c3fd9c94aa1638c0e00fe963041b8`, specifically

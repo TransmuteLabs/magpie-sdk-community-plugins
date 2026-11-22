@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
-	"net/http/httptest"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -17,12 +16,12 @@ const refusalFixtureCatalog = `{"data":[{"id":"fixture-model","type":"chat","lim
 
 func TestRequestPolicyOriginalFinalRefusal(t *testing.T) {
 	var sends atomic.Int32
-	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+	server := newZenFixture(t, func(writer http.ResponseWriter, request *http.Request) {
 		sends.Add(1)
 		writer.Header().Set("Retry-After", "3600")
 		writer.WriteHeader(429)
 		io.WriteString(writer, `{"error":{"type":"GoUsageLimitError","message":"usage limit reached"}}`)
-	}))
+	})
 	defer server.Close()
 	harness := newHarness(t, ModuleOptions{Endpoints: Endpoints{Console: server.URL, Inference: server.URL},
 		HTTPFactory: func(string) (Doer, func(), error) { return server.Client(), nil, nil }})
@@ -62,7 +61,7 @@ func TestOpenCodeKnownContentRefusalsStopBeforeAcceptance(t *testing.T) {
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			var sends atomic.Int32
-			server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+			server := newZenFixture(t, func(writer http.ResponseWriter, request *http.Request) {
 				if request.URL.Path == "/inference/v1/models" {
 					io.WriteString(writer, refusalFixtureCatalog)
 					return
@@ -70,7 +69,7 @@ func TestOpenCodeKnownContentRefusalsStopBeforeAcceptance(t *testing.T) {
 				sends.Add(1)
 				writer.WriteHeader(test.status)
 				io.WriteString(writer, test.body)
-			}))
+			})
 			defer server.Close()
 			harness := serveHarness(t, NewWindowModule(ModuleOptions{
 				Endpoints: Endpoints{Console: server.URL, Inference: server.URL},
@@ -131,7 +130,7 @@ func TestOpenCodeStreamContentRefusalRetainsAcceptedFence(t *testing.T) {
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			var sends atomic.Int32
-			server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+			server := newZenFixture(t, func(writer http.ResponseWriter, request *http.Request) {
 				if request.URL.Path == "/inference/v1/models" {
 					io.WriteString(writer, refusalFixtureCatalog)
 					return
@@ -139,7 +138,7 @@ func TestOpenCodeStreamContentRefusalRetainsAcceptedFence(t *testing.T) {
 				sends.Add(1)
 				writer.Header().Set("Content-Type", "text/event-stream")
 				io.WriteString(writer, "event: error\ndata: "+test.data+"\n\n")
-			}))
+			})
 			defer server.Close()
 			harness := serveHarness(t, NewWindowModule(ModuleOptions{
 				Endpoints: Endpoints{Console: server.URL, Inference: server.URL},
@@ -175,11 +174,11 @@ func TestRequestPolicyAmbiguityRetainsAcceptedFence(t *testing.T) {
 	} {
 		t.Run(name, func(t *testing.T) {
 			var sends atomic.Int32
-			server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+			server := newZenFixture(t, func(writer http.ResponseWriter, request *http.Request) {
 				sends.Add(1)
 				writer.WriteHeader(429)
 				io.WriteString(writer, body)
-			}))
+			})
 			defer server.Close()
 			harness := newHarness(t, ModuleOptions{Endpoints: Endpoints{Console: server.URL, Inference: server.URL},
 				HTTPFactory: func(string) (Doer, func(), error) { return server.Client(), nil, nil }})

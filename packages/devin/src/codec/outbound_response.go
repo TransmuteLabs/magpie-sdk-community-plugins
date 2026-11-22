@@ -307,7 +307,7 @@ func ReadNativeStream(ctx context.Context, reader io.Reader, gzipAllowed bool, e
 				code := terminal.Error.Code
 				switch code {
 				case "unauthenticated", "permission_denied", "resource_exhausted", "invalid_argument",
-					"unavailable", "deadline_exceeded", "canceled", "unimplemented", "data_loss", "internal":
+					"unavailable", "deadline_exceeded", "canceled", "unimplemented", "data_loss", "internal", "failed_precondition":
 				default:
 					code = "internal"
 				}

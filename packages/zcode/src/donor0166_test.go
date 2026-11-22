@@ -45,7 +45,7 @@ func TestDonor0166ChinaRenewalUsesSelectedUserNotDisplayName(t *testing.T) {
 			}
 			var result sdk.AuthResult
 			var renewed Credentials
-			if frame.Error != nil || json.Unmarshal(frame.Result, &result) != nil ||
+			if frame.Error != nil || json.Unmarshal(frame.Result, &result) != nil || result.Name != "same-display@example.invalid · ZCode bigmodel start" ||
 				json.Unmarshal(result.Credentials, &renewed) != nil || renewed.UserID != account.UserID ||
 				renewed.LoginProvider != "zai_cn" || renewed.AccountID() != account.AccountID() || reads.Load() != 1 {
 				t.Fatalf("same-user CN renewal changed stable identity: %+v", frame.Error)
@@ -55,9 +55,9 @@ func TestDonor0166ChinaRenewalUsesSelectedUserNotDisplayName(t *testing.T) {
 }
 
 func TestDonor0166DiscoveryNeverBillsExcludedGiftModelOrFailedPlanRead(t *testing.T) {
-	vendor, server := newCompletionVendor(t)
+	vendor, options := newCompletionVendor(t)
 	vendor.paidActive.Store(false)
-	harness := newHarness(t, endpointOptions(server))
+	harness := newHarness(t, options)
 	account := giftAccount()
 	frame, _ := harness.call(sdk.MethodProviderModels, scope(account), sdk.ModelsRequest{}, raw(account))
 	if frame.Error != nil {
@@ -83,11 +83,11 @@ func TestDonor0166DiscoveryNeverBillsExcludedGiftModelOrFailedPlanRead(t *testin
 }
 
 func TestDonor0166ManualStartNeverBillsModelOutsideCurrentGift(t *testing.T) {
-	vendor, server := newCompletionVendor(t)
+	vendor, options := newCompletionVendor(t)
 	vendor.balance = `{"code":0,"data":{"plans":[{"plan_id":"grant","status":"active"}],"balances":[
 		{"plan_id":"grant","total_units":100,"remaining_units":50,"capabilities":["model:GLM-5.3-Flash"]}
 	]}}`
-	harness := newHarness(t, endpointOptions(server))
+	harness := newHarness(t, options)
 	account := fixtureCredentials("start")
 	frame, _ := harness.call(sdk.MethodProviderModels, scope(account), sdk.ModelsRequest{}, raw(account))
 	var models sdk.ModelsResult

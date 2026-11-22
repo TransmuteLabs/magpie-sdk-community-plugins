@@ -319,6 +319,7 @@ func TestOrdinarySelectedPATInferenceAndBusinessErrors(t *testing.T) {
 	account := fixtureCredentials("individual")
 	request := execute(`{"model":"GLM-5.3","messages":[{"role":"user","content":"hello"}],"thinking":{"type":"enabled","budget_tokens":8192},"output_config":{"effort":"max"}}`)
 	request.Protocol = "anthropic"
+	request.Caller = &sdk.ExecuteCaller{Agent: "fixture-agent", Name: "Fixture Agent"}
 	request.Options = raw(sdk.ExecuteOptions{Method: "POST", Path: "/v1/messages", EscapedPath: "/v1/messages", Proxy: "system", CallerID: "fixture-agent"})
 	request.Headers = http.Header{"Cookie": {"secret"}}
 	frame, body := h.call(sdk.MethodProviderExecute, scope(account), request, raw(account))

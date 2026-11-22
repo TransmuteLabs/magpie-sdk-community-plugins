@@ -103,6 +103,16 @@ type Transaction struct {
 	principal string
 }
 
+func (transaction *Transaction) MergeClaimHold(nowMillis, untilMillis, delayMillis int64) int64 {
+	journal := transaction.Journal
+	if untilMillis > journal.ClaimHoldUntil {
+		journal.ClaimHoldUntil, journal.ClaimHoldDelay = untilMillis, delayMillis
+	} else if untilMillis == 0 && journal.ClaimHoldUntil <= nowMillis {
+		journal.ClaimHoldUntil, journal.ClaimHoldDelay = 0, 0
+	}
+	return journal.ClaimHoldUntil
+}
+
 func Open(path string) (*Store, error) {
 	if !filepath.IsAbs(path) || filepath.Clean(path) != path {
 		return nil, ErrJournal

@@ -287,6 +287,7 @@ func TestCoreRefreshRotatesOnceAndPreservesSelectedIdentity(test *testing.T) {
 			now.Store(1790000000000)
 			count := 0
 			scope, credentials := coreAccount(Global)
+			credentials.Name = "Saved MiniMax profile"
 			transport := coreDoer(func(request *http.Request) (*http.Response, error) {
 				count++
 				request.ParseForm()
@@ -308,7 +309,7 @@ func TestCoreRefreshRotatesOnceAndPreservesSelectedIdentity(test *testing.T) {
 				var replacement Credentials
 				json.Unmarshal(frame.Result, &result)
 				json.Unmarshal(result.Credentials, &replacement)
-				if frame.Error != nil || replacement.ID != credentials.ID || replacement.Refresh != "new-refresh" {
+				if frame.Error != nil || result.Name != credentials.Name || replacement.ID != credentials.ID || replacement.Refresh != "new-refresh" {
 					test.Fatal("rotation changed account or lost refresh")
 				}
 			} else if frame.Error == nil || frame.Error.Outcome != "uncertain" || (frame.Error.Code == "auth_revoked") != (status == 400) {

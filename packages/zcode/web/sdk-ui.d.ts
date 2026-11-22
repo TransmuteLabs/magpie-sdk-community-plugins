@@ -1,1 +1,1 @@
-export { ui, createAccountWorkflow } from "@magpie/extension-sdk/ui";
+export { ui } from "@magpie/extension-sdk/ui";

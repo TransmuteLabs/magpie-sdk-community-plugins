@@ -1,5 +1,33 @@
 {
   "schema": 1,
+  "localReconstructionProtocolFollowUp": {
+    "checkedAt": "2026-11-21",
+    "baseCommit": "789ea99e4a55b721fb9bc332b5bd712ce438a566",
+    "commit": "12bde35fd67c73ade965c1a0e9faf7d2bf3bc1e2",
+    "version": "reconstructed 3000.11.228",
+    "changedPaths": [
+      "reference/crates/chisel-server/src/acp_behavior.rs",
+      "reference/crates/chisel-server/src/lib.rs",
+      "reference/crates/plugin/src/install_behavior.rs",
+      "reference/crates/plugin/src/lib.rs",
+      "reference/crates/windsurf-api-client/src/deployment_behavior.rs",
+      "reference/crates/windsurf-api-client/src/lib.rs"
+    ],
+    "runtimePort": false,
+    "decision": "The committed changes cover ACP server dispatch and session finalization, native plugin installation, and deployment discovery. The credential, bootstrap, and Connect paths used by the SDK package have identical Git blobs."
+  },
+  "localReconstructionReview": {
+    "checkedAt": "2026-11-21",
+    "baseCommit": "cca74526fa64da113282c0cd1c6ea43fa9b3286b",
+    "commit": "789ea99e4a55b721fb9bc332b5bd712ce438a566",
+    "version": "reconstructed 3000.11.228",
+    "changedPaths": [
+      "reference/crates/chisel/src/repl/commands/feedback_behavior.rs",
+      "reference/crates/chisel/src/repl/commands/mod.rs"
+    ],
+    "runtimePort": false,
+    "decision": "The committed delta covers REPL feedback, a local-tools grant parser, and WebSocket error categories. The credential, bootstrap, and Connect definitions used by this package are unchanged. Uncommitted ACP recovery work was excluded."
+  },
   "recoveredProtocolFollowUp": {
     "checkedAt": "2026-11-17",
     "commit": "dfd5a590a3d4c3a89e79fe90b3348015d8e6f1e1",
@@ -34,7 +62,7 @@
       "The account-upload prefix formats a skill key. Startup with an assigned AccountUpload bundle requires shipped-client acceptance."
     ]
   },
-  "plugin": {"id": "devin-inbound", "version": "0.8.2", "sdkMinimum": "1.12", "nativeABI": 1, "capabilities": ["inbound-codec", "outbound-executor", "account-auth", "model-discovery", "usage-reporter", "agent-wiring", "module-rpc", "native-account-operations", "request-policy"]},
+  "plugin": {"id": "devin-inbound", "version": "0.8.3", "sdkMinimum": "1.12", "nativeABI": 1, "capabilities": ["inbound-codec", "outbound-executor", "account-auth", "model-discovery", "usage-reporter", "agent-wiring", "module-rpc", "native-account-operations", "request-policy", "provider-signin", "provider-saved-signin"]},
   "requestPolicy": {
     "api": "1.12",
     "guide": "docs/REQUEST-POLICY.md",
@@ -58,6 +86,74 @@
     }
   },
   "sources": [
+    {
+      "id": "community-devin-saved-signin",
+      "role": "saved API records and CLI-linked credential proofs",
+      "repository": "https://github.com/magpie-community/plugins",
+      "commit": "836f2e4e4cd899318c422d67cc1b2b30baaf1e06",
+      "version": "packages/devin 0.1.45",
+      "checkedAt": "2026-11-21",
+      "paths": ["packages/devin/index.mjs", "packages/devin/package.json"],
+      "artifacts": [
+        {"path": "packages/devin/index.mjs", "sha256": "ec73e98fbe846c6ca8bc3ffcbc3e17ec349c510717301de2c69b251a1c7ef1d8"}
+      ]
+    },
+    {
+      "id": "devinapp-provider-signin",
+      "role": "recovered UserStatus identity field and browser PKCE request; compare the newer Connect transport",
+      "repository": "local:Agents/devinapp",
+      "commit": "82853544a914da2673172e6d37788fc45e3b5fd9",
+      "version": "reconstructed Devin 3000.11.228",
+      "paths": [
+        "reference/crates/windsurf-api-client/src/w25_mech6.rs",
+        "reference/crates/windsurf-api-client/src/auth_slots.rs",
+        "reference/crates/windsurf-api-client/src/wire_behavior.rs",
+        "reference/crates/windsurf-api-client/src/stream_behavior.rs",
+        "reference/crates/chisel-api/src/credentials_slots.rs",
+        "reference/crates/chisel-agent-bin/src/plugin_context.rs",
+        "reference/docs/provider-protocol.md"
+      ],
+      "checkedAt": "2026-11-21",
+      "artifacts": [
+        {"path": "reference/crates/windsurf-api-client/src/w25_mech6.rs", "sha256": "bb7aa746190d733bc496b2c4b9795b9ae614970a6efcf40763a39c97f3b6d0f6"},
+        {"path": "reference/crates/windsurf-api-client/src/auth_slots.rs", "sha256": "510f36b65a6ce9811ed2837ea28b9e9427bb351d1d997cd43e6f50c6f0526236"}
+      ],
+      "comparison": {
+        "previousDevinapp": "e977587dd6a76ed2125ea7e09ac4771035100d35",
+        "authConnectBootstrapUnchangedFrom": "7cb52e1caa3b74ce18ba5d0db81953fa7d6dcba6",
+        "latestLocalReview": "cca74526fa64da113282c0cd1c6ea43fa9b3286b",
+        "latestLocalReviewDelta": "29b76a0b adds the GetChatMessage example and live_request.rs with a unary transport, text prompt role and first-response-message decode. The community donor still uses framed streaming, the role enum and a terminal Connect frame. After b86869df the changes cover organization switching in the REPL, bundle self-update and ACP relay session state. The watched credential, status, GetChatMessage and AssignModel definitions remain unchanged.",
+        "communityCommit": "836f2e4e4cd899318c422d67cc1b2b30baaf1e06",
+        "communityPackageTree": "1c23cc5c881c36b027f8cef2feb70f7a49ada5e4",
+        "communityPackageVersion": "0.1.45",
+        "communityPackageUnchangedFrom": "324acd6007f2d513c5072fe2e9fe1db3524ae03d",
+        "connect": "The new reference transport retains the supported Connect media type, version and frame flags. RecordTrajectorySegmentEvents still has unresolved request and response fields.",
+        "identity": "UserStatus field 7 is user_id. The local raw status capture has length-delimited field 7. The provider reads the corresponding JSON userId and fences it by the selected server and supplied tenant IDs."
+      }
+    },
+    {
+      "id": "devinapp-canonical-completion",
+      "role": "recovered native stop enum, Chat completion mapping and Connect terminal errors",
+      "repository": "local:Agents/devinapp",
+      "commit": "b86869df66dc5e9ac11f1c7dd199c50a8333a920",
+      "version": "reconstructed Devin 3000.11.228",
+      "paths": [
+        "gui-src/restored/chat-client/src/stores/nxi.ts",
+        "reference/crates/provider-proxy/src/openai.rs",
+        "reference/crates/provider-proxy/src/frame.rs",
+        "reference/crates/chisel-api/src/wire.rs"
+      ],
+      "checkedAt": "2026-11-21"
+    },
+    {
+      "id": "sdk-provider-signin",
+      "role": "public Providers sign-in and selected-account generation contract used by the native package",
+      "repository": "https://github.com/TransmuteLabs/magpie",
+      "commit": "c5d5404f716b0eb2d38b3a0e43a5afd83ce0ee70",
+      "version": "SDK API 1.19 host, package contract 1.12 with provider-signin",
+      "checkedAt": "2026-11-21",
+      "paths": ["pkg/extension/window_auth.go", "internal/gui/providers_extension_signin.go", "internal/extension/window_auth_store.go", "internal/plugin/host.js"]
+    },
     {
       "id": "devinapp-account-upload",
       "role": "recovered AccountUpload bundle lookup request and response; independent read through the selected account",
@@ -344,6 +440,10 @@
     }
   ],
   "watch": [
+    {"source": "community-devin-saved-signin", "paths": ["packages/devin/index.mjs", "packages/devin/package.json"], "behaviors": ["verify one host-selected API record before staging and activation", "verify the saved key and the current CLI key before linking"], "tests": ["src/provider_identity_test.go", "tests/window_auth_host.py"]},
+    {"source": "devinapp-provider-signin", "paths": ["reference/crates/windsurf-api-client/src/w25_mech6.rs", "reference/crates/windsurf-api-client/src/auth_slots.rs", "reference/crates/chisel-api/src/credentials_slots.rs", "reference/crates/chisel-agent-bin/src/plugin_context.rs"], "behaviors": ["server, user and tenant identity survive key rotation", "two-field PKCE exchange and one-use loopback callback", "official CLI file read during linked import and selected refresh"], "tests": ["src/provider_identity_test.go", "src/provider_window_auth_test.go", "tests/window_auth_host.py"]},
+    {"source": "devinapp-canonical-completion", "paths": ["gui-src/restored/chat-client/src/stores/nxi.ts", "reference/crates/provider-proxy/src/openai.rs", "reference/crates/provider-proxy/src/frame.rs", "reference/crates/chisel-api/src/wire.rs"], "behaviors": ["MIN_LOG_PROB maps to Chat stop and Messages end_turn with late usage and a valid Connect terminal", "failed_precondition survives canonical SDK execution, measured usage and host classification with one vendor dispatch"], "tests": ["src/provider_completion_test.go", "src/codec/stream_completion_test.go"]},
+    {"source": "sdk-provider-signin", "paths": ["pkg/extension/window_auth.go", "internal/gui/providers_extension_signin.go", "internal/extension/window_auth_store.go", "internal/plugin/host.js"], "behaviors": ["ordinary Providers sign-in, refresh labels and exact-generation logout", "transferred subscription logout checks the public owner revision and account generation", "one agent/provider package without a separate sign-in page"], "tests": ["src/provider_identity_test.go", "tests/window_auth_host.py", "tests/subscription_transfer_e2e.py", "tests/provenance_test.py"]},
     {"source": "devinapp-account-upload", "paths": ["reference/docs/provider-protocol.md", "reference/crates/windsurf-api-client/src/client/account_upload_wire.rs", "reference/crates/windsurf-api-client/src/client/plugins.rs", "reference/crates/chisel-agent-bin/src/plugin_source.rs", "reference/crates/plugin-host/src/discovery.rs"], "behaviors": ["bundle ID grammar and Account/Org/User scopes through the selected account", "rebuild vendor credentials and reject caller authority, malformed or duplicate fields", "pass signed metadata and absent results to the native client without downloading the bundle in Magpie"], "tests": ["src/codec/account_test.go", "src/agent_account_test.go", "tests/agent_http_e2e.py"]},
     {"source":"community-devin-045-quiet","paths":["packages/devin/index.mjs","packages/devin/quiet.test.mjs"],"behaviors":["five-minute timeout only around each pending underlying body read in decoded and raw chat","progress renews the read window and slow consumers do not consume it","timeout cancels only the owned HTTP child, returns uncertain deadline_exceeded and preserves partial output and measured usage","single acceptance/send/body disposal, no replay or complete refusal authority"],"tests":["src/outbound/quiet_test.go","src/outbound/client_test.go","src/outbound/native_test.go","src/outbound/quiet_cancel_test.go"]},
     {"source":"community-devin","paths":["packages/devin/index.mjs","packages/devin/images.test.mjs","packages/devin/thinking-signature.test.mjs","packages/devin/long-session.test.mjs"],"behaviors":["failed catalog returns an error rather than an authoritative snapshot or empty success","adjacent signed thoughts retain the last text/signature on a real assistant text/tool prompt while every origin remains checked","inline image magic bytes choose a supported media type without modifying image bytes","whitespace-only unmarked user prompts are omitted; unrepresentable cache boundaries fail explicitly","ambiguous invalid_argument is not proof of context exhaustion, safe unsigned replay or absence of effects"],"tests":["src/codec/messages_test.go","src/provider_completion_test.go","src/provider_request_policy_test.go","tests/provenance_test.py","docs/DONOR-MATRIX.md"]},
@@ -375,6 +475,19 @@
     {"source": "codec-extraction", "paths": ["plugins/protocols/devin"], "behaviors": ["historical codec provenance"], "tests": ["src/codec/decode_test.go", "src/codec/response_test.go", "docs/donor-files.json"]}
   ],
   "limits": {
+    "savedSignInContract": {
+      "checkedAt": "2026-11-21",
+      "hostBaseCommit": "c5d5404f716b0eb2d38b3a0e43a5afd83ce0ee70",
+      "requiredCapability": "provider-saved-signin",
+      "method": "saved-signin",
+      "publicSDKOverlay": [
+        {"path": "pkg/extension/account_selection.go", "sha256": "f88e0f0e8f5bb1f07943984d8242f873ff610f23c8282a87cf3c15eb2db5235e"},
+        {"path": "pkg/extension/contract.go", "sha256": "4785929db8b3a16192e04ee2382850e5c79e0dc17f22f3c17f338a840f13052a"},
+        {"path": "pkg/extension/window_auth.go", "sha256": "2b9d60878084d9fd7c91ab8beaa20727273656149b28901a65eeda5250c062e1"}
+      ],
+      "wireMinimum": "1.12",
+      "scope": "Both provider variants require the capability before sign-in can run. The host alone prepares and activates one saved sign-in. The inbound-only variant has no authentication."
+    },
     "quietRead045": {
       "checkedAt": "2026-11-17",
       "quietReadMilliseconds": 300000,
@@ -713,15 +826,15 @@
         "evidence": "usbox:/tmp/magpie-devin-default.S2EoN3BM/green-r2",
         "state": "earlier full0.7 package passed nine installed fixtures including paired24, agent/bootstrap/cold CLI, Messages/history/Facts, no-op/held read and real transitions; these are not new API9 paid-task proofs"
       },
-      "state": "0.8.2/API1.12 is the default artifact and includes the native managed bundle read and Messages turn effort. Paired0.5 requires API1.12/request-policy. Inbound0.2 retains API1.1 without request-policy. The library hashes and policy receipts above document earlier builds."
+      "state": "0.8.3/API1.12 is the default artifact. 0.8.3 and paired 0.5.1 require provider-signin and provider-saved-signin. Inbound 0.2 retains API1.1. The library hashes and policy receipts above document earlier builds."
     },
     "variants": [
-      {"manifest": "src/magpie-plugin.json", "version": "0.5.0", "sdkMinimum": "1.12", "nativeABI": 1, "capabilities": ["inbound-codec", "outbound-executor", "account-auth", "model-discovery", "usage-reporter", "request-policy"], "surface": "explicit --paired-only artifact: paired native ingress, Chat and scoped Messages, auth/models/usage/Facts/diagnostics and request policy; no agent or bootstrap operations"},
+      {"manifest": "src/magpie-plugin.json", "version": "0.5.1", "sdkMinimum": "1.12", "nativeABI": 1, "capabilities": ["inbound-codec", "outbound-executor", "account-auth", "model-discovery", "usage-reporter", "request-policy", "provider-signin", "provider-saved-signin"], "surface": "explicit --paired-only artifact: paired native ingress, Chat and scoped Messages, Providers sign-in, models/usage/Facts/diagnostics and request policy"},
       {"manifest": "src/magpie-inbound.json", "version": "0.2.0", "sdkMinimum": "1.1", "nativeABI": 1, "capabilities": ["inbound-codec", "model-discovery"], "surface": "inbound-only canonical Chat/model converter; no account auth or provider"},
-      {"manifest": "src/magpie-agent.json", "version": "0.8.2", "sdkMinimum": "1.12", "nativeABI": 1, "capabilities": ["inbound-codec", "outbound-executor", "account-auth", "model-discovery", "usage-reporter", "agent-wiring", "module-rpc", "native-account-operations", "request-policy"], "surface": "standard default distribution: all paired features, request policy, agent/native bootstrap, managed bundle lookup, Messages turn effort and default-off paid fresh-account cache tasks"}
+      {"manifest": "src/magpie-agent.json", "version": "0.8.3", "sdkMinimum": "1.12", "nativeABI": 1, "capabilities": ["inbound-codec", "outbound-executor", "account-auth", "model-discovery", "usage-reporter", "agent-wiring", "module-rpc", "native-account-operations", "request-policy", "provider-signin", "provider-saved-signin"], "surface": "standard default distribution: paired features, Providers sign-in, agent/bootstrap, managed bundle lookup, Messages turn effort and default-off paid account tasks"}
     ],
-    "auth": ["Explicit API key or one-use browser PKCE; explicit CLI redirects remain caller-managed", "First-account window uses a private per-instance 127.0.0.1:0/callback receiver and existing host browser/poll completion; no credential import, community plugin or native CLI auth dependency", "Canceled host flows cannot complete; bounded private receivers end on completion, deadline or instance disposal, with no new module-cancel API", "No recovered refresh/revoke endpoint; expiry requires sign-in and logout removes host state"],
-    "onboarding": {"guide":"docs/ONBOARDING.md","implementationReference":"1729055bb5c566903ce2adbcf97a7e1b78bd3dc1","callbackSource":"reference/crates/windsurf-api-client/src/oauth.rs","verification":"/tmp/magpie-devin-first-account-20261116","scope":"Existing public component lifetime/private State and host poll broker; no SDK API or donor pin change","limits":"Actual GUI HTTP and exec handlers plus native build; no rendered browser, new native load or live vendor sign-in"},
+    "auth": ["Providers sign-in accepts an API key or one-use browser PKCE", "CLI preparation verifies one community API record and retains it outside active accounts until explicit activation", "Reauthorization fences the verified server and vendor user and tenant while preserving the selected host slot", "An unexpired credential can refresh its verified label and identity proof; expired credentials require reauthorization", "Logout removes the selected host account generation, with no vendor revocation RPC"],
+    "onboarding": {"guide":"docs/ONBOARDING.md","implementationReference":"82853544a914da2673172e6d37788fc45e3b5fd9","callbackSource":"reference/crates/windsurf-api-client/src/oauth.rs","fixture":"tests/window_auth_host.py","scope":"Public Providers sign-in, private loopback owner, CLI preparation of saved API records and selected native sign-out. The companion subscription_transfer_e2e.py covers owner transfer, rollback and selected sign-out under the public owner revision.","limits":"Devin import requires a host with auth import and auth transfer for the complete retired subscription. Transfer and sign-out preserve the source credentials. CLI-linked accounts require explicit refresh and an initial saved key that can prove the prior subject. Live vendor sign-in remains unverified."},
     "notFull": [
       "Original Cognition client/live-server parity, cache TTL, charges and current live model availability are not proven",
       "Historical d070 bootstrap and dirty API9 cosmetic-noop reds remain preserved; current committed467 duplicate/no-op/held-read/real-transition gates pass with the typed decisionModels consumer",

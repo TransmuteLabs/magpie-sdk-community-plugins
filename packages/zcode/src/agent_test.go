@@ -107,8 +107,9 @@ func TestOwnedAgentIsInTheSingleNativeControlBundle(t *testing.T) {
 		agent.Library != nil || manifest.Runtime != "native" || len(manifest.Providers) != 1 {
 		t.Fatal("owned profile lost its config path, launch or inherited ZCode Library owner")
 	}
-	if len(Manifest().Agents) != 0 || Manifest().Contract.Has(sdk.AgentWiring) || Manifest().Contract.Version.Minor != 12 {
-		t.Fatal("provider-only policy manifest acquired agent wiring")
+	headless := Manifest()
+	if len(headless.Agents) != 0 || headless.Contract.Has(sdk.AgentWiring) || headless.Contract.Version.Minor != 20 {
+		t.Fatal("provider-only manifest lost its SDK floor or acquired agent wiring")
 	}
 }
 

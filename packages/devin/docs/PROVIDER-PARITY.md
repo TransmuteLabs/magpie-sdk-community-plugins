@@ -1,20 +1,19 @@
 # Current Devin provider comparison
 
-The default native `devin-inbound` 0.8.2 package is self-contained. It already
+The default native `devin-inbound` 0.8.3 package is self-contained. It
 owns account auth, catalog, quota, Chat/Messages execution, paired native
 ingress and the Devin agent/bootstrap surface. No community plugin, Bun,
 Node module or separately installed Devin CLI supplies its provider hooks.
-The provider ID inside this package is `devin`; the host assigns its own
-namespaced provider identity. Installing this package does not adopt retired
-built-in accounts or install a legacy community migration target. Sign in
-explicitly to this package.
+The provider ID inside this package is `devin`. Fresh sign-in through
+Providers uses the SDK provider's own public ID. To retain the public ID and
+account aliases of an existing Community subscription, use the complete
+[transfer procedure](ONBOARDING.md#import-a-saved-community-sign-in).
 
 The exact source map is [source-lock.json](source-lock.json), explained in
 [SOURCES.md](SOURCES.md). The community donor comparison includes
-`b35d4b35b2446bd929896ddeb58f3cb299e9e2d1`, package 0.1.44. Its scoped
-snapshot-marker, adjacent signed-thought and long-session changes are recorded
-there alongside the recovered protocol baseline. Donor functions named below
-identify behavior, not a claim of whole-donor or live-vendor parity.
+`836f2e4e4cd899318c422d67cc1b2b30baaf1e06`, package 0.1.45. The source map
+records the saved credential shape along with scoped snapshot markers,
+adjacent signed thoughts and long-session normalization.
 
 The [original 0.1.41 comparison](history/provider-comparison-0.1.41.md)
 preserves its exact source identities, failures and verification limits.
@@ -25,16 +24,16 @@ The [donor matrix](DONOR-MATRIX.md) retains the detailed codec boundaries.
 | Behavior and donor evidence | Native package and current result |
 | --- | --- |
 | Provider registration: `DevinAuthPlugin` auth loader, config and provider.models hooks; OpenCode2 `v2Setup`/`devinLanguage` | [manifest](../src/magpie-agent.json), [provider module](../src/provider_module.go) and [agent module](../src/agent_module.go) register the equivalent native SDK surfaces. OpenCode v1/v2 adapters are not another runtime requirement. |
-| API key/session token: auth methods, `success`, `apikey.test.mjs` | [auth owner](../src/provider_auth.go) accepts explicit credentials and verifies selected-server status before saving. No recovered refresh/revoke RPC: refresh requests sign-in again, logout removes the host account. |
-| Browser PKCE: `browserSignIn`, `exchange` | [PKCE codec](../src/outbound/auth.go) implements the same authorization/exchange protocol with one-use, bounded host-private state. Explicit SDK redirects and full callback submission remain supported. The package page uses a module-owned loopback receiver and existing host poll completion; see [onboarding](ONBOARDING.md) for lifecycle, revocation and verification limits. The module does not launch a browser. |
-| Identity: `whoOfStatus`, `success`, `identity.test.mjs` | Email/name plus organization are used for labels, with fallback order `devinInfo.accountDisplayName`, `planInfo.teamName`, `userStatus.teamName`. Display edges are trimmed without repeating the same label. IDs remain hashes of selected server and credential, including when no email/name is available. Two keys with the same label remain distinct. |
-| CLI account reuse: `cliSignIn` (1024), `live` (3150), `cli-key.test.mjs` | Not imported: no reads of another application's credentials, CLI subprocess identity fallback or automatic credential replacement. An unavailable status endpoint refuses new sign-in instead of trusting a CLI/snapshot. Explicit API-key/session-token input is the self-contained alternative. |
+| API key/session token: auth methods, `success`, `apikey.test.mjs` | The [auth owner](../src/provider_auth.go) verifies the selected server's status before saving. Refresh rereads status with the current unexpired credential. Logout removes the selected generation from the host. |
+| Browser PKCE: `browserSignIn`, `exchange` | The [PKCE codec](../src/outbound/auth.go) uses one-use, bounded host-private state. The Providers form uses the host poll broker and module-owned loopback receiver. Explicit SDK redirects and full callback submission remain supported for CLI callers. |
+| Identity: `whoOfStatus`, `success`, `identity.test.mjs` | The [account binding](../src/provider_identity.go) uses server, user, team and organization IDs from verified status. Matching names do not authorize replacement. A response without a usable user ID keeps the server/key fingerprint. Labels use email or name plus the organization. |
+| Saved sign-in and CLI reuse (`cliSignIn`, `live`, `cli-key.test.mjs`) | `auth import` prepares one saved API record. `auth transfer` changes the subscription owner using tickets for all saved accounts. `auth activate` publishes a separate SDK account. A CLI-linked import verifies the saved subject against the current CLI credential. Explicit refresh follows later proven rotations for that subject. [Import guide](ONBOARDING.md#import-a-saved-community-sign-in) |
 | Catalog: `configsFor`, `ownFamilies`, `familiesFor`, `listed`, `provider.models`; free/prices/images tests | [model projection](../src/codec/outbound_models.go), [selection](../src/codec/model_selection.go), [provider domain tests](../src/provider_domain_test.go): current selected-account discovery, concrete UIDs, families/aliases, ordered efforts, fast/priority tiers, images, limits, known prices and free scopes already exist. Router picks Adaptive/Fusion remain excluded. |
 | Catalog fallback and unknown models | Donor caches configs, can use CLI output/static snapshots and retain configured models. Native virtual selections reread the selected account's catalog before acceptance; no snapshot grants unavailable models. Explicit native UIDs retain native semantics. Label-only family names outside SDK ID grammar retain their concrete UID/display label. Failures do not become a fabricated catalog. |
 | Messages turn effort: CLIProxyAPI `061ffe6fb` | The last `system` message's `output_config.effort` selects the account's native family variant ahead of the top-level cache placeholder. Disabled thinking keeps the existing default and a concrete model UID stays pinned. Invalid inline configurations are refused before inference. |
 | Signed-out usage: `usage`, auth.usage, `usage.test.mjs` | Status is read before models; explicit Connect `unauthenticated` returns a typed refusal and constant sign-in message. Bare HTTP401 stays a transport fact without inferring expired credentials. Catalog4xx refusals propagate; transient/malformed catalog data still defers quota because free scope is unknown. Fresh success recovers current revision/windows. No automatic refresh or replay is added. |
 | Signed-out host UI/routing | The host consumes typed `unauthenticated` usage failures through its shared selected-account auth owner. Generation, package/config revision and the current usage-read token fence publication; stale or superseded results cannot clear a newer refusal. The SDK has no `UsageResult.signIn` field. Bare HTTP401 alone is not an inferred credential expiry, and this projection adds no automatic refresh or replay. |
-| Account metadata and plan display | Donor refreshes identity metadata during usage and prettifies tier enums into plan names. Native saves identity on explicit auth; usage does not rewrite account metadata. SDK has no top-level plan/expiry result. Plan end uses an informational window/reset; tier prettification and ongoing metadata updates are not ported. |
+| Account metadata and plan display | Status verification on sign-in and explicit refresh updates the name. Usage reads leave account identity alone. Plan end uses an informational window/reset. Tier descriptions and plan names remain donor-specific. |
 | Quota/accounting: donor usage/free/prices | [status decoder](../src/outbound/status.go) and [usage tests](../src/provider_usage_test.go) preserve day/week windows, free exclusions and present ACU values. API1.9 includes units, signed micros and plan-end reset; API1.7 compatibility retains its percentage representation. Unlike donor positive-balance dollar text, unknown currency is not inferred. Execution facts/ledger remain separate from quota. |
 | Maintained CLIProxy dimensional usage | Sparse field28 Token Usage reaches canonical/SDK/ledger paths without displacing field7 snapshots or inventing missing counts. The [exact comparison and limits](CLIPROXY-PROVIDER-CHECK.md) preserves the donor evidence; shared refusal policy is documented separately in [REQUEST-POLICY.md](REQUEST-POLICY.md). |
 | Canonical/native requests and compression: `build`, `buildMessages`, `frame` (1149), `gzip-request.test.mjs` | Existing native and canonical encoders retain selected authority and ordinary supported message/tool/image/sampling fields. [Connect encoder](../src/codec/outbound_response.go) gzips payloads greater than 8KiB. The installed test checks flag, header, selected model/key and decompressed content for Chat, Messages and native requests. |
@@ -80,10 +79,10 @@ magpie plugin sdk call devin-inbound provider.usage '{}' \
 ```
 
 Use the model ID returned by the running gateway's `/v1/models` in ordinary
-Chat or Messages requests. For reauthentication, supply
-`--scope '{"account":"ACCOUNT_ID"}'` to both auth calls; a different
-credential fingerprint is a separate account. Browser PKCE and callback
-submission are documented in [account setup](REFERENCE.md#account-setup).
+Chat or Messages requests. For CLI reauthentication, supply
+`--scope '{"account":"ACCOUNT_ID"}'` to both auth calls. Rotation preserves that
+slot after verification of the same subject. Browser PKCE, saved record input
+and identity rules are described in [onboarding](ONBOARDING.md).
 The explicit historical inbound-only artifact has no provider; the default
 build is the complete artifact described here.
 

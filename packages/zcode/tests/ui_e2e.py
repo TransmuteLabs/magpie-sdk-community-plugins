@@ -149,7 +149,7 @@ def main():
             with zipfile.ZipFile(source.parent / "dist/magpie-plugin_linux_amd64.zip") as archive:
                 archive.extractall(distribution)
             manifest = json.loads((distribution / "magpie-plugin.json").read_bytes())
-            assert manifest["contract"]["version"]["minor"] == 12
+            assert manifest["contract"]["version"]["minor"] == 20
             fields = ",".join(name + ":" + json.dumps(origin + path) for name, path in {
                 "Zai": "/zai", "BigModel": "/bigmodel", "Start": "/start",
                 "ZaiQuota": "/quota", "BigModelQuota": "/quota", "LegacyBigModelQuota": "/quota",
@@ -241,8 +241,8 @@ def main():
                     if web.poll() is not None or time.monotonic() > deadline:
                         raise AssertionError("isolated web host failed to start")
                     time.sleep(0.1)
-            pages = json.loads(request("/api/plugin-pages")[0])
-            page = next(value for value in pages if value["name"] == "zcode")
+            pages = json.loads(request("/api/plugin-panels")[0])
+            page = next(value for value in pages if value["name"] == "zcode" and value["slot"] == "settings")
             base = page["url"].removesuffix("index.html")
             for relative in ("index.html", "app.bundle.js", "app.js", "page.js", "control.js", "sdk-ui.js", "style.css"):
                 content, headers = request(base + relative)
@@ -258,7 +258,9 @@ def main():
                 "ref": page["ref"], "binding": "page.execution-list",
             })[0])
             assert {value["id"] for value in summaries} == set(identities)
-            assert all(value["generation"] == "1" and set(value) <= {"id", "generation", "expiresAt"} for value in summaries)
+            names = {identity: f"user-{suffix} · ZCode zai individual" for identity, suffix in zip(identities, ("a", "b"), strict=True)}
+            assert all(value["name"] == names[value["id"]] and value["generation"] == "1" and
+                       set(value) <= {"id", "name", "generation", "expiresAt"} for value in summaries)
             assert not data_dir.exists(), "safe account discovery started vendor state"
 
             def call(binding, identity=identities[0], generation="1", input=None, intent="", succeeds=True):
@@ -341,7 +343,7 @@ def main():
             web_log.close()
             print(json.dumps({
                 "passed": True, "hostSHA256": hashlib.sha256(Path(host).read_bytes()).hexdigest(),
-                "minimumHostAPI": "1.12", "actualNativePageRoutes": True,
+                "minimumHostAPI": "1.20", "actualNativePageRoutes": True,
                 "checkedStaticAssets": True, "sanitizedAccountEnumeration": True,
                 "twoSelectedAccountsReachedNativeProfile": True,
                 "uncertainResetNotReplayedOrRetargeted": True, "claimDispatchedOnce": True,

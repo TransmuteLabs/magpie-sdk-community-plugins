@@ -153,6 +153,14 @@ func (owner *module) completeFlow(ctx context.Context, call sdk.Call, stream *sd
 			account = start
 		}
 	}
+	account.DisplayName = oauthDisplayName(user)
+	if account.DisplayName == "" && flow.TargetAccount != "" {
+		previous, err := owner.identity(call)
+		if err != nil {
+			return sdk.AuthResult{}, err
+		}
+		account.DisplayName = previous.DisplayName
+	}
 	if err := account.Validate(owner.options.Now()); err != nil {
 		return sdk.AuthResult{}, invalid("Completed authorization did not yield usable selected credentials")
 	}
@@ -163,7 +171,7 @@ func (owner *module) completeFlow(ctx context.Context, call sdk.Call, stream *sd
 	if err != nil {
 		return sdk.AuthResult{}, err
 	}
-	return sdk.AuthResult{ID: account.AccountID(), Name: "ZCode " + account.Site + " " + account.Kind,
+	return sdk.AuthResult{ID: account.AccountID(), Name: account.accountName(),
 		Credentials: credentials, ExpiresAt: account.ExpiresAt}, nil
 }
 

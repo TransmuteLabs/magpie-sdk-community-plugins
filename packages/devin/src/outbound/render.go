@@ -255,7 +255,7 @@ func (renderer *ChatRenderer) Validate(summary codec.NativeSummary) error {
 	if renderer.finished {
 		return errors.New("canonical response is finished")
 	}
-	if summary.Stop != 2 && summary.Stop != 3 && summary.Stop != 10 {
+	if summary.Stop != 2 && summary.Stop != 3 && summary.Stop != 4 && summary.Stop != 10 {
 		return errors.New("native stop reason requires the paired native route")
 	}
 	for _, tool := range renderer.tools {
@@ -276,7 +276,7 @@ func (renderer *ChatRenderer) Finish(summary codec.NativeSummary) error {
 	}
 	finish := ""
 	switch summary.Stop {
-	case 2:
+	case 2, 4:
 		finish = "stop"
 		if len(renderer.tools) > 0 {
 			finish = "tool_calls"
