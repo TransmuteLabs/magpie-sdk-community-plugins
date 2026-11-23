@@ -37,10 +37,18 @@ USERS = {
 }
 SELECTED = "devin#cli"
 ROTATED = "devin#secondary"
+ACCOUNT_NAMES = {SELECTED: "Fixture CLI account", ROTATED: "Fixture second organization"}
+TEAM_ID = "fixture-team"
+SUBJECT_USERS = {**USERS, ROTATED: USERS[SELECTED]}
+ORG_IDS = dict.fromkeys(SAVED_KEYS, "fixture-org")
+ORG_IDS[ROTATED] = "fixture-second-org"
 CLI_CURRENT = "cog_fixture_devin_transfer_cli_current"
 ROTATED_KEY = "cog_fixture_devin_transfer_second_rotated"
 GATEWAY_KEY_NAME = "Fixture transfer caller"
-PRIVATE = (*SAVED_KEYS.values(), CLI_CURRENT, ROTATED_KEY, WEB_KEY, CALLER_KEY)
+DENIED_KEY_NAME = "Fixture disjoint account caller"
+DENIED_KEY = "synthetic-denied-devin-transfer-key"
+CALLER_KEYS = {GATEWAY_KEY_NAME: CALLER_KEY, DENIED_KEY_NAME: DENIED_KEY}
+PRIVATE = (*SAVED_KEYS.values(), CLI_CURRENT, ROTATED_KEY, WEB_KEY, *CALLER_KEYS.values())
 
 
 def public_output(value):
@@ -48,11 +56,13 @@ def public_output(value):
 
 
 def account_label(key):
-    return f"{USERS[key]}@example.invalid · {ORGANIZATION}"
+    return f"{SUBJECT_USERS[key]}@example.invalid · {ORGANIZATION}"
 
 
 class Vendor(Handler):
     def do_POST(self):
+        with self.server.lock:
+            self.server.requests += 1
         try:
             size = int(self.headers.get("Content-Length", "0"))
             require(0 < size <= 64 << 10, "invalid fixture request size")
@@ -70,11 +80,13 @@ class Vendor(Handler):
                 saved_key = ROTATED
             require(saved_key, "vendor received an unexpected credential")
             if self.path == STATUS:
-                user = USERS[saved_key]
-                status = {"userId": user, "email": f"{user}@example.invalid", "teamId": "fixture-team",
+                user = SUBJECT_USERS[saved_key]
+                status = {"userId": user, "email": f"{user}@example.invalid", "teamId": TEAM_ID,
                           "planStatus": {"dailyQuotaRemainingPercent": 90, "planInfo": {"devinInfo": {
-                              "orgId": "fixture-org", "accountDisplayName": ORGANIZATION,
+                              "orgId": ORG_IDS[saved_key], "accountDisplayName": ORGANIZATION,
                           }}}}
+                with self.server.lock:
+                    self.server.status_accounts.append(saved_key)
                 self.reply("application/json", json.dumps({"userStatus": status}).encode())
                 return
             if self.path == MODELS:
@@ -90,7 +102,8 @@ class Vendor(Handler):
             request = fields(payload)
             require(request.get(21) == [MODEL.encode()] and fields(request[1][0])[3] == [key.encode()],
                     "model or credential did not reach the ordinary Devin endpoint")
-            require(saved_key == SELECTED and CALLER_KEY.encode() not in payload, "wrong selected account")
+            require(saved_key == SELECTED and not any(token.encode() in payload for token in CALLER_KEYS.values()),
+                    "wrong selected account or leaked caller key")
             messages = [fields(value) for value in request.get(3, [])]
             prompt = b"".join(message.get(3, [b""])[0] for message in messages).decode()
             require(prompt in ("before-transfer", "after-transfer", "after-rollback", "after-logout"),
@@ -113,7 +126,7 @@ class TransferGateway(Gateway):
         completed = subprocess.run([str(self.magpie), *arguments], cwd=self.home, env=self.env,
                                    capture_output=True, text=True, timeout=45)
         output = completed.stdout + completed.stderr
-        if arguments != ("gateway-key", "add", GATEWAY_KEY_NAME, "--key", CALLER_KEY):
+        if arguments not in [("gateway-key", "add", name, "--key", key) for name, key in CALLER_KEYS.items()]:
             public_output(output)
         operation = " ".join(arguments[:3])
         if refusal:
@@ -155,6 +168,18 @@ class TransferGateway(Gateway):
             time.sleep(0.15)
         raise AssertionError("ordinary Providers did not publish the expected subscription owner")
 
+    def account_acl_bindings(self, expected, stage):
+        with self.opener.open(self.origin + "/api/caller-keys", timeout=15) as response:
+            public = response.read(16 << 20).decode()
+        public_output(public)
+        names = json.loads(public)["accountNames"]
+        bindings = {}
+        for label, account in expected.items():
+            matches = [ref for ref, shown in names.items() if shown == label]
+            require(matches == [account], f"{stage}: {label} did not identify the expected canonical grant")
+            bindings[label] = matches[0]
+        return bindings
+
     def configure_server(self, server):
         config = json.loads(self.command("plugin", "sdk", "config", MODULE))
         self.command("plugin", "sdk", "config", MODULE, json.dumps({"server": server}),
@@ -193,19 +218,39 @@ class TransferGateway(Gateway):
         require(json.loads(output)["choices"][0]["message"]["content"] == "fixture answer: " + stage,
                 stage + ": ordinary Chat response changed")
 
+    def refuse_disjoint_account(self, vendor, stage):
+        with vendor.lock:
+            previous = vendor.requests
+        value = {"model": PUBLIC_MODEL, "messages": [{"role": "user", "content": "acl-denied-" + stage}],
+                 "max_tokens": 32}
+        status, _, body = self.request("/v1/chat/completions", json.dumps(value).encode(), key=DENIED_KEY,
+                                       headers={"Content-Type": "application/json"})
+        output = body.decode()
+        public_output(output)
+        with vendor.lock:
+            require(vendor.requests == previous, f"{stage}: denied caller sent an upstream request")
+        require(status == 403 and DENIED_KEY_NAME in output and
+                f"not allowed to use the accounts behind {PUBLIC_MODEL}" in output,
+                f"{stage}: authenticated caller did not get the account ACL refusal: HTTP {status}")
+        return {"stage": stage, "status": status, "upstreamRequests": 0}
+
 
 def run(magpie, distribution, legacy, bun, artifacts):
     artifacts.mkdir()
     manifest = json.loads((distribution / "magpie-plugin.json").read_text())
     report = {"status": "failed", "hostSHA256": digest(magpie), "sdkSHA256": digest(distribution / manifest["entry"]),
               "legacySHA256": digest(legacy), "runnerSHA256": digest(__file__),
-              "moduleVersion": manifest["version"], "checks": []}
+              "moduleVersion": manifest["version"], "checks": [], "accountACLRefusals": []}
     try:
+        require((manifest["id"], manifest["version"]) == (MODULE, "0.8.3"), "wrong Devin release")
         with ExitStack() as stack:
             vendor = ThreadingHTTPServer(("127.0.0.1", 0), Vendor)
             vendor.lock, vendor.calls, vendor.failures = threading.Lock(), [], []
+            vendor.requests, vendor.status_accounts = 0, []
             server_thread(stack, vendor)
             proxy = server_thread(stack, DenyProxy())
+            replacement = server_thread(stack, DenyProxy())
+            replacement_origin = f"http://127.0.0.1:{replacement.server_port}"
             home = Path(stack.enter_context(tempfile.TemporaryDirectory(prefix="devin-transfer-")))
             gateway = TransferGateway(magpie, distribution, home, artifacts, f"http://127.0.0.1:{proxy.server_port}")
             stack.callback(gateway.close)
@@ -230,7 +275,7 @@ def run(magpie, distribution, legacy, bun, artifacts):
             source = gateway.config / "plugin-auth.json"
             records = {saved_key: {"type": "api", "key": token, "accountId": USERS[saved_key],
                                    "metadata": {"server": origin, "email": account_label(saved_key),
-                                                "orgId": "fixture-org", "teamId": "fixture-team"}}
+                                                "orgId": ORG_IDS[saved_key], "teamId": TEAM_ID}}
                        for saved_key, token in SAVED_KEYS.items()}
             records[SELECTED]["metadata"]["cli"] = "true"
             source.write_text(json.dumps(records) + "\n")
@@ -239,15 +284,27 @@ def run(magpie, distribution, legacy, bun, artifacts):
             gateway.command("provider", "refresh", PROVIDER)
             gateway.command("provider", "models", PROVIDER, "+" + MODEL)
             gateway.command("provider", "pool", PROVIDER, "--accounts", USERS[SELECTED])
+            for login, label in ACCOUNT_NAMES.items():
+                gateway.command("accounts", "alias", PROVIDER, USERS[login], label)
             gateway.command("gateway-key", "add", GATEWAY_KEY_NAME, "--key", CALLER_KEY)
+            gateway.command("gateway-key", "add", DENIED_KEY_NAME, "--key", DENIED_KEY)
             acl = gateway.config / "caller-keys.json"
-            caller_key, = json.loads(acl.read_text())
-            gateway.command("gateway-key", "models", caller_key["id"], PUBLIC_MODEL)
-            gateway.command("gateway-key", "accounts", caller_key["id"], f"{PROVIDER}/{USERS[SELECTED]}")
+            caller_ids = {item["name"]: item["id"] for item in json.loads(acl.read_text())}
+            for name, login in ((GATEWAY_KEY_NAME, SELECTED), (DENIED_KEY_NAME, ROTATED)):
+                gateway.command("gateway-key", "models", caller_ids[name], PUBLIC_MODEL)
+                gateway.command("gateway-key", "accounts", caller_ids[name], f"{PROVIDER}/{USERS[login]}")
             original_acl = acl.read_bytes()
-            caller_key, = json.loads(original_acl)
-            require(caller_key["models"] == [PUBLIC_MODEL], "caller key did not keep the public model ID")
+            caller_keys = {item["name"]: item for item in json.loads(original_acl)}
+            caller_key = caller_keys[GATEWAY_KEY_NAME]
+            denied_key = caller_keys[DENIED_KEY_NAME]
+            require(caller_key["models"] == denied_key["models"] == [PUBLIC_MODEL] and
+                    len(caller_key["accounts"]) == len(denied_key["accounts"]) == 1 and
+                    caller_key["accounts"] != denied_key["accounts"],
+                    "caller keys do not share the model with disjoint account ACLs")
             allowed, = caller_key["accounts"]
+            disjoint, = denied_key["accounts"]
+            expected_bindings = {f"{PROVIDER}/{ACCOUNT_NAMES[SELECTED]}": allowed,
+                                 f"{PROVIDER}/{ACCOUNT_NAMES[ROTATED]}": disjoint}
             gateway.start_web()
             pid = gateway.process.pid
             before = gateway.subscription()
@@ -257,16 +314,43 @@ def run(magpie, distribution, legacy, bun, artifacts):
                 return [(login["user"], login["on"]) for login in row["account"]["logins"]]
 
             require(check_logins(before) == expected_logins, "legacy account policy was not applied")
+            report["accountACLBindings"] = {
+                "before-transfer": gateway.account_acl_bindings(expected_bindings, "before-transfer")
+            }
             gateway.infer("before-transfer")
+            report["accountACLRefusals"].append(gateway.refuse_disjoint_account(vendor, "before-transfer"))
             original = source.read_bytes()
             report["checks"].append("three community accounts, stable model ACL and successful CLI-linked request")
 
             gateway.command("plugin", "sdk", "add", str(distribution))
+            gateway.configure_server(replacement_origin)
+            gateway.command("plugin", "sdk", "auth", "import", MODULE, PROVIDER, ROTATED,
+                            refusal="could not verify the saved sign-in")
+            require(not replacement.requests and not replacement.probes,
+                    "a foreign-server import sent a request to the configured replacement server")
+            report["foreignServerImportRefused"] = True
             gateway.configure_server(origin)
             write_cli(SAVED_KEYS["devin"])
             gateway.command("plugin", "sdk", "auth", "import", MODULE, PROVIDER, SELECTED,
                             refusal="could not verify the saved sign-in")
+            write_cli(SAVED_KEYS[ROTATED])
+            with vendor.lock:
+                status_start = len(vendor.status_accounts)
+            gateway.command("plugin", "sdk", "auth", "import", MODULE, PROVIDER, SELECTED,
+                            refusal="could not verify the saved sign-in")
+            with vendor.lock:
+                status_accounts = vendor.status_accounts[status_start:]
+            require(SELECTED in status_accounts and ROTATED in status_accounts,
+                    "same-user foreign organization refusal did not verify both keys at the vendor")
+            report["wrongOrganizationStatusAccounts"] = [SELECTED, ROTATED]
             write_cli(CLI_CURRENT)
+            require(not json.loads(gateway.command("plugin", "sdk", "auth", "owners")) and
+                    not json.loads(gateway.command("plugin", "sdk", "accounts", MODULE, PROVIDER, "--json")) and
+                    source.read_bytes() == original and acl.read_bytes() == original_acl and
+                    check_logins(gateway.subscription()) == expected_logins,
+                    "rejected identity checks changed an owner, credential, ACL or public alias")
+            report["wrongOrganizationFollowCLIRefused"] = True
+
             def prepare_signins(rotated=""):
                 prepared = {}
                 for key in SAVED_KEYS:
@@ -275,11 +359,15 @@ def run(magpie, distribution, legacy, bun, artifacts):
                             item["account"]["generation"] == ("2" if key == rotated else "1"),
                             "import lost the verified account label or generation")
                     prepared[key] = item
+                cli_account, other_org = [prepared[key]["account"] for key in (SELECTED, ROTATED)]
+                require(cli_account["name"] == other_org["name"] and cli_account["id"] != other_org["id"],
+                        "same-user Devin accounts with the same label and different organizations collided")
                 require(len({item["account"]["id"] for item in prepared.values()}) == len(SAVED_KEYS),
                         "verified Devin accounts collided")
                 return prepared
 
             prepared = prepare_signins()
+            report["sharedUserTenantAccountsDistinct"] = True
             tickets = [item["ticket"] for item in prepared.values()]
             gateway.command("plugin", "sdk", "auth", "transfer", MODULE, PROVIDER, tickets[0],
                             refusal="selection changed or is incomplete")
@@ -293,7 +381,9 @@ def run(magpie, distribution, legacy, bun, artifacts):
             require({item["key"]: (item["user"], item["id"]) for item in owner["accounts"]} == expected_accounts,
                     "transfer changed a public account alias or crossed credentials")
             selected, = [item for item in owner["accounts"] if item["key"] == SELECTED]
-            require(allowed == f"{PROVIDER}/{selected['loginID']}" and acl.read_bytes() == original_acl,
+            other_org, = [item for item in owner["accounts"] if item["key"] == ROTATED]
+            require(allowed == f"{PROVIDER}/{selected['loginID']}" and
+                    disjoint == f"{PROVIDER}/{other_org['loginID']}" and acl.read_bytes() == original_acl,
                     "transfer changed the stored gateway ACL")
             active = gateway.subscription(owner["revision"])
             require(check_logins(active) == expected_logins and
@@ -301,20 +391,26 @@ def run(magpie, distribution, legacy, bun, artifacts):
                     "SDK Providers lost account policy or verified labels")
             require(all(login["extensionGeneration"] == "1" for login in active["account"]["logins"]),
                     "SDK Providers lost the account generation")
+            report["accountACLBindings"]["after-transfer"] = gateway.account_acl_bindings(
+                expected_bindings, "after-transfer")
             write_cli(SAVED_KEYS[SELECTED])
             gateway.infer("after-transfer")
+            report["accountACLRefusals"].append(gateway.refuse_disjoint_account(vendor, "after-transfer"))
             report["checks"].append("foreign CLI identity and partial transfer refused, SDK preserved all three identities and routing")
 
             gateway.command("plugin", "logout", PROVIDER, refusal="managed by an SDK plugin")
             require(source.read_bytes() == original, "legacy sign-out changed rollback credentials")
+            cli_before_rollback = cli.read_bytes()
             rollback = json.loads(gateway.command("plugin", "sdk", "auth", "rollback", PROVIDER, owner["revision"]))
             require(not rollback["active"] and rollback["revision"] != owner["revision"] and
                     rollback["publicID"] == owner["publicID"] and rollback["accounts"] == owner["accounts"],
                     "rollback changed the public subscription or account identities")
             require(check_logins(gateway.subscription()) == expected_logins, "rollback lost the legacy account policy")
             gateway.infer("after-rollback")
-            require(source.read_bytes() == original and gateway.process.pid == pid and gateway.process.poll() is None,
-                    "rollback rewrote the legacy sign-ins or restarted Magpie")
+            report["accountACLRefusals"].append(gateway.refuse_disjoint_account(vendor, "after-rollback"))
+            require(source.read_bytes() == original and cli.read_bytes() == cli_before_rollback and
+                    gateway.process.pid == pid and gateway.process.poll() is None,
+                    "rollback rewrote a legacy sign-in or restarted Magpie")
             require(acl.read_bytes() == original_acl, "rollback changed the stored gateway ACL")
             report["checks"].append("legacy logout refused, original credentials intact, same host served restored legacy route")
 
@@ -333,8 +429,7 @@ def run(magpie, distribution, legacy, bun, artifacts):
             login = next(login for login in fresh["account"]["logins"] if login["user"] == signed_out_user)
             require(login["extensionGeneration"] == "2", "new owner did not publish the new credential generation")
             cli_before_logout = cli.read_bytes()
-            replacement = server_thread(stack, DenyProxy())
-            gateway.configure_server(f"http://127.0.0.1:{replacement.server_port}")
+            gateway.configure_server(replacement_origin)
             revision = fresh["account"]["ownerRevision"]
             gateway.forget_login(owner["revision"], login, refusal="subscription owner changed")
             gateway.forget_login(revision, old_login, refusal="extension account generation changed")
@@ -366,6 +461,7 @@ def run(magpie, distribution, legacy, bun, artifacts):
                                     "after a server change, and kept the surviving route")
             report["publicProvider"] = PROVIDER
             report["approvedAccount"] = allowed
+            report["disjointAccount"] = disjoint
             report["vendorCalls"] = vendor.calls
         require(gateway.process.poll() is not None and not home.exists(), "fixture retained its host or home")
         report["status"] = "passed"
