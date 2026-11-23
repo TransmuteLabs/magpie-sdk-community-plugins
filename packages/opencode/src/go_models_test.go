@@ -5,7 +5,9 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"slices"
+	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -15,36 +17,55 @@ import (
 )
 
 func TestPublicSDKGoCatalogAndExecuteUseSelectedSnapshot(t *testing.T) {
-	const live = `{"object":"list","data":[
-		{"id":"step-5-preview","type":"chat","name":"Step-5 Preview",
+	const workspace = `{"opencode":{"id":"opencode","models":{
+		"other-plan":{"id":"other-plan","type":"chat","limit":{"context":1000000,"output":65536},
+			"api":{"chat-completions":{"base_url":"https://opencode.ai/inference/openai/v1"}}}
+	}},"opencode-go":{"id":"opencode-go","models":{
+		"step-5-preview":{"id":"step-5-preview","type":"chat","name":"Step-5 Preview",
 			"limit":{"context":1000000,"input":1000000,"output":65536},
 			"api":{"chat-completions":{"base_url":"https://opencode.ai/inference/go/openai/v1"}}},
-		{"id":"gemini-4-argon-contributor","type":"chat","name":"Gemini 4 Argon Contributor",
+		"gemini-4-argon-contributor":{"id":"gemini-4-argon-contributor","type":"chat","name":"Gemini 4 Argon Contributor",
 			"limit":{"context":1048576,"output":65536},
 			"api":{"generate-content":{"base_url":"https://opencode.ai/inference/go/google/v1beta"}}},
-		{"id":"minimax-m3","type":"chat","limit":{"context":1000000,"output":131072},
+		"minimax-m3":{"id":"minimax-m3","type":"chat","limit":{"context":1000000,"output":131072},
 			"api":{"messages":{"base_url":"https://opencode.ai/inference/go/anthropic/v1"}}},
-		{"id":"gpt-6-luna","type":"chat","limit":{"context":1050000,"output":128000},
+		"gpt-6-luna":{"id":"gpt-6-luna","type":"chat","limit":{"context":1050000,"output":128000},
 			"api":{"responses":{"base_url":"https://opencode.ai/inference/go/openai/v1"}}},
-		{"id":"wrong-lane","type":"chat","limit":{"context":1000000,"output":65536},
-			"api":{"chat-completions":{"base_url":"https://opencode.ai/inference/openai/v1"}}},
-		{"id":"unknown-bare","object":"model"},
-		{"id":"kimi-k3","object":"model"}
-	]}`
+		"glm-5.2":{"id":"glm-5.2","type":"chat","limit":{"context":1000000,"output":131072},
+			"api":{"chat-completions":{"base_url":"https://opencode.ai/inference/go/openai/v1"}}},
+		"glm-5.3":{"id":"glm-5.3","type":"chat","limit":{"context":1000000,"output":131072},
+			"api":{"chat-completions":{"base_url":"https://opencode.ai/inference/go/openai/v1"}}},
+		"mimo-v2.5":{"id":"mimo-v2.5","type":"chat","limit":{"context":1000000,"output":128000},
+			"api":{"chat-completions":{"base_url":"https://opencode.ai/inference/go/openai/v1"}}},
+		"mimo-v2.5-pro":{"id":"mimo-v2.5-pro","type":"chat","limit":{"context":1048576,"output":128000},
+			"api":{"chat-completions":{"base_url":"https://opencode.ai/inference/go/openai/v1"}}},
+		"longcat-2.5":{"id":"longcat-2.5","type":"chat","limit":{"context":1000000,"output":65536},
+			"api":{"chat-completions":{"base_url":"https://opencode.ai/inference/go/openai/v1"}}},
+		"wrong-lane":{"id":"wrong-lane","type":"chat","limit":{"context":1000000,"output":65536},
+			"api":{"messages":{"base_url":"https://opencode.ai/inference/anthropic/v1"},
+				"responses":{"base_url":"https://opencode.ai/inference/openai/v1"}}},
+		"unknown-bare":{"id":"unknown-bare"},
+		"kimi-k3":{"id":"kimi-k3"}
+	}}}`
 	var clock atomic.Int64
 	clock.Store(time.Now().UnixNano())
 	now := func() time.Time { return time.Unix(0, clock.Load()) }
 	var failA, expireA atomic.Bool
 	var lists, dispatches atomic.Int32
 	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-		if request.URL.Path == "/inference/go/v1/models" {
+		switch request.URL.Path {
+		case "/inference/go/v1/models":
+			io.WriteString(writer, `{"object":"list","data":[{"id":"glm-5.2"},{"id":"kimi-k3"}]}`)
+			return
+		case "/console/api/v1/models":
 			lists.Add(1)
-			if request.Method != http.MethodGet || request.Header.Get("User-Agent") != "opencode/latest/2.3.0/cli" {
-				t.Error("Go catalog did not use the documented request")
+			if request.Method != http.MethodGet || request.Header.Get("Accept") != "application/json" ||
+				request.Header.Get("User-Agent") != "opencode/latest/2.3.0/cli" {
+				t.Error("Go workspace catalog did not use the documented request")
 			}
 			switch request.Header.Get("Authorization") {
 			case "Bearer access-a":
-				if request.Header.Get("X-Opencode-Org-Id") != "org-a" {
+				if request.Header.Get("X-Org-Id") != "org-a" {
 					t.Error("Go catalog used the wrong workspace")
 				}
 				if expireA.Load() {
@@ -53,10 +74,13 @@ func TestPublicSDKGoCatalogAndExecuteUseSelectedSnapshot(t *testing.T) {
 				if failA.Load() {
 					writer.WriteHeader(http.StatusServiceUnavailable)
 				} else {
-					io.WriteString(writer, live)
+					io.WriteString(writer, workspace)
 				}
 			case "Bearer access-b":
-				io.WriteString(writer, `{"object":"list","data":[]}`)
+				if request.Header.Get("X-Org-Id") != "org-b" {
+					t.Error("Go catalog used the wrong peer workspace")
+				}
+				io.WriteString(writer, `{"opencode":{"id":"opencode","models":{}}}`)
 			case "Bearer access-rotated":
 				writer.WriteHeader(http.StatusForbidden)
 			default:
@@ -67,11 +91,30 @@ func TestPublicSDKGoCatalogAndExecuteUseSelectedSnapshot(t *testing.T) {
 		dispatches.Add(1)
 		switch request.URL.Path {
 		case "/inference/go/openai/v1/chat/completions":
-			if request.Header.Get("Authorization") != "Bearer access-a" &&
-				request.Header.Get("Authorization") != "Bearer access-rotated" {
-				t.Error("Go Chat used a foreign credential")
+			if (request.Header.Get("Authorization") != "Bearer access-a" &&
+				request.Header.Get("Authorization") != "Bearer access-rotated") ||
+				request.Header.Get("X-Opencode-Org-Id") != "org-a" {
+				t.Error("Go Chat used a foreign credential or workspace")
 			}
-			io.WriteString(writer, `{"choices":[]}`)
+			body, err := io.ReadAll(request.Body)
+			if err != nil {
+				t.Error(err)
+			}
+			switch string(body) {
+			case `{"model":"minimax-m3","messages":[{"role":"user","content":"test"}],"stream":true}`,
+				`{"model":"gpt-6-luna","messages":[{"role":"user","content":"test"}],"stream":true}`:
+				if request.Header.Get("X-Opencode-Session") == "" {
+					t.Error("Go translation lost the session header")
+				}
+				writer.Header().Set("Content-Type", "text/event-stream")
+				io.WriteString(writer, "data: {\"choices\":[{\"delta\":{\"content\":\"ok\"}}]}\n\n")
+				io.WriteString(writer, "data: [DONE]\n\n")
+			case `{"model":"step-5-preview","messages":[]}`, `{"model":"kimi-k3","messages":[]}`:
+				io.WriteString(writer, `{"choices":[]}`)
+			default:
+				t.Errorf("Go Chat changed the request body: %s", body)
+				writer.WriteHeader(http.StatusBadRequest)
+			}
 		case "/inference/go/google/v1beta/models/gemini-4-argon-contributor:streamGenerateContent":
 			if request.Header.Get("X-Goog-Api-Key") != "access-a" || request.URL.RawQuery != "alt=sse" {
 				t.Error("Go Gemini used a foreign credential or an incorrect query")
@@ -83,7 +126,7 @@ func TestPublicSDKGoCatalogAndExecuteUseSelectedSnapshot(t *testing.T) {
 		}
 	}))
 	t.Cleanup(server.Close)
-	options := ModuleOptions{Endpoints: Endpoints{Console: server.URL, Inference: server.URL},
+	options := ModuleOptions{Endpoints: Endpoints{Console: server.URL + "/console", Inference: server.URL},
 		Now: now, HTTPFactory: func(string) (Doer, func(), error) { return server.Client(), nil, nil }}
 	harness := serveHarness(t, NewWindowModule(options), raw(moduleConfig{ProjectID: "global"}))
 	accountA, accountB := credential(now(), "a", "org-a"), credential(now(), "b", "org-b")
@@ -106,9 +149,14 @@ func TestPublicSDKGoCatalogAndExecuteUseSelectedSnapshot(t *testing.T) {
 			model.ID == "gemini-4-argon-contributor" && !slices.Equal(model.Protocols, []protocolext.Protocol{"gemini"}) {
 			t.Errorf("Go discovery changed the native declaration: %+v", model)
 		}
+		if (model.ID == "minimax-m3" || model.ID == "gpt-6-luna") &&
+			!slices.Equal(model.Protocols, []protocolext.Protocol{"chat"}) {
+			t.Errorf("Go discovery did not advertise the implemented relay for %+v", model)
+		}
 	}
-	if !slices.Equal(ids, []string{"gemini-4-argon-contributor", "kimi-k3", "step-5-preview"}) {
-		t.Errorf("Go catalog got %q from the selected list", ids)
+	want := []string{"gemini-4-argon-contributor", "glm-5.3", "gpt-6-luna", "kimi-k3", "longcat-2.5", "mimo-v2.5", "mimo-v2.5-pro", "minimax-m3", "step-5-preview"}
+	if !slices.Equal(ids, want) {
+		t.Fatalf("Go catalog got %q from the selected workspace, want %q", ids, want)
 	}
 	if models := list(scopeB, accountB); len(models) != 0 {
 		t.Errorf("Go empty list was replaced by another account or the bootstrap: %v", models)
@@ -119,24 +167,32 @@ func TestPublicSDKGoCatalogAndExecuteUseSelectedSnapshot(t *testing.T) {
 		Body: json.RawMessage(`{"model":"kimi-k3","messages":[]}`)}
 	gemini := sdk.ExecuteRequest{Protocol: "gemini", Model: "gemini-4-argon-contributor", Body: json.RawMessage(`{"contents":[{}]}`),
 		Options: raw(sdk.ExecuteOptions{Path: "/v1beta/models/gemini-4-argon-contributor:streamGenerateContent", Query: "alt=sse"})}
-	for _, request := range []sdk.ExecuteRequest{step, gemini} {
-		frame, _ := harness.invoke(sdk.MethodProviderExecute, scopeA, request, raw(accountA))
+	messages := sdk.ExecuteRequest{Protocol: "chat", Model: "minimax-m3",
+		Body: json.RawMessage(`{"model":"minimax-m3","messages":[{"role":"user","content":"test"}],"stream":true}`)}
+	responses := sdk.ExecuteRequest{Protocol: "chat", Model: "gpt-6-luna",
+		Body: json.RawMessage(`{"model":"gpt-6-luna","messages":[{"role":"user","content":"test"}],"stream":true}`)}
+	for _, request := range []sdk.ExecuteRequest{step, gemini, messages, responses} {
+		frame, events := harness.invoke(sdk.MethodProviderExecute, scopeA, request, raw(accountA))
 		if frame.Error != nil || !harness.accepted[frame.ID] {
 			t.Errorf("Go discovered model could not execute: %v", frame.Error)
 		}
+		if (request.Model == messages.Model || request.Model == responses.Model) &&
+			!strings.Contains(string(events), "data: [DONE]") {
+			t.Errorf("missing translated Chat terminal for %s", request.Model)
+		}
 	}
-	for _, request := range []sdk.ExecuteRequest{step, pinned} {
+	for _, request := range []sdk.ExecuteRequest{step, pinned, messages, responses} {
 		frame, _ := harness.invoke(sdk.MethodProviderExecute, scopeB, request, raw(accountB))
 		if frame.Error == nil || frame.Error.Outcome != "not-started" || harness.accepted[frame.ID] {
 			t.Errorf("known empty Go catalog gained inference authority: %v", frame.Error)
 		}
 	}
-	if lists.Load() != 2 || dispatches.Load() != 2 {
+	if lists.Load() != 2 || dispatches.Load() != 4 {
 		t.Errorf("execute did not reuse the selected snapshots: lists=%d dispatches=%d", lists.Load(), dispatches.Load())
 	}
 	clock.Add(int64(2 * time.Minute))
 	failA.Store(true)
-	if models := list(scopeA, accountA); len(models) != len(modelsA) {
+	if models := list(scopeA, accountA); !reflect.DeepEqual(models, modelsA) {
 		t.Error("failed refresh discarded last-good Go catalog")
 	}
 	frame, _ := harness.invoke(sdk.MethodProviderExecute, scopeA, step, raw(accountA))
@@ -146,8 +202,9 @@ func TestPublicSDKGoCatalogAndExecuteUseSelectedSnapshot(t *testing.T) {
 	rotated := accountA
 	rotated.Access = "access-rotated"
 	scopeA.Generation++
-	if models := list(scopeA, rotated); len(models) != len(Models()) {
-		t.Error("a generation without permission to list did not retain static compatibility")
+	denied, _ := harness.invoke(sdk.MethodProviderModels, scopeA, sdk.ModelsRequest{}, raw(rotated))
+	if denied.Error == nil {
+		t.Error("a generation without permission to list published the bootstrap as its workspace catalog")
 	}
 	frame, _ = harness.invoke(sdk.MethodProviderExecute, scopeA, step, raw(rotated))
 	if frame.Error == nil || frame.Error.Outcome != "not-started" {
@@ -159,6 +216,12 @@ func TestPublicSDKGoCatalogAndExecuteUseSelectedSnapshot(t *testing.T) {
 	}
 	failA.Store(false)
 	fresh := newHarness(t, options)
+	beforeLists, beforeDispatches := lists.Load(), dispatches.Load()
+	frame, _ = fresh.invoke(sdk.MethodProviderExecute, scopeB, pinned, raw(accountB))
+	if frame.Error == nil || frame.Error.Code != "unsupported" || frame.Error.Outcome != "not-started" ||
+		fresh.accepted[frame.ID] || lists.Load() != beforeLists+1 || dispatches.Load() != beforeDispatches {
+		t.Error("cold worker used a bootstrap model for a confirmed empty workspace", frame.Error)
+	}
 	frame, _ = fresh.invoke(sdk.MethodProviderExecute, sdk.Scope{Provider: ProviderGo, Account: accountA.AccountID(ProviderGo), Generation: 1}, step, raw(accountA))
 	if frame.Error != nil || !fresh.accepted[frame.ID] {
 		t.Error("cold worker failed to recover a model discovered by the host", frame.Error)

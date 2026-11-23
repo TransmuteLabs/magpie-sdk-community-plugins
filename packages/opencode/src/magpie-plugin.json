@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "id": "opencode",
-  "version": "0.8.4",
+  "version": "0.8.5",
   "runtime": "native",
   "entry": "lib/opencode.so",
   "contract": {
@@ -58,8 +58,8 @@
           "temperature": true
         },
         {
-          "id": "glm-5.2",
-          "name": "GLM-5.2",
+          "id": "glm-5.3",
+          "name": "GLM-5.3",
           "protocols": [
             "chat"
           ],
@@ -68,6 +68,7 @@
           "tools": true,
           "reasoning": true,
           "efforts": [
+            "low",
             "high",
             "max"
           ],
@@ -78,7 +79,7 @@
           "outputModalities": [
             "text"
           ],
-          "released": "2026-06-13",
+          "released": "2026-08-14",
           "temperature": true
         },
         {

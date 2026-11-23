@@ -1,10 +1,32 @@
 # OpenCode module source provenance
 
-OpenCode **0.8.4** uses public SDK API **1.12**, native ABI **1**, and the
+OpenCode **0.8.5** uses public SDK API **1.12**, native ABI **1**, and the
 Magpie `sessions` panel slot. It retains the Providers sign-in and Sessions
 placement from 0.8.3. Zen service-key names include a short account
 fingerprint. The provider and agent protocol sources remain the same.
 `--compat-api8` builds the 0.8.1 window package at API **1.12**.
+
+## November 23 Go workspace catalog
+
+The local OpenCode donor `011f9043e8a90dc9a1ac42fb1181486dd4d13b71`
+documents `/console/api/v1/models` as the workspace-edited model list
+for an OpenCode login. The module sends the selected OAuth bearer and
+`x-org-id`, following the donor's Console credential helper. It consumes
+only the `opencode-go` provider, preserves successful empty and last
+good results, and shares the account, organization and credential
+generation between discovery and execution.
+
+The same donor documents Chat Completions translation for Go text
+models. The module uses its existing Chat transport for Go entries
+whose metadata names an exact Messages or Responses Go base URL. The
+donor's models.dev snapshot supplies the replacement GLM-5.3 metadata.
+Commit `a86ac3f1b9d5fb7de846c29d6e0dc2136c503f0d` records the retirement
+of GLM 5, 5.1 and 5.2. The historical compatibility fixture remains
+archived. The source and loopback fixtures establish the client
+contract. Live OAuth replies and workspace-specific model counts
+remain unverified.
+
+## Earlier source reviews
 
 The 0.8.1 source review advances OpenCode `2.3.0` from `d33b578333` to
 `011f9043e8a90dc9a1ac42fb1181486dd4d13b71`. The 25 commits change

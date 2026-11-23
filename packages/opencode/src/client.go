@@ -274,18 +274,19 @@ func (client *Client) generateGemini(ctx context.Context, credentials Credential
 	return client.generate(ctx, credentials, headers, body, endpoint, true)
 }
 
-func (client *Client) modelList(ctx context.Context, path, access, org string) []byte {
+func (client *Client) modelList(ctx context.Context, target, access, orgHeader, org string) []byte {
 	ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
 	defer cancel()
-	request, err := http.NewRequestWithContext(ctx, http.MethodGet, client.Endpoints.Inference+path, nil)
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, target, nil)
 	if err != nil {
 		return nil
 	}
+	request.Header.Set("Accept", "application/json")
 	request.Header.Set("Authorization", "Bearer "+access)
 	request.Header.Set("User-Agent", "opencode/latest/"+client.Version+"/cli")
 	request.Header.Set("x-opencode-client", "cli")
 	if org != "" {
-		request.Header.Set("x-opencode-org-id", org)
+		request.Header.Set(orgHeader, org)
 	}
 	response, err := client.HTTP.Do(request)
 	if err != nil {

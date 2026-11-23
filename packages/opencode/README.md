@@ -1,6 +1,6 @@
 # OpenCode
 
-OpenCode Go and Zen providers, agent wiring, and consented local session history ship in one native plugin. **OpenCode 0.8.4** requires SDK **1.12**, native ABI **1**, `provider-signin`, and the `sessions` panel slot.
+OpenCode Go and Zen providers, agent wiring, and consented local session history ship in one native plugin. **OpenCode 0.8.5** requires SDK **1.12**, native ABI **1**, `provider-signin`, and the `sessions` panel slot.
 
 In Magpie, open **Providers → Add → Subscriptions** to sign in to OpenCode Go or Zen with a device code, add a Zen API key, or activate Zen Free. Manage signed-in accounts in Providers. Zen service-key names include a short account fingerprint. Signing in again with a saved service key also updates its label. The history panel appears on **Sessions** and asks for storage access separately.
 
@@ -8,7 +8,7 @@ In Magpie, open **Providers → Add → Subscriptions** to sign in to OpenCode G
 
 GitHub releases include the macOS arm64 ZIP and its SHA-256 checksum. Use the
 GitHub CLI sign-in that has access to the private repository. Before updating
-to 0.8.4, update Magpie to a build with the Sessions panel slot.
+to 0.8.5, update Magpie to a build with the Sessions panel slot.
 
 ```sh
 magpie plugin sdk add 'github:TransmuteLabs/magpie-sdk-community-plugins#opencode'

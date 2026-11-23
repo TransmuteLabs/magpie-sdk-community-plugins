@@ -1,5 +1,20 @@
 {
   "schema": 1,
+  "goWorkspaceCatalog20261123": {
+    "checkedAt": "2026-11-23",
+    "commit": "011f9043e8a90dc9a1ac42fb1181486dd4d13b71",
+    "retirementCommit": "a86ac3f1b9d5fb7de846c29d6e0dc2136c503f0d",
+    "paths": [
+      "packages/core/src/console-access.ts",
+      "packages/core/src/models-dev/snapshot.txt",
+      "services/site/src/docs/content/console/api/models.mdx",
+      "services/site/src/docs/content/console/go.mdx"
+    ],
+    "tests": ["src/go_models_test.go", "src/full_package_test.go", "tests/full_e2e.py"],
+    "decision": "Discover the Go provider in the selected Console workspace. Admit exact Go Messages and Responses model metadata through the documented Chat translation. Replace retired GLM bootstrap metadata using the pinned snapshot.",
+    "freshClientExecuted": false,
+    "liveOAuthVerified": false
+  },
   "officialProviderFollowUp20261119": {
     "checkedAt": "2026-11-19",
     "ref": "origin/dev",
@@ -234,7 +249,7 @@
   },
   "plugin": {
     "id": "opencode",
-    "version": "0.8.4",
+    "version": "0.8.5",
     "sdkMinimum": "1.12",
     "nativeABI": 1
   },

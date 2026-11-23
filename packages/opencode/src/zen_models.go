@@ -105,8 +105,7 @@ func zenProjectModels(listed []string, live map[string]inferenceModel, public bo
 			continue
 		}
 		seen[id] = true
-		switch id {
-		case "glm-5.3-flash-free", "glm-5", "glm-5.1", "glm-5.2":
+		if id == "glm-5.3-flash-free" || retiredGLM(id) {
 			continue
 		}
 		model, known := metadata[id]
@@ -151,6 +150,10 @@ func validInferenceModelID(id string) bool {
 		!strings.ContainsFunc(id, func(character rune) bool { return unicode.IsSpace(character) || unicode.IsControl(character) })
 }
 
+func retiredGLM(id string) bool {
+	return id == "glm-5" || id == "glm-5.1" || id == "glm-5.2"
+}
+
 func (model inferenceModel) free() bool {
 	priceIn, priceOut := model.Cost.Text.Input.Price, model.Cost.Text.Output.Price
 	return priceIn != nil && *priceIn == 0 && priceOut != nil && *priceOut == 0
@@ -176,6 +179,11 @@ func (model inferenceModel) protocols(goPlan, live bool) []protocolext.Protocol 
 		if entry := model.API[route.API]; entry != nil && (!live || nativeInferenceEndpoint(entry, route.Base)) {
 			protocols = append(protocols, protocolext.Protocol(route.Protocol))
 		}
+	}
+	if goPlan && len(protocols) == 0 &&
+		(nativeInferenceEndpoint(model.API["responses"], goOpenAIBase) ||
+			nativeInferenceEndpoint(model.API["messages"], goAnthropicBase)) {
+		protocols = append(protocols, "chat")
 	}
 	return protocols
 }
@@ -334,7 +342,8 @@ func (owner *module) discoverZen(ctx context.Context, call sdk.Call, stream *sdk
 	if found && owner.options.Now().Sub(previous.at) < time.Minute {
 		return slices.Clone(previous.models), nil
 	}
-	body := owner.client(stream).modelList(ctx, "/inference/v1/models", identity.access(), identity.organization())
+	client := owner.client(stream)
+	body := client.modelList(ctx, client.Endpoints.Inference+"/inference/v1/models", identity.access(), "x-opencode-org-id", identity.organization())
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}

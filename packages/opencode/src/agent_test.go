@@ -223,19 +223,19 @@ func TestAgentSyncAndDisconnectPreserveOutputOverridesAndUnknownFields(t *testin
 
 func TestAgentPreservesNestedModelOverridesAndCustomVariants(t *testing.T) {
 	hash := sha256.Sum256([]byte("opencode\x00" + ProviderGo))
-	ref := "extension-" + hex.EncodeToString(hash[:12]) + "/glm-5.2"
+	ref := "extension-" + hex.EncodeToString(hash[:12]) + "/glm-5.3"
 	options := agentOptions{Gateway: "http://127.0.0.1:3425", Key: "host-only-key", Field: "model", Value: "magpie/" + ref,
 		Models: []json.RawMessage{raw(map[string]string{"value": "magpie/" + ref})}}
 	binding := &sdk.AgentBindingSnapshot{Target: "opencode", Revision: "0", Values: map[string]string{}}
 	for _, format := range []string{"v1", "v2"} {
 		t.Run(format, func(t *testing.T) {
 			providerKey, capabilityKey := "providers", "capabilities"
-			variants := `[{"id":"low","settings":{"reasoningEffort":"low"}},` +
+			variants := `[{"id":"medium","settings":{"reasoningEffort":"medium"}},` +
 				`{"id":"high","settings":{"reasoningEffort":"high","customSetting":"keep-high"}},` +
 				`{"id":"personal","settings":{"customSetting":"keep-personal"}}]`
 			if format == "v1" {
 				providerKey, capabilityKey = "provider", "modalities"
-				variants = `{"low":{"reasoningEffort":"low"},"high":{"reasoningEffort":"high","customSetting":"keep-high"},` +
+				variants = `{"medium":{"reasoningEffort":"medium"},"high":{"reasoningEffort":"high","customSetting":"keep-high"},` +
 					`"personal":{"customSetting":"keep-personal"}}`
 			}
 			before := []byte(`{"` + providerKey + `":{"magpie":{"models":{"` + ref +
@@ -256,7 +256,7 @@ func TestAgentPreservesNestedModelOverridesAndCustomVariants(t *testing.T) {
 					t.Fatalf("agent erased a user model override %q", expected)
 				}
 			}
-			if strings.Contains(string(plan.Files[0].Body), `"low"`) {
+			if strings.Contains(string(plan.Files[0].Body), `"medium"`) {
 				t.Fatal("agent retained an obsolete generated variant")
 			}
 		})

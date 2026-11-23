@@ -17,6 +17,9 @@ const refusalFixtureCatalog = `{"data":[{"id":"fixture-model","type":"chat","lim
 func TestRequestPolicyOriginalFinalRefusal(t *testing.T) {
 	var sends atomic.Int32
 	server := newZenFixture(t, func(writer http.ResponseWriter, request *http.Request) {
+		if serveFixtureGoCatalog(writer, request) {
+			return
+		}
 		sends.Add(1)
 		writer.Header().Set("Retry-After", "3600")
 		writer.WriteHeader(429)
@@ -175,6 +178,9 @@ func TestRequestPolicyAmbiguityRetainsAcceptedFence(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			var sends atomic.Int32
 			server := newZenFixture(t, func(writer http.ResponseWriter, request *http.Request) {
+				if serveFixtureGoCatalog(writer, request) {
+					return
+				}
 				sends.Add(1)
 				writer.WriteHeader(429)
 				io.WriteString(writer, body)

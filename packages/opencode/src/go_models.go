@@ -2,6 +2,7 @@ package opencode
 
 import (
 	"context"
+	"encoding/json"
 	"slices"
 	"strings"
 	"sync"
@@ -13,8 +14,9 @@ import (
 )
 
 const (
-	goOpenAIBase = "/inference/go/openai/v1"
-	goGeminiBase = "/inference/go/google/v1beta"
+	goOpenAIBase    = "/inference/go/openai/v1"
+	goAnthropicBase = "/inference/go/anthropic/v1"
+	goGeminiBase    = "/inference/go/google/v1beta"
 )
 
 type goCatalogKey struct {
@@ -84,7 +86,8 @@ func (owner *module) discoverGo(ctx context.Context, call sdk.Call, stream *sdk.
 	if previous != nil && owner.options.Now().Sub(previous.at) < time.Minute {
 		return previous.models, nil
 	}
-	body := owner.client(stream).modelList(ctx, "/inference/go/v1/models", credentials.Access, credentials.OrgID)
+	client := owner.client(stream)
+	body := client.modelList(ctx, client.Endpoints.Console+"/api/v1/models", credentials.Access, "x-org-id", credentials.OrgID)
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
@@ -95,17 +98,33 @@ func (owner *module) discoverGo(ctx context.Context, call sdk.Call, stream *sdk.
 	if previous != nil {
 		return previous.models, nil
 	}
-	return Models(), nil
+	return nil, &sdk.Error{Code: "upstream", Message: "OpenCode Go workspace catalog unavailable", Outcome: "not-started"}
 }
 
 func goDiscoverModels(body []byte) ([]sdk.Model, bool) {
-	entries, ok := decodeInferenceList(body)
-	if !ok {
+	var providers map[string]struct {
+		ID     string                     `json:"id"`
+		Models map[string]json.RawMessage `json:"models"`
+	}
+	if json.Unmarshal(body, &providers) != nil || providers == nil {
 		return nil, false
 	}
+	for id, provider := range providers {
+		if id == "" || id != provider.ID || provider.Models == nil {
+			return nil, false
+		}
+	}
+	entries := providers[ProviderGo].Models
 	pinned := Models()
 	models := make([]sdk.Model, 0, len(entries))
-	for _, entry := range entries {
+	for id, raw := range entries {
+		var entry inferenceModel
+		if json.Unmarshal(raw, &entry) != nil || entry.ID != id || !validInferenceModelID(id) {
+			return nil, false
+		}
+		if retiredGLM(id) {
+			continue
+		}
 		if entry.hasMetadata() {
 			if descriptor, ok := entry.projectLive(true, false); ok {
 				models = append(models, descriptor)
@@ -133,10 +152,13 @@ func (owner *module) canExecuteGo(ctx context.Context, call sdk.Call, stream *sd
 			return supported, nil
 		}
 	}
-	if known, supported := supportsCatalogModel(Models(), model, protocol); known {
-		return supported, nil
-	}
 	models, err := owner.discoverGo(ctx, call, stream, state, credentials)
+	if err != nil {
+		if ctx.Err() == nil && modelSupports(model, protocol) {
+			return true, nil
+		}
+		return false, err
+	}
 	_, supported := supportsCatalogModel(models, model, protocol)
-	return supported, err
+	return supported, nil
 }
