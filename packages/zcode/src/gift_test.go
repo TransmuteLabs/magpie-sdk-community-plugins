@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
+	"slices"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -20,6 +21,7 @@ type giftFixture struct {
 	start     atomic.Int32
 	paid      atomic.Int32
 	quota     atomic.Int64
+	reserve   atomic.Bool
 	answer    string
 	status    int
 }
@@ -47,13 +49,18 @@ func newGiftFixture(t *testing.T, answer string, status int) (*giftFixture, *htt
 		case "/api/biz/subscription/list":
 			io.WriteString(writer, `{"code":200,"data":[{"status":"VALID","inCurrentPeriod":true,"productName":"GLM Coding Pro"}]}`)
 		case "/api/v1/zcode-plan/billing/balance":
+			balances := []any{map[string]any{"plan_id": "grant", "user_plan_id": "owned", "total_units": 100,
+				"remaining_units": fixture.remaining.Load(), "capabilities": []string{
+					"model:glm-5.3", "model:glm-limited-preview", "model:GLM-LIMITED-PREVIEW", "tool:web-search",
+				}}}
+			if fixture.reserve.Load() {
+				balances = append(balances, map[string]any{"plan_id": "grant", "user_plan_id": "owned",
+					"show_name": "Reserve", "total_units": 25, "remaining_units": 0, "capabilities": []string{"model:GLM-5.3"}})
+			}
 			json.NewEncoder(writer).Encode(map[string]any{"code": 0, "data": map[string]any{
 				"plans": []any{map[string]any{"plan_id": "grant", "user_plan_id": "owned", "status": "active",
 					"ends_at": fixtureNow.Add(time.Hour).Unix()}},
-				"balances": []any{map[string]any{"plan_id": "grant", "user_plan_id": "owned", "total_units": 100,
-					"remaining_units": fixture.remaining.Load(), "capabilities": []string{
-						"model:glm-5.3", "model:glm-limited-preview", "model:GLM-LIMITED-PREVIEW", "tool:web-search",
-					}}},
+				"balances": balances,
 			}})
 		case "/quota/zai":
 			json.NewEncoder(writer).Encode(map[string]any{"code": 0, "data": map[string]any{
@@ -250,6 +257,47 @@ func TestGiftDualUsageSeparatesTrialFromExhaustedPaidQuota(t *testing.T) {
 	}
 	if !paidExcluded || !trialOpen {
 		t.Fatalf("paid quota blocks gift or gift quota became unknown: %+v", result.Windows)
+	}
+}
+
+func TestGiftUsagePreservesAsideBucketScope(t *testing.T) {
+	for _, test := range []struct {
+		name      string
+		account   Credentials
+		config    map[string]any
+		models    []string
+		available string
+	}{
+		{name: "start", account: fixtureCredentials("start"), config: map[string]any{}, models: []string{"glm-5.3"},
+			available: "glm-limited-preview"},
+		{name: "dual", account: giftAccount(), config: map[string]any{}, models: []string{"GLM-5.3-Trial", "GLM-5.3"},
+			available: "glm-limited-preview-Trial"},
+		{name: "dual_paid_first", account: giftAccount(), config: map[string]any{"freeFirst": false},
+			models: []string{"GLM-5.3-Trial"}, available: "glm-limited-preview-Trial"},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			fixture, server := newGiftFixture(t, `{"type":"message","content":[]}`, 200)
+			fixture.reserve.Store(true)
+			harness := newHarnessConfigured(t, endpointOptions(server), test.config)
+			frame, _ := harness.call(sdk.MethodProviderUsage, scope(test.account), sdk.UsageRequest{}, raw(test.account))
+			var result sdk.UsageResult
+			if frame.Error != nil || json.Unmarshal(frame.Result, &result) != nil {
+				t.Fatalf("usage: %+v", frame.Error)
+			}
+			reserve, other := false, false
+			for _, window := range result.Windows {
+				if window.Name == "Reserve · Start Plan" {
+					reserve = true
+					if !window.Aside || window.Used != 100 || !slices.Equal(window.Models, test.models) {
+						t.Fatalf("reserve usage = %+v, want an aside at 100%% scoped to %v", window, test.models)
+					}
+				}
+				other = other || !window.Aside && window.Used == 25 && containsString(window.Models, test.available)
+			}
+			if !reserve || !other {
+				t.Fatalf("reserve or ordinary neighboring model missing from usage: %+v", result.Windows)
+			}
+		})
 	}
 }
 

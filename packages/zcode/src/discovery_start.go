@@ -254,6 +254,7 @@ func projectStartBuckets(buckets []startBucket) []sdk.UsageWindow {
 		}
 		if !selected {
 			window := bucket.window
+			window.Models = bucket.models
 			window.Aside = true
 			aside = append(aside, window)
 		}

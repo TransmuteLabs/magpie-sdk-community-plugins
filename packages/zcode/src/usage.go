@@ -200,6 +200,10 @@ func (owner *module) readUsage(ctx context.Context, call sdk.Call, stream *sdk.S
 			}
 			held, holdErr := owner.giftRouteHeld(ctx, stream)
 			freeFirst := state.freeFirst && !held && holdErr == nil
+			giftRest := make(map[string]bool, len(gift.Declared))
+			for name, model := range gift.Declared {
+				giftRest[name] = owner.giftRested(ctx, account, model, false)
+			}
 			for index := range report.Windows {
 				window := &report.Windows[index]
 				if window.Aside {
@@ -207,23 +211,32 @@ func (owner *module) readUsage(ctx context.Context, call sdk.Call, stream *sdk.S
 				}
 				for name, model := range gift.Declared {
 					window.NotModels = append(window.NotModels, model+"-Trial")
-					if freeFirst && gift.Models[name] && !owner.giftRested(ctx, account, model, false) {
+					if freeFirst && gift.Models[name] && !giftRest[name] {
 						window.NotModels = append(window.NotModels, model)
 					}
 				}
 			}
 			for _, window := range gift.Windows {
 				if window.Aside {
+					models := make([]string, 0, len(window.Models))
+					for _, name := range window.Models {
+						model := gift.Declared[name]
+						models = append(models, model+"-Trial")
+						if freeFirst && gift.Models[name] && !giftRest[name] {
+							models = append(models, model)
+						}
+					}
+					window.Models = models
 					report.Windows = append(report.Windows, window)
 					continue
 				}
 				plain := window.Models[0]
 				window.Models = []string{gift.Declared[plain] + "-Trial"}
 				window.Name = gift.Declared[plain] + "-Trial · " + window.Name
-				if owner.giftRested(ctx, account, plain, false) {
+				if giftRest[plain] {
 					window.Used = 100
 				}
-				if freeFirst && gift.Models[plain] && !owner.giftRested(ctx, account, plain, false) {
+				if freeFirst && gift.Models[plain] && !giftRest[plain] {
 					window.Models = append(window.Models, gift.Declared[plain])
 				}
 				report.Windows = append(report.Windows, window)
