@@ -74,10 +74,99 @@ class GuiEndpoint(policy.PolicyEndpoint):
         super().dispatch(path, value, region)
 
 
-fixture.EndpointHandler = GuiEndpoint
+class AccountIsolationEndpoint(GuiEndpoint):
+    def dispatch(self, path, value, region):
+        usage_paths = (
+            "/matrix/api/v1/user/get_user_extra_info",
+            "/matrix/api/v1/commerce/get_membership_info",
+            "/backend/account/token_plan/remains_percent",
+            "/v1/api/openplatform/charge/combo/cycle_audio_resource_package",
+        )
+        if path not in usage_paths:
+            return super().dispatch(path, value, region)
+        token = self.headers["Authorization"].removeprefix("Bearer ")
+        selected_region, identity, _ = self.server.tokens[token]
+        require(selected_region == fixture.GLOBAL and fixture.HOSTS[self.authority] == selected_region,
+                "quota request crossed regions")
+        used = self.server.account_usage[identity]
+        group = "group-" + identity
+        if path.endswith("/get_user_extra_info"):
+            self.reply({"workspaces": [{"workspace_type": 0, "workspace_id": group,
+                                        "op_group_id": group, "has_token_plan": True}]})
+        elif path.endswith("/get_membership_info"):
+            require(value.get("workspace_id") == group, "membership used another account's workspace")
+            self.reply({"has_token_plan": True})
+        else:
+            require(self.headers.get("X-Group-Id") == group, "plan lookup used another account's group")
+            if path.endswith("/remains_percent"):
+                end = self.server.account_reset
+                self.reply({"model_remains": [{"model_name": "general", "current_interval_status": 1,
+                                               "current_interval_remaining_percent": 100 - used,
+                                               "start_time": end - 5 * 3600, "end_time": end}]})
+            else:
+                self.reply({"current_subscribe": {"current_subscribe_title": "Synthetic Coding Plan"}})
 
 
-def run(host_binary, distribution, output):
+def account_isolation(request, auth, accounts, provider_id, proxy):
+    provider = fixture.GLOBAL
+    first, second = "first-isolated-subject", "second-isolated-subject"
+    proxy.authorized = True
+    proxy.account_usage = {first: 17, second: 63}
+    proxy.account_reset = int(time.time()) + 3 * 3600
+    saved = {}
+    for identity in (first, second):
+        proxy.identity, proxy.name = identity, identity + "@example.invalid"
+        challenge = auth("start", provider)
+        require(challenge["state"] == "waiting", "ordinary Providers did not issue a device challenge")
+        time.sleep(challenge["retryAfterMs"] / 1000 + 0.05)
+        completed = auth("finish", provider, challenge["flow"])
+        require(completed["state"] == "complete", "ordinary Providers did not save the selected subject")
+        saved[identity] = completed["account"]
+    first_account, second_account = saved[first], saved[second]
+    before = {account["id"]: account["generation"] for account in accounts(provider)}
+    require(len(before) == 2 and before == {first_account["id"]: "1", second_account["id"]: "1"},
+            "two same-region sign-ins did not keep independent generation-one accounts")
+    listed, = [row for row in request("/api/providers")["providers"] if row["id"] == provider_id]
+    require(listed["accountUsers"] == {account["id"]: identity + "@example.invalid"
+                                      for identity, account in saved.items()},
+            "Providers did not show the two matching display names")
+
+    def check_cards(cards, expected):
+        selected = [row for row in cards if row["provider"] == provider_id]
+        require(len(selected) == len(expected) and {row.get("user") for row in selected} == set(expected),
+                "Usage did not publish exactly the current selected accounts")
+        for row in selected:
+            windows = [window for window in row["windows"] if window["name"] == "5 hours"]
+            require(not row.get("error") and len(windows) == 1 and not windows[0].get("unknown")
+                    and not windows[0].get("error") and windows[0]["used"] == expected[row["user"]]
+                    and windows[0].get("resetsAt"), "Usage attributed a vendor window incorrectly")
+
+    def plan_subjects(start):
+        return {proxy.tokens[row["headers"]["authorization"].removeprefix("Bearer ")][1]
+                for row in proxy.snapshot()[start:] if row["path"] == "/backend/account/token_plan/remains_percent"}
+
+    check_cards(request("/api/usage/quotas?asked=1"), {saved[key]["id"]: used
+                                                     for key, used in proxy.account_usage.items()})
+    require(plan_subjects(0) == {first, second}, "ordinary Usage did not read both selected vendor plans")
+    target = {"agent": provider_id, "account": {"id": first_account["id"], "expectedGeneration": "2"}}
+    request("/api/login/forget", target, success=False)
+    require({account["id"]: account["generation"] for account in accounts(provider)} == before,
+            "stale logout changed a saved account")
+    target["account"]["expectedGeneration"] = first_account["generation"]
+    request("/api/login/forget", target)
+    require({account["id"]: account["generation"] for account in accounts(provider)} == {second_account["id"]: "1"},
+            "selected logout removed or changed the sibling")
+    cached = request("/api/usage/quotas") or []
+    for row in cached:
+        if row["provider"] == provider_id and row.get("user") == first_account["id"]:
+            require(row.get("readDeferred") and not row.get("windows"),
+                    "ordinary Usage still published a usable allowance for the signed-out account")
+    check_cards(request("/api/usage/quotas?asked=1"), {second_account["id"]: proxy.account_usage[second]})
+    return {"case": "same-region-usage-after-selected-logout", "passed": True,
+            "initialCards": 2, "remainingCards": 1, "staleLogoutRefused": True}
+
+
+def run(host_binary, distribution, output, isolated_accounts=False):
     require(not output.exists(), "GUI evidence must use a new directory")
     output.mkdir()
     manifest = json.loads((distribution / "magpie-plugin.json").read_text())
@@ -86,12 +175,14 @@ def run(host_binary, distribution, output):
             and not (distribution / "web").exists(), "MiniMax must supply providers without a duplicate window or agent")
     require(manifest["version"] == metadata["version"] and metadata["magpie"]["name"] == "MiniMax",
             "MiniMax distribution metadata does not match the native module")
-    report = {"test": "TestInstalledMiniMaxProviderSignIn", "cases": [],
+    report = {"test": "TestInstalledMiniMaxAccountUsageIsolation" if isolated_accounts
+              else "TestInstalledMiniMaxProviderSignIn", "cases": [],
               "hostSHA256": fixture.sha256(host_binary),
               "librarySHA256": fixture.sha256(distribution / manifest["entry"]),
               "runtime": "actual Providers routes and packaged native handlers; no external vendor"}
     try:
         with ExitStack() as stack:
+            fixture.EndpointHandler = AccountIsolationEndpoint if isolated_accounts else GuiEndpoint
             home = Path(stack.enter_context(tempfile.TemporaryDirectory(prefix="mm-gui-")))
             ca, context = fixture.certificate(output, {"HOME": str(home), "PATH": "/usr/bin:/bin"})
             proxy = fixture.Fixture(context)
@@ -132,8 +223,11 @@ def run(host_binary, distribution, output):
                         data = response.read(fixture.LIMIT)
                     require(success is not False, "revoked GUI request unexpectedly succeeded")
                     return json.loads(data)
-                except urllib.error.HTTPError:
+                except urllib.error.HTTPError as error:
                     require(success is not True, "ordinary GUI request failed")
+                    if isolated_accounts and success is False:
+                        require(400 <= error.code < 500 and b"extension account generation changed" in error.read(fixture.LIMIT),
+                                "stale logout did not reach the selected-account generation check")
                     return None
 
             def accounts(provider):
@@ -181,6 +275,14 @@ def run(host_binary, distribution, output):
 
             def exchanges():
                 return len([row for row in proxy.snapshot() if row["path"] == "/oauth2/token"])
+
+            if isolated_accounts:
+                report["cases"].append(account_isolation(request, auth, accounts, ids[fixture.GLOBAL], proxy))
+                require(not proxy.failures and not proxy.denied, "unexpected vendor fixture traffic")
+                require(fixture.sha256(distribution / manifest["entry"]) == report["librarySHA256"],
+                        "production native library bytes changed")
+                report["status"] = "passed"
+                return
 
             signed_in = {}
             for provider in regions:
@@ -330,5 +432,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     for option in ("host", "distribution", "output"):
         parser.add_argument("--" + option, type=Path, required=True)
+    parser.add_argument("--isolated-accounts", action="store_true")
     options = parser.parse_args()
-    run(*(getattr(options, name).resolve() for name in ("host", "distribution", "output")))
+    run(*(getattr(options, name).resolve() for name in ("host", "distribution", "output")),
+        isolated_accounts=options.isolated_accounts)
