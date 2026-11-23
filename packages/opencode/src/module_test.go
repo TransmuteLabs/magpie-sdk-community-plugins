@@ -401,6 +401,97 @@ func TestPublicSDKGoChatRequiresSSEForStreamingSuccess(t *testing.T) {
 	}
 }
 
+func TestSDKOpenCodeProjectRefusalPrecedesAnyDispatch(t *testing.T) {
+	account := credential(time.Now(), "user", "org")
+	personal := ZenCredentials{Kind: "key", Key: "fixture-personal"}
+	public := ZenCredentials{Kind: "public", Key: "public"}
+	chat := sdk.ExecuteRequest{Protocol: "chat", Model: "deepseek-v4.1-flash",
+		Body: []byte(`{"model":"deepseek-v4.1-flash","messages":[]}`)}
+	gemini := sdk.ExecuteRequest{Protocol: "gemini", Model: "fixture-gemini",
+		Body: []byte(`{"contents":[{"parts":[{"text":"fixture"}]}]}`)}
+	for _, target := range []struct {
+		scope   sdk.Scope
+		auth    json.RawMessage
+		request sdk.ExecuteRequest
+	}{
+		{sdk.Scope{Provider: ProviderGo, Account: account.AccountID(ProviderGo), Generation: 1}, raw(account), chat},
+		{zenScope(ProviderZen, personal), raw(personal), gemini},
+		{zenScope(ProviderZenPublic, public), raw(public), gemini},
+	} {
+		for _, scenario := range []struct {
+			name, header, code string
+		}{
+			{"missing", "", "project_required"},
+			{"malformed", "invalid-fixture-project", "invalid_project"},
+		} {
+			t.Run(target.scope.Provider+"/"+scenario.name, func(t *testing.T) {
+				harness := serveHarness(t, NewWindowModule(ModuleOptions{
+					HTTPFactory: func(string) (Doer, func(), error) {
+						t.Error("project rejection reached the network factory")
+						return nil, nil, fmt.Errorf("fixture refused network use")
+					},
+				}), raw(moduleConfig{}))
+				request := target.request
+				if scenario.header != "" {
+					request.Headers = http.Header{}
+					request.Headers.Set("X-Opencode-Project", scenario.header)
+				}
+				frame, body := harness.invoke(sdk.MethodProviderExecute, target.scope, request, target.auth)
+				if frame.Error == nil || frame.Error.Code != scenario.code || frame.Error.Outcome != "not-started" {
+					t.Errorf("wrong project classification: %+v", frame.Error)
+				}
+				if len(harness.proxies) != 0 || len(harness.accepted) != 0 || len(harness.headers) != 0 || len(body) != 0 {
+					t.Errorf("project refusal published SDK events or used the network: proxy=%d accepted=%d headers=%d body=%q",
+						len(harness.proxies), len(harness.accepted), len(harness.headers), body)
+				}
+			})
+		}
+	}
+}
+
+func TestSDKOpenCodeConfiguredProjectKeepsHeaderPrecedence(t *testing.T) {
+	const project = "0123456789abcdef0123456789abcdef01234567"
+	for _, scenario := range []struct {
+		name, configured, header, want string
+	}{
+		{"explicit_header", "", project, project},
+		{"configured_over_header", "global", project, "global"},
+		{"configured_over_malformed_header", "global", "invalid-fixture-project", "global"},
+	} {
+		t.Run(scenario.name, func(t *testing.T) {
+			var requests atomic.Int32
+			const fixtureReply = `{"message":"fixture response"}`
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, request *http.Request) {
+				requests.Add(1)
+				if project := request.Header.Get("X-Opencode-Project"); project != scenario.want {
+					t.Errorf("wire project=%q, want %q", project, scenario.want)
+				}
+				w.Header().Set("Content-Type", "application/json")
+				io.WriteString(w, fixtureReply)
+			}))
+			t.Cleanup(server.Close)
+			harness := serveHarness(t, NewModule(ModuleOptions{
+				Endpoints: Endpoints{Console: server.URL + "/console", Inference: server.URL},
+				HTTPFactory: func(string) (Doer, func(), error) {
+					return server.Client(), nil, nil
+				},
+			}), raw(moduleConfig{ProjectID: scenario.configured}))
+			account := credential(time.Now(), "user", "org")
+			scope := sdk.Scope{Provider: ProviderGo, Account: account.AccountID(ProviderGo), Generation: 1}
+			request := sdk.ExecuteRequest{Protocol: "chat", Model: "deepseek-v4.1-flash",
+				Options: []byte(`{"method":"POST","path":"/v1/chat/completions"}`),
+				Body:    []byte(`{"model":"deepseek-v4.1-flash","messages":[]}`),
+				Headers: http.Header{"X-Opencode-Project": {scenario.header}}}
+			frame, body := harness.invoke(sdk.MethodProviderExecute, scope, request, raw(account))
+			if frame.Error != nil || !harness.accepted[frame.ID] || requests.Load() != 1 ||
+				len(harness.headers) != 1 || string(body) != fixtureReply {
+				t.Errorf("valid project did not dispatch once: accepted=%v requests=%d headers=%d body=%q error=%+v",
+					harness.accepted[frame.ID], requests.Load(), len(harness.headers), body, frame.Error)
+			}
+		})
+	}
+}
+
 func TestPublicSDKNonSSEStreamingResponseClosesWithoutEOF(t *testing.T) {
 	for _, name := range []string{"Go Chat", "Go Gemini", "Zen Free"} {
 		t.Run(name, func(t *testing.T) {

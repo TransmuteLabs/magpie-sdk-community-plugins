@@ -201,6 +201,20 @@ func notStarted(err error) error {
 	return &sdk.Error{Code: "invalid_params", Message: "OpenCode request was rejected before dispatch", Outcome: "not-started"}
 }
 
+func executionProject(configured string, headers http.Header) (string, error) {
+	if configured != "" {
+		return configured, nil
+	}
+	project := headers.Get("x-opencode-project")
+	if project == "" {
+		return "", &sdk.Error{Code: "project_required", Message: "Configure an explicit OpenCode projectId or supply X-Opencode-Project", Outcome: "not-started"}
+	}
+	if !validProject(project) {
+		return "", &sdk.Error{Code: "invalid_project", Message: "X-Opencode-Project must be an OpenCode project hash or global", Outcome: "not-started"}
+	}
+	return project, nil
+}
+
 type proxyHTTP struct {
 	stream  *sdk.Stream
 	factory HTTPFactory
@@ -548,12 +562,12 @@ func (owner *module) execute(ctx context.Context, call sdk.Call, stream *sdk.Str
 	if headers == nil {
 		headers = http.Header{}
 	}
-	project := state.config.ProjectID
-	if project == "" {
-		project = headers.Get("x-opencode-project")
+	project, err := executionProject(state.config.ProjectID, headers)
+	if err != nil {
+		return nil, err
 	}
 	if err := state.headers.Stamp(headers, call.Scope.Account, options.CallerID, call.Scope.Session, project, ClientVersion, owner.options.Now()); err != nil {
-		return nil, &sdk.Error{Code: "invalid_params", Message: "Configure an explicit projectId before OpenCode chat execution", Outcome: "not-started"}
+		return nil, notStarted(err)
 	}
 	supported, err := owner.canExecuteGo(ctx, call, stream, state, credentials, request.Model, request.Protocol)
 	if err != nil {

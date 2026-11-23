@@ -217,9 +217,13 @@ explicit zero input and output prices. GLM 5, 5.1, 5.2 and GLM-5.3-Flash
 Free are excluded from the Zen bootstrap and every subsequent listing.
 
 Configure an explicit `projectId` (an OpenCode project hash or `global`), or
-supply an explicit project header. No home directory or Git configuration is
-inspected. The reviewed client target is pinned to OpenCode 2.3.0 at the exact
-revision in `source-lock.json`; the 2.2.5→2.3.0 protocol review is in
+supply an explicit `X-Opencode-Project` header. Saved configuration takes
+precedence. Inference without either value returns `project_required`. A
+malformed project header returns `invalid_project` when no value is configured.
+Both are `not-started` SDK errors before any inference request. No home
+directory or Git configuration is inspected. The reviewed client target is
+pinned to OpenCode 2.3.0 at the exact revision in `source-lock.json`, with
+the 2.2.5→2.3.0 protocol review in
 [SOURCES.md](SOURCES.md).
 
 ## Explicit limits

@@ -111,9 +111,9 @@ func (owner *module) executeZen(ctx context.Context, call sdk.Call, stream *sdk.
 	if headers == nil {
 		headers = http.Header{}
 	}
-	project := state.config.ProjectID
-	if project == "" {
-		project = headers.Get("x-opencode-project")
+	project, err := executionProject(state.config.ProjectID, headers)
+	if err != nil {
+		return nil, err
 	}
 	if err := state.headers.Stamp(headers, call.Scope.Account, options.CallerID, call.Scope.Session, project, ClientVersion, owner.options.Now()); err != nil {
 		return nil, notStarted(err)
