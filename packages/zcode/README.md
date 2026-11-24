@@ -1,7 +1,7 @@
 # ZCode
 
 One native package with the ZCode provider, controller, agent profile, a Settings
-control panel and rooted CLI history. The default artifact is **0.16.0**,
+control panel and rooted CLI history. The default artifact is **0.16.1**,
 public SDK minimum **1.20**, native ABI **1**. SQLite and runtime behavior are
 preserved from the independently reviewed standalone source.
 

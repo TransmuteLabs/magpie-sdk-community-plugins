@@ -5,11 +5,17 @@ Refs name exact commits; the verification host additionally pins its
 committed tree. Source repositories remain
 read-only; no dependency installation or vendor account was used.
 
-The full 0.16.0 composition requires `provider-signin` and
+The full 0.16.1 composition requires `provider-signin` and
 `provider-saved-signin`. The latter denotes two-step saved-account preparation
 and activation through Magpie. Both compositions require API 1.20 for
 the typed rate-limit check-in result. The explicit
 0.7.4 headless composition retains its provider-only contract.
+
+Version 0.16.1 scopes each named Start reserve to the models it covers.
+The SDK regression exercises Start, dual free-first and dual paid-first.
+The Linux gateway test used a loopback vendor to check that Preview and paid
+GLM could still dispatch beside an exhausted Trial reserve. The source lock
+records the exact tested patch and receipt.
 
 The earlier browser-only candidate used the release workflow SDK commit
 `1a478840fc13199bf302efcdc9cf9b987d821438`. Its subscription checks on
@@ -28,7 +34,7 @@ loopback vendor and local Community fixtures.
 | Confirmed CN/Start checkpoint | `3d949ff`, headless 0.6.2 / optional UI 0.8.2, wire client 3.18.2 |
 | Accepted owned-agent checkpoint | `ffa65a5`, headless 0.6.2 / native UI and agent 0.9.0 |
 | Bounded donor-parity checkpoint | `f6c708f`, headless compatibility 0.7.0 / native UI and agent 0.10.0 |
-| Ordinary full package | 0.16.0, provider/controller/agent/UI and rooted CLI history together; `scripts/build.py --output DIRECTORY` with no selection flags |
+| Ordinary full package | 0.16.1, provider/controller/agent/UI and rooted CLI history together; `scripts/build.py --output DIRECTORY` with no selection flags |
 | Current provider-only package | 0.7.4, explicit `--headless`, same domain fixes and public policy |
 | Runtime SDK floor | both compositions use 1.20. The full composition requires `provider-saved-signin`. Historical receipts retain their original floors. |
 | 2026-11-16 baseline regression repair host | parent immutable local candidate-05, 11001-file source SHA256 `0db2f2e148b7263e196db2e1e4f40e2fd3a4bfba31fddf842a9417e6b57f4926`; separate from earlier native/policy freezes and final combined acceptance |
@@ -60,6 +66,23 @@ loopback vendor and local Community fixtures.
 | 2026-11-17 bounded community donor | `324acd6007f2d513c5072fe2e9fe1db3524ae03d`, package0.1.68, ZCode subtree `91595e647e66e6b45105ce45fcea2291b85d0634`; original extraction pins remain unchanged |
 | Saved sign-in comparison | community `836f2e4e4cd899318c422d67cc1b2b30baaf1e06`, same 0.1.68 subtree; desktop `fec975905a2abd4c07e35c40d51fa097a2258ec9` |
 | 2026-11-22 check-in donor | community `fdbf261b7d01d1c908220029473d671cc420cab7`, package 0.1.69, ZCode subtree `ee4de91f09b88382e6b2d55236b1f1e3e93dc6ec` |
+| Browser sign-in clock-skew donor | ZCode Desktop 4.0.0 and CLI 0.18.0, `a4b4445141eb7d3b3e99eada9292775383bfc44e`, optional init `server_time` |
+
+The desktop 3.18.2 provider configuration (revision 44) includes
+`.*glm-4\.6(?!v).*` in its Messages model rules. The SDK uses an equivalent
+Go regexp for that exact case-insensitive model pattern. The vendor
+resolver derives eligibility from the selected provider's model lists and
+applies matching rules in order. The Community loader reads the same
+public configuration with JavaScript regexp semantics. Discovery and
+selected execution keep the vendor resolver's membership and rule order.
+Other unsupported expressions still return an error.
+
+ZCode's newer init response supplies `server_time` alongside `expires_at`.
+The SDK applies that server-relative lifetime using the existing persisted
+local deadline and caps it at five minutes from init start. If init omits
+the field or returns a value other than a finite JSON number, the SDK
+continues to use absolute `expires_at`. `src/auth_flow_test.go` covers both
+directions of clock skew and this legacy fallback through SDK auth calls.
 
 Community 0.1.69 rechecks the marketing feed after a successful claim so
 plans that arrive later in the Beijing day can be claimed. The SDK package

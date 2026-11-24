@@ -212,15 +212,20 @@ func (owner *module) authStart(ctx context.Context, call sdk.Call, stream *sdk.S
 	flowID, _ := data["flow_id"].(string)
 	authorizeURL, _ := data["authorize_url"].(string)
 	address, parseErr := url.Parse(authorizeURL)
-	deadline, validDeadline := finiteNumber(data["expires_at"])
+	expiresAt, validExpiry := finiteNumber(data["expires_at"])
 	interval, validInterval := finiteNumber(data["poll_interval_sec"])
+	now := float64(owner.options.Now().UnixMilli())
+	deadline := expiresAt * 1000
+	if serverTime, valid := finiteNumber(data["server_time"]); valid {
+		deadline = now + (expiresAt-serverTime)*1000
+	}
 	if !safeText(flowID) || parseErr != nil || address.Scheme != "https" || address.Host == "" ||
-		address.User != nil || address.Query().Get("state") == "" || !validDeadline || !validInterval ||
-		deadline*1000 <= float64(owner.options.Now().UnixMilli()) || deadline*1000 > float64(started.Add(24*time.Hour).UnixMilli()) ||
+		address.User != nil || address.Query().Get("state") == "" || !validExpiry || !validInterval ||
+		deadline <= now || deadline > float64(started.Add(24*time.Hour).UnixMilli()) ||
 		interval < 1 || interval >= 300 {
 		return nil, &sdk.Error{Code: "upstream", Message: "ZCode returned an invalid authorization flow"}
 	}
-	flow.FlowID, flow.Deadline = flowID, min(int64(deadline*1000), started.Add(5*time.Minute).UnixMilli())
+	flow.FlowID, flow.Deadline = flowID, min(int64(deadline), started.Add(5*time.Minute).UnixMilli())
 	flow.Interval = int64(interval * 1000)
 	if flow.Interval >= flow.Deadline-owner.options.Now().UnixMilli() {
 		return nil, &sdk.Error{Code: "upstream", Message: "ZCode authorization interval exceeds its remaining lifetime"}

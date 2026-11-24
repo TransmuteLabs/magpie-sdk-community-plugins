@@ -6,7 +6,7 @@ commands and layout are in [../README.md](../README.md). Source-level names
 elsewhere in the reference are relative to `src/` unless stated otherwise.
 
 External native Go module for `TransmuteLabs/magpie-sdk-plugin-protocol-zcode`.
-The ordinary **0.16.0** package includes provider, controller, owned agent
+The ordinary **0.16.1** package includes provider, controller, owned agent
 and UI in one native installation. It uses the shared SDK **1.20**
 contract and native ABI **1**, and imports only public SDK packages.
 The SDK owns registration and C glue. No community plugin or Bun worker
@@ -388,8 +388,10 @@ provider configuration receives no account credentials. The selected
 plan's ordered rules determine model properties, limits and efforts;
 Start discovery keeps declared active buckets visible after exhaustion;
 strict Trial dispatch requires confirmed spendable quota. Inference
-rechecks eligibility before dispatch. Unknown entitlement, malformed
-configuration and unsupported regexp semantics return explicit errors.
+rechecks eligibility before dispatch. The catalog supports revision 44's
+case-insensitive model rule for GLM-4.6 excluding GLM-4.6V. Unknown
+entitlement, malformed configuration and unsupported regexp semantics
+return explicit errors.
 Discovery currently runs on each invocation, without an entitlement cache.
 `auto` attempts Personal paid selection when that family's material
 exists. A session without linked paid material can confirm Start

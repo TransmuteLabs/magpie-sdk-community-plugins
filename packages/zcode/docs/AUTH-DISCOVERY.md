@@ -32,6 +32,10 @@ endpoint is invented. All verification uses synthetic endpoints and tokens.
   exchanges cannot be repeated after an uncertain result.
 - `auth.finish` returns Pending for a pending/temporarily unavailable poll.
   Poll interval and deadline are honored.
+- When init supplies finite numeric `server_time` in Unix seconds, the
+  module converts the remaining lifetime on the server clock to a local
+  continuation deadline. Missing or unusable values use the original
+  absolute expiry. The same local five-minute cap applies in both cases.
 - A completed receipt may be returned again without another vendor
   exchange. Selected-account reauthorization rejects another vendor user,
   selection or credential generation.

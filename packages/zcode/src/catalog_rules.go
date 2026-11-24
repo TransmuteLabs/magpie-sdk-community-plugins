@@ -31,6 +31,9 @@ func matchRule(pattern any, value string, insensitive bool) (bool, error) {
 	if !valid || len(text) > 16384 {
 		return false, protocol.ErrInvalid
 	}
+	if insensitive && text == `.*glm-4\.6(?!v).*` {
+		text = `[^\r\n\x{2028}\x{2029}]*glm-4\.6(?:[^v\r\n\x{2028}\x{2029}][^\r\n\x{2028}\x{2029}]*)?`
+	}
 	expression := "^(?:" + text + ")$"
 	if insensitive {
 		expression = "(?i)" + expression

@@ -69,6 +69,68 @@ func TestUnsupportedRegexpCannotSilentlyDropAnEligibilityRule(t *testing.T) {
 	}
 }
 
+func TestRevision44GLMRuleKeepsItsScope(t *testing.T) {
+	for _, example := range []struct {
+		name  string
+		model string
+		match bool
+	}{
+		{"base", "GLM-4.6", true},
+		{"suffix", "zai/Glm-4.6-Flash", true},
+		{"vision", "GLM-4.6V", false},
+		{"vision_suffix", "glm-4.6v-flash", false},
+		{"second_occurrence", "GLM-4.6v/glm-4.6", true},
+		{"both_vision", "GLM-4.6v/glm-4.6V", false},
+		{"glm_5", "GLM-5", false},
+		{"glm_5_3", "GLM-5.3", false},
+		{"line_separator", "GLM-4.6\u2028Flash", false},
+	} {
+		t.Run(example.name, func(t *testing.T) {
+			matched, err := matchRule(`.*glm-4\.6(?!v).*`, example.model, true)
+			if err != nil || matched != example.match {
+				t.Fatalf("revision 44 model match = %t, %v; want %t", matched, err, example.match)
+			}
+		})
+	}
+}
+
+func TestRevision44GLMRuleKeepsAPIAndPriority(t *testing.T) {
+	fixture := modelConfigFixture()
+	config := fixture["config"].(map[string]any)
+	providers := config["providerConfigRules"].(map[string]any)["providerRules"].([]any)
+	providers[0].(map[string]any)["config"] = map[string]any{"builtinModelIds": []string{
+		"GLM-4.6", "GLM-4.6V", "GLM-4.6-Flash", "GLM-5.3",
+	}}
+	rules := config["modelConfigRules"].(map[string]any)
+	rules["modelApiRules"] = []any{
+		map[string]any{"modelMatch": `.*glm-4\.6(?!v).*`, "apiTypeMatch": "anthropic-messages",
+			"config": map[string]any{"properties": map[string]any{"contextWindow": 12000}}},
+		map[string]any{"modelMatch": `.*glm-4\.6(?!v).*`, "apiTypeMatch": "openai-chat-completions",
+			"config": map[string]any{"enabled": false}},
+	}
+	rules["builtinProviderModelRules"] = []any{map[string]any{
+		"providerId": "account:zai-individual-coding-plan", "modelId": "GLM-4.6-Flash",
+		"config": map[string]any{"properties": map[string]any{"contextWindow": 16000}},
+	}}
+	models, err := configuredModels(raw(fixture), "account:zai-individual-coding-plan", "https://api.z.ai/api/anthropic")
+	if err != nil || len(models) != 4 {
+		t.Fatalf("revision 44 rule precedence: %v, models %+v", err, models)
+	}
+	for index, expected := range []struct {
+		id      string
+		context int64
+	}{
+		{"GLM-4.6", 12000},
+		{"GLM-4.6V", 256000},
+		{"GLM-4.6-Flash", 16000},
+		{"GLM-5.3", 256000},
+	} {
+		if model := models[index]; model.ID != expected.id || model.ContextWindow != expected.context {
+			t.Fatalf("model %d = %s with %d tokens; want %s with %d", index, model.ID, model.ContextWindow, expected.id, expected.context)
+		}
+	}
+}
+
 func TestMissingRuleFamiliesAndUnspecifiedOptionsPreserveInheritance(t *testing.T) {
 	fixture := modelConfigFixture()
 	rules := fixture["config"].(map[string]any)["modelConfigRules"].(map[string]any)

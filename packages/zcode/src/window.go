@@ -9,7 +9,7 @@ import (
 
 func ControlManifest() sdk.Manifest {
 	manifest := Manifest()
-	manifest.Version = "0.16.0"
+	manifest.Version = "0.16.1"
 	manifest.Providers[0].MaxConcurrency = new(3)
 	manifest.Contract.Capabilities = append(manifest.Contract.Capabilities,
 		sdk.AgentWiring, sdk.StorageSource, sdk.AgentProcess, sdk.ProviderSignIn, sdk.ProviderSavedSignIn)

@@ -2,7 +2,7 @@
   "schema": 1,
   "plugin": {
     "id": "zcode",
-    "version": "0.16.0",
+    "version": "0.16.1",
     "sdkMinimum": "1.20",
     "nativeABI": 1
   },
@@ -19,6 +19,51 @@
     ]
   },
   "sources": [
+    {
+      "id": "vendor-zcode-oauth-clock-skew",
+      "role": "browser-sign-in-init-server-relative-expiry",
+      "repository": "https://github.com/zai-org/ZCode",
+      "commit": "a4b4445141eb7d3b3e99eada9292775383bfc44e",
+      "version": "desktop 4.0.0 / CLI 0.18.0",
+      "checkedAt": "2026-11-24",
+      "paths": ["packages/services/src/oauth/oauthService.ts", "apps/zcode-cli/packages/adapters/src/auth/cli-oauth.ts", "apps/zcode-cli/packages/bootstrap/src/auth-login.ts"],
+      "checkedFiles": {
+        "packages/services/src/oauth/oauthService.ts": "ee75fd7a2613e9ea891f93a8285a66e67df707e130692ea60939f156efad5957"
+      },
+      "limits": ["The port uses the existing durable local deadline. The official client's process-local monotonic timer is outside this change."]
+    },
+    {
+      "id": "vendor-zcode-revision44-model-regexp",
+      "role": "official-provider-catalog-model-regexp-compatibility",
+      "repository": "https://github.com/zai-org/ZCode",
+      "commit": "fec975905a2abd4c07e35c40d51fa097a2258ec9",
+      "tree": "5e90fec80706b8381f94e4eef48cf821b9868916",
+      "version": "desktop 3.18.2 / CLI 0.17.1",
+      "checkedAt": "2026-11-24",
+      "paths": ["config/provider/zcode-builtin.json", "packages/provider/src/config/model-config.ts", "packages/provider/src/resolver.ts"],
+      "checkedFiles": {
+        "config/provider/zcode-builtin.json": "2af7b0cac658e9507413f5b1f5f9754e17c18fd29745522592d8b6ae699030ab",
+        "packages/provider/src/config/model-config.ts": "4c0e31fc9945989573861561099d49b6695063ac13a98964443ebe967dc51c45",
+        "packages/provider/src/resolver.ts": "2d3edd7d1b9dbc3ef666e915f6a8ac220d3e53ddb2df55b8efc0fe87bc6149f3"
+      },
+      "limits": ["Compatibility covers the exact revision 44 model rule and selected provider catalog. Other unsupported expressions remain errors."]
+    },
+    {
+      "id": "zcode-trial-reserve-scope",
+      "role": "named-Start-reserve-model-scope",
+      "repository": "https://github.com/TransmuteLabs/magpie-sdk-community-plugins",
+      "commit": "afe1cd6a4c5b8ee65e596c9ec7a8bdb33bad7206",
+      "version": "0.16.0",
+      "checkedAt": "2026-11-23",
+      "paths": ["packages/zcode/src/discovery_start.go", "packages/zcode/src/usage.go", "packages/zcode/src/gift_test.go"],
+      "verification": {
+        "hostCommit": "51ba0b7338e5d51a041e8c98a31ec1467d888376",
+        "sdkBaseCommit": "0ba83486319eb3a5dc3f854d37162824141ae2e2",
+        "patchSHA256": "d8dcf58c90c13d2e2712a9f45ac12736079a7f0e4bc8102e76d8b31e2e84d345",
+        "receiptSHA256": "26ac08d62b98613ab093a933b39ee7dc0a4cec057b250ba25141585176f427fd"
+      },
+      "limits": ["Linux loopback evidence covers reserve scope and group dispatch. Release artifacts and live provider behavior remain unverified."]
+    },
     {
       "id": "community-zcode-0169",
       "role": "half-hourly-late-gift-feed-recheck-port",
@@ -624,6 +669,12 @@
   ],
   "watch": [
     {
+      "source": "vendor-zcode-oauth-clock-skew",
+      "paths": ["packages/services/src/oauth/oauthService.ts", "apps/zcode-cli/packages/adapters/src/auth/cli-oauth.ts", "apps/zcode-cli/packages/bootstrap/src/auth-login.ts"],
+      "behaviors": ["numeric optional init server_time in Unix seconds", "server-relative lifetime and legacy absolute expiry"],
+      "tests": ["src/auth_flow_test.go"]
+    },
+    {
       "source": "vendor-native-foreground-20261116",
       "paths": ["packages/shared/src/zcode-protocol-v4/command.ts", "packages/shared/src/zcode-protocol-v4/snapshot.ts", "packages/shared/src/zcode-protocol-v4/transport.ts", "packages/shared/src/zcode-protocol/index.ts"],
       "behaviors": ["one durable native sendText", "ACK differs from terminal query", "owned V4 workspace/session/command/control projection", "string and integer reverse RPC IDs", "correlated reverse reply/cancel", "stop bypasses pending turn", "loss/revocation never replays", "successful close joins read callback replies before terminal publication"],
@@ -751,7 +802,7 @@
     "Historical native lifecycle verification pinned base c11acbc2bebec1fb213ef562900d35188cdf55fe, physical source tree 8fe78ab9df13d733d61462eacce19bff523c1e58 and binary c018c44332ff9238779d1d01340dfd751209c2c694942fd0406e4d6a3c96cc86. Those c8281b6 lineage/native libraries remain historical evidence, not acceptance of the changed foreground package.",
     "Agent options retain and validate public decisionModels separately from chat models. Decision metadata does not configure a ZCode decision client or authorize decision-only models in the chat catalog.",
     "Both current compositions require SDK 1.20 for the completed rate-limited check-in result and retain SDK 1.12 request-policy. The historical ordinary full distribution was 0.15.0 with provider/controller/owned-agent/UI and rooted default CLI SQLite history; explicit --headless retained the 0.7.3 provider-only composition. Historical API4/API9 receipts and source locks retain their original identities.",
-    "The full 0.16.0 composition requires provider-saved-signin at API 1.12 and uses Magpie's two-step saved-account preparation and activation. The 0.7.4 headless manifest has no provider sign-in binding. Community source 836f2e4e remains the donor for the one-record import shape. Desktop-follow records require interactive authorization.",
+    "The full composition requires provider-saved-signin at API 1.12 and uses Magpie's two-step saved-account preparation and activation. The 0.7.4 headless manifest has no provider sign-in binding. Community source 836f2e4e remains the donor for the one-record import shape. Desktop-follow records require interactive authorization.",
     "API1.12 verification uses the frozen e2ca42c6 physical host source. Permit-validation and revoked-diagnostic changes belong to the host owner; final combined host replay is coordinated by parent. No live vendor, actual client, publication or committed-host acceptance is inferred.",
     "The 0.14.0 continuation uses fresh official fec9759 and community 57d1cc6a; the latter's ZCode tree d1be84b4 is identical to the ported 0.1.66. Previous c8281b6 native library acceptance does not establish acceptance of this changed package. Final merged-host pin and actual-client resume/control remain separate.",
     "Wire ClientVersion 3.18.2 accompanies the confirmed unlinked-Start and explicit zai_cn login-channel ports. The bounded vendor audit is not full native-agent parity.",

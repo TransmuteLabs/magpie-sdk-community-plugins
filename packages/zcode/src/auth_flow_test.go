@@ -96,6 +96,109 @@ func TestHeadlessStartFlowHonorsIntervalAndRedeliversWithoutExchange(t *testing.
 	}
 }
 
+func TestHeadlessStartFlowClockSkew(t *testing.T) {
+	const initDelay = 3 * time.Second
+	for _, test := range []struct {
+		name       string
+		clockSkew  time.Duration
+		serverTime any
+		expiresIn  time.Duration
+		wantUntil  time.Duration
+	}{
+		{name: "client_ahead", clockSkew: 394 * time.Second, serverTime: fixtureNow.Unix(), expiresIn: 2 * time.Minute, wantUntil: 123 * time.Second},
+		{name: "client_behind", clockSkew: -25 * time.Hour, serverTime: fixtureNow.Unix(), expiresIn: 2 * time.Minute, wantUntil: 123 * time.Second},
+		{name: "missing_server_time", expiresIn: 2 * time.Minute, wantUntil: 2 * time.Minute},
+		{name: "non_numeric_server_time", serverTime: "1794564000", expiresIn: 2 * time.Minute, wantUntil: 2 * time.Minute},
+		{name: "non_finite_server_time", serverTime: json.Number("1e999"), expiresIn: 2 * time.Minute, wantUntil: 2 * time.Minute},
+		{name: "client_ahead_legacy", clockSkew: 394 * time.Second, expiresIn: 2 * time.Minute},
+		{name: "expired_at_server", clockSkew: -10 * time.Minute, serverTime: fixtureNow.Unix()},
+		{name: "local_five_minute_cap", serverTime: fixtureNow.Unix(), expiresIn: 10 * time.Minute, wantUntil: 5 * time.Minute},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			localStart := fixtureNow.Add(test.clockSkew)
+			var clock atomic.Int64
+			clock.Store(localStart.UnixMilli())
+			var polls, balances atomic.Int32
+			server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+				var data map[string]any
+				switch request.URL.Path {
+				case "/api/v1/oauth/cli/init":
+					clock.Add(initDelay.Milliseconds())
+					writer.Header().Set("Date", fixtureNow.Add(-time.Hour).Format(http.TimeFormat))
+					data = map[string]any{
+						"flow_id": "clock-flow", "authorize_url": "https://chat.z.ai/authorize?state=fixture-state",
+						"poll_interval_sec": 1, "expires_at": fixtureNow.Add(test.expiresIn).Unix(),
+					}
+					if test.serverTime != nil {
+						data["server_time"] = test.serverTime
+					}
+				case "/api/v1/oauth/cli/poll/clock-flow":
+					if polls.Add(1) == 1 {
+						data = map[string]any{"status": "pending"}
+					} else {
+						data = map[string]any{"status": "ready", "token": fixtureJWT(fixtureNow.Add(time.Hour)),
+							"user": map[string]string{"user_id": "clock-user"}}
+					}
+				case "/api/v1/zcode-plan/billing/balance":
+					balances.Add(1)
+					writer.Header().Set("Date", fixtureNow.Format(http.TimeFormat))
+					data = map[string]any{"plans": []any{map[string]any{"plan_id": "start", "user_plan_id": "owned",
+						"status": "active", "ends_at": fixtureNow.Add(time.Hour).Unix()}}, "balances": []any{}}
+				default:
+					t.Errorf("unexpected clock-skew login endpoint %s", request.URL.Path)
+					writer.WriteHeader(http.StatusNotFound)
+					return
+				}
+				if err := json.NewEncoder(writer).Encode(map[string]any{"code": 0, "data": data}); err != nil {
+					t.Error(err)
+				}
+			}))
+			t.Cleanup(server.Close)
+			options := endpointOptions(server)
+			options.Now = func() time.Time { return time.UnixMilli(clock.Load()) }
+			h := newHarness(t, options)
+			selected := sdk.Scope{Provider: ProviderID}
+			frame, _ := h.call(sdk.MethodAuthStart, selected,
+				sdk.AuthStartRequest{Method: "browser", Input: raw(authSelection{Site: "zai", Kind: "start"})}, nil)
+			if test.wantUntil == 0 {
+				if frame.Error == nil || frame.Error.Code != "upstream" || frame.Error.Message != "ZCode returned an invalid authorization flow" ||
+					polls.Load() != 0 || balances.Load() != 0 {
+					t.Fatalf("expected init to reject expired authorization, got %+v", frame.Error)
+				}
+				return
+			}
+			var started sdk.AuthStartResult
+			if frame.Error != nil || json.Unmarshal(frame.Result, &started) != nil ||
+				started.URL != "https://chat.z.ai/authorize?state=fixture-state" || started.PollAfterMs != 1000 || len(started.Continuation) == 0 {
+				t.Fatalf("expected init to accept valid authorization, got %+v", frame.Error)
+			}
+			finish := sdk.AuthFinishRequest{Continuation: started.Continuation}
+			deadline := localStart.Add(test.wantUntil)
+			clock.Store(deadline.Add(-time.Second - time.Millisecond).UnixMilli())
+			frame, _ = h.call(sdk.MethodAuthFinish, selected, finish, nil)
+			var pending sdk.AuthResult
+			if frame.Error != nil || json.Unmarshal(frame.Result, &pending) != nil || !pending.Pending || polls.Load() != 1 {
+				t.Fatalf("authorization did not poll before expiry: %+v", frame.Error)
+			}
+			clock.Store(deadline.Add(-time.Millisecond).UnixMilli())
+			frame, _ = h.call(sdk.MethodAuthFinish, selected, finish, nil)
+			var complete sdk.AuthResult
+			var account Credentials
+			if frame.Error != nil || json.Unmarshal(frame.Result, &complete) != nil || complete.Pending ||
+				json.Unmarshal(complete.Credentials, &account) != nil || account.Kind != "start" || account.UserID != "clock-user" ||
+				polls.Load() != 2 || balances.Load() != 1 {
+				t.Fatalf("authorization did not complete before expiry: %+v", frame.Error)
+			}
+			clock.Store(deadline.UnixMilli())
+			frame, _ = h.call(sdk.MethodAuthFinish, selected, finish, nil)
+			if frame.Error == nil || !strings.Contains(frame.Error.Message, "Authorization expired") ||
+				polls.Load() != 2 || balances.Load() != 1 {
+				t.Fatalf("authorization returned a receipt or repolled at expiry: %+v", frame.Error)
+			}
+		})
+	}
+}
+
 func TestSelectedStartRenewalRejectsAnotherVendorUser(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		switch request.URL.Path {
