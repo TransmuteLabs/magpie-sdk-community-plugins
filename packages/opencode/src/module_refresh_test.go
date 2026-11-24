@@ -49,6 +49,9 @@ func TestPublicSDKRefreshRotatesOnlyTheSelectedAccount(t *testing.T) {
 	var exchanges atomic.Int32
 	var chat atomic.Int32
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if serveFixtureGoCatalog(w, r) {
+			return
+		}
 		switch r.URL.Path {
 		case "/console/auth/device/token":
 			exchanges.Add(1)
@@ -107,7 +110,7 @@ func TestPublicSDKRefreshRotatesOnlyTheSelectedAccount(t *testing.T) {
 			t.Fatalf("replacement credentials failed: %v", executed.Error)
 		}
 	}
-	if exchanges.Load() != 2 || chat.Load() != 2 || len(h.proxies) != 4 {
+	if exchanges.Load() != 2 || chat.Load() != 2 || len(h.proxies) != 6 {
 		t.Fatal("module refreshed implicitly, retried rotation or bypassed proxy authority")
 	}
 }

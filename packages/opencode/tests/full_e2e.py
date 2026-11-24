@@ -35,7 +35,8 @@ def main():
     parser.add_argument("--agent-format", choices=("v1", "v2"), default="v2")
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1] / "src"
-    contract = json.loads((args.distribution / "magpie-plugin.json").read_text())["contract"]
+    declaration = json.loads((args.distribution / "magpie-plugin.json").read_text())
+    contract = declaration["contract"]
     provider_signin = "provider-signin" in contract["capabilities"]
     zen_exchange = 3 if provider_signin else 4
     output = args.output.resolve()
@@ -78,7 +79,7 @@ def main():
     donor_models = json.loads((root / "testdata/donors/zen-list.json").read_text())
     donor_catalog = json.loads((root / "testdata/donors/zen-catalog.json").read_text())["models"]
     signin_catalog_ids = {
-        "go-initial": ("deepseek-v4.1-flash", "glm-5.2"),
+        "go-initial": ("deepseek-v4.1-flash", "glm-5.3"),
         "go-renewed": ("kimi-k3", "gemini-4-argon"),
         "zen-device": ("claude-sonnet-5-5",),
         "zen-key": ("claude-haiku-5-5",),
@@ -90,20 +91,23 @@ def main():
     signin_zen_accounts = {("Bearer PRIVATE-access-2", "changed-org"): "zen-device",
                            ("Bearer SYNTHETIC-ZEN-SERVICE", ""): "zen-key",
                            ("Bearer public", ""): "zen-free"}
-    pinned_go = json.loads((root / "testdata/compat/provider-0.2.0.json").read_text())["providers"][0]["models"]
-    go_model_ids = {model["id"] for model in pinned_go}
-    full_go_list = {"object": "list", "data": [{"id": model, "object": "model"} for model in sorted(go_model_ids)]}
+    go_provider, = (provider for provider in declaration["providers"] if provider["id"] == "opencode-go")
+    go_model_ids = {model["id"] for model in go_provider["models"]}
+
+    def go_catalog(models):
+        return {"opencode-go": {"id": "opencode-go", "models": {model: {"id": model} for model in sorted(models)}}}
+
+    full_go_list = go_catalog(go_model_ids)
     zen_models_by_id = {model["id"]: model for model in donor_models["data"]}
     signin_lists = {}
     for account, models in signin_catalog_ids.items():
         if account in signin_go_accounts.values():
             assert set(models) <= go_model_ids, "Go sign-in fixture departed from the pinned donor projection"
-            entries = [{"id": model, "object": "model"} for model in models]
+            signin_lists[account] = go_catalog(models)
         else:
             if account == "zen-free":
                 models += signin_catalog_ids["zen-device"]
-            entries = [zen_models_by_id[model] for model in models]
-        signin_lists[account] = {"object": "list", "data": entries}
+            signin_lists[account] = {"object": "list", "data": [zen_models_by_id[model] for model in models]}
     state.update(signinCatalogReads=[], signinQuotaReads=[])
     devices = set()
     namespace = "/fixture-" + secrets.token_hex(16)
@@ -250,10 +254,10 @@ def main():
         def do_GET(self):
             path = urlsplit(self.path).path
             selected = (self.headers.get("Authorization", ""), self.headers.get("x-opencode-org-id", ""))
-            if provider_signin and (path == "/inference/go/v1/models" or
-                                    args.provider_signin_only and path == "/inference/v1/models"):
-                accounts = signin_go_accounts if path == "/inference/go/v1/models" else signin_zen_accounts
-                account = accounts.get(selected)
+            go_list = path == "/console/api/v1/models"
+            if go_list or args.provider_signin_only and path == "/inference/v1/models":
+                account = (signin_go_accounts.get((selected[0], self.headers.get("x-org-id", "")))
+                           if go_list else signin_zen_accounts.get(selected))
                 if not account or self.headers.get("Cookie") or self.headers.get("x-opencode-client") != "cli":
                     with lock:
                         state["failures"].append("catalog request used unexpected account or headers: " + path)
@@ -691,16 +695,16 @@ def main():
             (output / "result.json").write_text(json.dumps(report, indent=2) + "\n")
             print(json.dumps(report))
             return
-        for model in ("deepseek-v4.1-flash", "glm-5.2", "kimi-k3", "gemini-4-argon"):
+        for model in ("deepseek-v4.1-flash", "glm-5.3", "kimi-k3", "gemini-4-argon"):
             command("provider", "test", provider, model)
         request("/api/set", {"Agent": "opencode-sdk", "Field": "model", "Value": "magpie/" + provider + "/deepseek-v4.1-flash"})
-        request("/api/set", {"Agent": "opencode-sdk", "Field": "small", "Value": "magpie/" + provider + "/glm-5.2"})
+        request("/api/set", {"Agent": "opencode-sdk", "Field": "small", "Value": "magpie/" + provider + "/glm-5.3"})
         assert personal.read_bytes() == original, "profile changed personal config"
         help_config = home / ".config/magpie/extensions/opencode/agent.json"
         connected = json.loads(help_config.read_text())
         gateway = urlsplit(connected["providers"]["magpie"]["settings"]["baseURL"])
         gateway_key = connected["providers"]["magpie"]["settings"]["apiKey"]
-        for model in ("deepseek-v4.1-flash", "glm-5.2", "kimi-k3", "gemini-4-argon"):
+        for model in ("deepseek-v4.1-flash", "glm-5.3", "kimi-k3", "gemini-4-argon"):
             connection = http.client.HTTPConnection(gateway.hostname, gateway.port, timeout=15)
             connection.request("POST", gateway.path + "/chat/completions", json.dumps({
                 "model": provider + "/" + model, "messages": [{"role": "user", "content": "ordinary-gateway"}],
@@ -721,7 +725,7 @@ def main():
         initial_launch = json.loads(command("opencode-sdk", "run", "synthetic"))
         assert initial_launch["usedCheckedOverlay"] and initial_launch["ordinaryGateway"]
         assert initial_launch["modelArgs"] == 0 and initial_launch["model"].endswith("/deepseek-v4.1-flash")
-        explicit_model = "magpie/" + provider + "/glm-5.2"
+        explicit_model = "magpie/" + provider + "/glm-5.3"
         explicit_launch = json.loads(command("opencode-sdk", "run", "--model", explicit_model, "synthetic"))
         assert explicit_launch["modelArgs"] == 1 and explicit_launch["model"] == explicit_model
         (output / "pre-library-result.json").write_text(json.dumps({
@@ -751,7 +755,7 @@ def main():
         assert launch["usedCheckedOverlay"] and launch["libraryInstructions"] and launch["ordinaryGateway"]
         overlay = json.loads(help_config.read_text())
         assert overlay["model"].endswith("/deepseek-v4.1-flash")
-        assert overlay["agents"]["title"]["model"].endswith("/glm-5.2")
+        assert overlay["agents"]["title"]["model"].endswith("/glm-5.3")
         command("plugin", "sdk", "reload", "opencode")
         reauthorize_launch()
         assert json.loads(command("opencode-sdk", "run", "synthetic"))["ordinaryGateway"]

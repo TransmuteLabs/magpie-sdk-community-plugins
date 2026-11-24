@@ -90,11 +90,18 @@ def main():
                 if self.path == "/console/api/orgs":
                     user = access.removeprefix("access-")
                     return self.reply([{"id": "org-" + user, "name": "Organization " + user}])
+                if self.path == "/console/api/v1/models":
+                    user = access.removeprefix("rotated-access-")
+                    if user not in ("a", "b") or self.headers.get("x-org-id") != "org-" + user:
+                        return self.reply({"error": "unexpected_catalog_authority"}, 403)
+                    models = {model: {"id": model} for model in catalog_ids}
+                    return self.reply({"opencode-go": {"id": "opencode-go", "models": models}})
                 if self.path == "/zen/go/v1/usage":
                     state["usage"].append(dict(self.headers))
                     return self.reply({"usage": {"rolling": {"percent": 23}}})
             self.reply({"error": "unexpected_path"}, 404)
 
+    catalog_ids = ("deepseek-v4.1-flash", "glm-5.3", "kimi-k3", "gemini-4-argon")
     server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Fixture)
     server.daemon_threads = True
     server_thread = threading.Thread(target=server.serve_forever, daemon=True)
@@ -136,7 +143,9 @@ def main():
         subprocess.run(["go", "build", "-mod=readonly", "-buildmode=c-shared",
                         "-o", str(dist / "lib/opencode.so"), "./testdata/native-fixture"],
                        env=env, cwd=root, check=True, timeout=120)
-        (dist / "magpie-plugin.json").write_bytes((root / "testdata/compat/provider-0.2.0.json").read_bytes())
+        manifest = subprocess.check_output(["go", "run", "-mod=readonly", "./cmd/manifest", "--compat-provider"],
+                                           env=env, cwd=root, timeout=60)
+        (dist / "magpie-plugin.json").write_bytes(manifest)
         run(["add", str(dist)])
         run(["config", "opencode", '{"projectId":"global"}', "--expected", "0"])
         identities = {}
@@ -154,7 +163,7 @@ def main():
                 assert renewed["generation"] == 2, "ordinary provider did not renew an expiring account"
                 assert renewed["auth"]["access"] == "rotated-access-a"
                 if args.all_models:
-                    for model in ["glm-5.2", "kimi-k3", "gemini-4-argon"]:
+                    for model in catalog_ids[1:]:
                         run(["provider", "test", provider, model], sdk=False)
         before = {row["id"]: row for row in accounts()}
         assert len(before) == 2

@@ -33,7 +33,7 @@ func TestPackagedModelsPreserveDonorProtocolsAndModalities(t *testing.T) {
 		temperature bool
 	}{
 		{"deepseek-v4.1-flash", "chat", []string{"text", "image"}, 1000000, 384000, true},
-		{"glm-5.2", "chat", []string{"text"}, 1000000, 131072, true},
+		{"glm-5.3", "chat", []string{"text"}, 1000000, 131072, true},
 		{"kimi-k3", "chat", []string{"text", "image", "video"}, 1048576, 131072, false},
 		{"gemini-4-argon", "gemini", []string{"text", "image", "audio", "video", "pdf"}, 1048576, 65536, false},
 	} {
@@ -54,7 +54,8 @@ func TestPackagedModelsPreserveDonorProtocolsAndModalities(t *testing.T) {
 			t.Errorf("missing donor model %s", test.id)
 		}
 	}
-	if modelSupports("gemini-4-argon", "chat") || modelSupports("kimi-k3", "gemini") || modelSupports("unknown", "chat") {
+	if modelSupports("gemini-4-argon", "chat") || modelSupports("kimi-k3", "gemini") ||
+		modelSupports("glm-5.2", "chat") || modelSupports("unknown", "chat") {
 		t.Fatal("packaged models advertise an unestablished protocol")
 	}
 }
@@ -159,6 +160,9 @@ func TestPublicSDKGeminiNativeStreamsAndSelectedAccounts(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			var calls atomic.Int32
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if serveFixtureGoCatalog(w, r) {
+					return
+				}
 				count := calls.Add(1)
 				user := "a"
 				if count == 2 {
@@ -194,7 +198,7 @@ func TestPublicSDKGeminiNativeStreamsAndSelectedAccounts(t *testing.T) {
 					t.Fatal("native generation bypassed acceptance or response status")
 				}
 			}
-			if calls.Load() != 2 || len(h.proxies) != 2 {
+			if calls.Load() != 2 || len(h.proxies) != 4 {
 				t.Fatal("native Gemini retried or bypassed selected proxy resolution")
 			}
 		})
@@ -228,6 +232,9 @@ func TestPublicSDKGeminiChecksStreamAfterFinishReason(t *testing.T) {
 					}
 					var calls atomic.Int32
 					server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+						if serveFixtureGoCatalog(writer, request) {
+							return
+						}
 						if request.URL.Path == "/inference/v1/models" {
 							io.WriteString(writer, `{"data":[{"id":"`+model+`"}]}`)
 							return
@@ -308,8 +315,18 @@ func (client geminiSplitClient) Do(request *http.Request) (*http.Response, error
 }
 
 func TestPublicSDKRejectsUnsupportedGeminiSemanticsBeforeDispatch(t *testing.T) {
-	var calls atomic.Int32
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { calls.Add(1) }))
+	var catalogs, dispatches atomic.Int32
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet && r.URL.Path == "/api/v1/models" {
+			catalogs.Add(1)
+			io.WriteString(w, `{"opencode-go":{"id":"opencode-go","models":{
+				"gemini-4-argon":{"id":"gemini-4-argon"},"kimi-k3":{"id":"kimi-k3"}
+			}}}`)
+			return
+		}
+		dispatches.Add(1)
+		t.Errorf("unexpected OpenCode request: %s %s", r.Method, r.URL.Path)
+	}))
 	t.Cleanup(server.Close)
 	h := newHarness(t, ModuleOptions{Endpoints: Endpoints{Console: server.URL, Inference: server.URL},
 		HTTPFactory: func(string) (Doer, func(), error) { return server.Client(), nil, nil }})
@@ -334,8 +351,11 @@ func TestPublicSDKRejectsUnsupportedGeminiSemanticsBeforeDispatch(t *testing.T) 
 		frame, _ := h.invoke(sdk.MethodProviderExecute, sdk.Scope{Provider: ProviderGo, Account: account.AccountID(ProviderGo), Generation: 1},
 			sdk.ExecuteRequest{Protocol: test.protocol, Model: test.model, Body: []byte(test.body),
 				Options: raw(map[string]string{"path": test.path, "query": test.query})}, raw(account))
-		if frame.Error == nil || frame.Error.Outcome != "not-started" || calls.Load() != 0 || h.accepted[frame.ID] {
+		if frame.Error == nil || frame.Error.Outcome != "not-started" || dispatches.Load() != 0 || h.accepted[frame.ID] {
 			t.Fatalf("unsupported Gemini semantics reached upstream: %+v", frame.Error)
 		}
+	}
+	if catalogs.Load() != 1 {
+		t.Fatalf("OpenCode did not reuse the selected catalog, requests: %d", catalogs.Load())
 	}
 }

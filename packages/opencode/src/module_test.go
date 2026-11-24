@@ -214,6 +214,9 @@ func TestPublicSDKDeviceFlowModelsUsageAndScopedChat(t *testing.T) {
 	var requests atomic.Int32
 	var acceptedBeforeDispatch atomic.Bool
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if serveFixtureGoCatalog(w, r) {
+			return
+		}
 		requests.Add(1)
 		w.Header().Set("Content-Type", "application/json")
 		switch r.URL.Path {
@@ -340,6 +343,18 @@ func TestPublicSDKDeviceFlowModelsUsageAndScopedChat(t *testing.T) {
 
 func bytesContains(value []byte, part string) bool { return strings.Contains(string(value), part) }
 
+func serveFixtureGoCatalog(writer http.ResponseWriter, request *http.Request) bool {
+	if request.Method != http.MethodGet ||
+		(request.URL.Path != "/api/v1/models" && request.URL.Path != "/console/api/v1/models") {
+		return false
+	}
+	io.WriteString(writer, `{"opencode-go":{"id":"opencode-go","models":{
+		"deepseek-v4.1-flash":{"id":"deepseek-v4.1-flash"},
+		"gemini-4-argon":{"id":"gemini-4-argon"}
+	}}}`)
+	return true
+}
+
 func TestPublicSDKGoChatRequiresSSEForStreamingSuccess(t *testing.T) {
 	const jsonReply = `{"message":"fixture response"}`
 	for _, test := range []struct {
@@ -363,6 +378,9 @@ func TestPublicSDKGoChatRequiresSSEForStreamingSuccess(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			var requests atomic.Int32
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if serveFixtureGoCatalog(w, r) {
+					return
+				}
 				requests.Add(1)
 				w.Header().Set("Content-Type", test.contentType)
 				w.WriteHeader(test.status)
@@ -462,6 +480,9 @@ func TestSDKOpenCodeConfiguredProjectKeepsHeaderPrecedence(t *testing.T) {
 			var requests atomic.Int32
 			const fixtureReply = `{"message":"fixture response"}`
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, request *http.Request) {
+				if serveFixtureGoCatalog(w, request) {
+					return
+				}
 				requests.Add(1)
 				if project := request.Header.Get("X-Opencode-Project"); project != scenario.want {
 					t.Errorf("wire project=%q, want %q", project, scenario.want)
@@ -499,6 +520,9 @@ func TestPublicSDKNonSSEStreamingResponseClosesWithoutEOF(t *testing.T) {
 			var closeOnce sync.Once
 			closed := make(chan struct{})
 			server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+				if serveFixtureGoCatalog(writer, request) {
+					return
+				}
 				requests.Add(1)
 				defer closeOnce.Do(func() { close(closed) })
 				writer.Header().Set("Content-Type", "application/json")
@@ -550,6 +574,9 @@ func TestPublicSDKTruncatedStreamIsUncertainWithoutReplay(t *testing.T) {
 	var complete atomic.Bool
 	var requests atomic.Int32
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if serveFixtureGoCatalog(w, r) {
+			return
+		}
 		requests.Add(1)
 		w.Header().Set("Content-Type", "text/event-stream")
 		io.WriteString(w, "data: {\"choices\":[{\"delta\":{\"content\":\"[DONE] is just text\"}}]}\n\n")
@@ -594,6 +621,9 @@ func TestManifestUsesOnlyMinimumPublicContract(t *testing.T) {
 func TestPublicSDKTerminalClosesHeldHTTPStream(t *testing.T) {
 	closed := make(chan struct{})
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if serveFixtureGoCatalog(w, r) {
+			return
+		}
 		defer close(closed)
 		w.Header().Set("Content-Type", "text/event-stream")
 		io.WriteString(w, "data: [DONE]\n\n")
@@ -630,6 +660,9 @@ func TestPublicSDKOwnsCompressionNegotiation(t *testing.T) {
 		t.Run(fixture.name, func(t *testing.T) {
 			closed := make(chan struct{})
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if serveFixtureGoCatalog(w, r) {
+					return
+				}
 				defer close(closed)
 				if values := r.Header.Values("Accept-Encoding"); len(values) != 1 || values[0] != "gzip" {
 					t.Errorf("caller changed transport compression negotiation: %q", values)

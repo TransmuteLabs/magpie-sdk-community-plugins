@@ -23,6 +23,13 @@ func Manifest() sdk.Manifest {
 	manifest.Contract.Version.Minor = 12
 	manifest.Compatibility.HostAPI = "^1.12"
 	manifest.Contract.Capabilities = append(manifest.Contract.Capabilities, sdk.RequestPolicy)
+	for index := range manifest.Providers[0].Models {
+		model := &manifest.Providers[0].Models[index]
+		if model.ID == "glm-5.2" {
+			model.ID, model.Name, model.Released = "glm-5.3", "GLM-5.3", "2026-08-14"
+			model.Efforts = []string{"low", "high", "max"}
+		}
+	}
 	switch runtime.GOOS {
 	case "darwin":
 		manifest.Entry = "lib/opencode.dylib"

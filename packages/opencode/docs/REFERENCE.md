@@ -25,14 +25,14 @@ not install a community/OpenCode auth plugin or run a Bun backend.
 
 | Distribution | Version | Minimum SDK | Contents |
 | --- | --- | --- | --- |
-| Ordinary full package | 0.8.4 | 1.12 | Providers sign-in, agent wiring, Go + Zen OAuth/key/public, Console HTTP bindings and a Sessions panel for SQLite/WAL history |
-| Previous release | 0.8.2 | 1.12 | Providers sign-in plus the standalone OpenCode page |
+| Ordinary full package | 0.8.5 | 1.12 | Workspace-scoped OpenCode Go catalog, Providers sign-in, agent wiring, Go + Zen OAuth/key/public, Console HTTP bindings and a Sessions panel for SQLite/WAL history |
+| Previous release | 0.8.4 | 1.12 | Providers sign-in, agent wiring, Go + Zen OAuth/key/public, Console HTTP and the Sessions panel |
 | Full compatibility artifact | 0.8.1 | 1.12 | Explicit legacy `--compat-api8` flag with the previous window-only sign-in declarations |
 | Provider compatibility artifact | 0.2.0 | 1.12 | Historical Go OAuth, four models, Chat/Gemini, quota |
 | Agent compatibility artifact | 0.3.0 | 1.12 | Historical provider plus declared profile, config planner and launch metadata |
 
 Update Magpie to a build that supports the `sessions` panel slot before
-installing or updating to 0.8.4. The Add and Update paths validate panel
+installing or updating to 0.8.5. The Add and Update paths validate panel
 metadata before activating the package.
 
 The panel supports rendered history through the optional
@@ -166,25 +166,29 @@ The compatibility artifact's sign-in page runs in a scripts-only sandbox.
 
 ## Models and native protocols
 
-Go loads `/inference/go/v1/models` for the selected OAuth account. Its
-Chat and Gemini routes use the same snapshot to decide which models can
-execute. The snapshot belongs to the account, organization, and credential
-generation. A successful empty list disables inference for that selection
-until discovery returns models again. Failed refreshes retain the last
-successful list. A cold worker can fetch the list before executing a
-dynamic model. Go discovery admits the native Chat and Gemini endpoints
-with verified context and output limits. It leaves Messages and Responses
-models out until their Go transports are supported.
+Go loads `/console/api/v1/models` with the selected OAuth account and
+workspace and reads its `opencode-go` provider. The same account,
+organization, and credential generation own the snapshot used for
+discovery and execution. A confirmed empty workspace disables inference
+for that selection until discovery returns models again. Failed refreshes
+retain the last successful list. A cold worker checks discovery before
+dispatch. On a discovery failure it can still call a packaged model with
+its declared protocol, subject to server authorization. Discovery reports
+the failure when it has no last successful list.
 
-Before a successful discovery, the following four models provide a
-packaged fallback from the reviewed `opencode-go-models-2026-10-31.json`
-snapshot. When a live list contains only model IDs, it supplies availability
-for these verified entries.
+Metadata for a model must have valid limits and a supported Go endpoint.
+Chat and Gemini retain their native routes. Models that declare Go Messages
+or Responses can also use the documented Go Chat Completions translation.
+
+The four packaged fallback models are listed below. Three retain the
+reviewed October 31 metadata. GLM-5.3 comes from the pinned November
+OpenCode source. When a catalog lists only IDs, the module can resolve
+these entries from its packaged metadata.
 
 | Model | Protocol | Input modalities |
 | --- | --- | --- |
 | DeepSeek V4.1 Flash | `chat` | text, image |
-| GLM-5.2 | `chat` | text |
+| GLM-5.3 | `chat` | text |
 | Kimi K3 | `chat` | text, image, video |
 | Gemini 4 Argon | `gemini` | text, image, audio, video, PDF |
 
