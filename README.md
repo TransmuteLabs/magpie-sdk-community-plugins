@@ -7,11 +7,15 @@ source, completed verification, pending donor updates and release readiness.
 
 | Package | Purpose |
 | --- | --- |
+| [CodeArts](packages/codearts/README.md) | Huawei Cloud CodeArts and OfficeAce providers, signing, usage and check-in |
 | [Command Code](packages/commandcode/README.md) | Provider, agent and decision models |
 | [Devin](packages/devin/README.md) | Native protocol, provider and agent |
+| [Kimi Work](packages/kimi-work/README.md) | Kimi Work desktop subscription provider, catalog and usage |
 | [MiniMax](packages/minimax/README.md) | MiniMax Code China and Global providers, tools, media and search |
 | [OMP](packages/omp/README.md) | Session conversion and history sources |
 | [OpenCode](packages/opencode/README.md) | Provider, agent, history and interface |
+| [Qoder](packages/qoder/README.md) | Qoder, Qoder CN, QwenWork and QwenWork Enterprise providers |
+| [WorkBuddy](packages/workbuddy/README.md) | Tencent WorkBuddy and WorkBuddy AI providers, usage and check-in |
 | [ZCode](packages/zcode/README.md) | Native protocol, provider, agent and interface |
 
 Connect Claude Desktop from Magpie's built-in Agents settings.

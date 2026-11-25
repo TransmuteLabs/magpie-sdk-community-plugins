@@ -3,7 +3,7 @@
 One complete native package: Provider API Chat/Responses/Messages, Go-plan
 conversion, account sign-in, models, usage, SystemOne decisions, checked agent
 configuration and an account details panel. Module `protocol-commandcode`,
-version `0.1.5`, requires SDK API 1.12, native ABI 1, shared request policy
+version `0.1.6`, requires SDK API 1.12, native ABI 1, shared request policy
 and the `provider-signin` capability.
 
 Open **Providers → Add → Subscriptions → Command Code** and choose an API key,

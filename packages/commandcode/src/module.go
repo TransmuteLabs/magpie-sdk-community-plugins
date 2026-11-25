@@ -13,10 +13,10 @@ import (
 	"github.com/yetone/magpie/pkg/protocolext"
 )
 
-const Version = "0.1.5"
+const Version = "0.1.6"
 const ProviderID = "commandcode-native"
 const ModuleID = "protocol-commandcode"
-const cliVersion = "1.91.0"
+const cliVersion = "1.93.3"
 
 type Config struct {
 	APIURL           string `json:"apiURL,omitempty"`

@@ -1,5 +1,25 @@
 # CommandCode source provenance
 
+Command Code `0.1.6` aligns `cliVersion` (`x-command-code-version`) to
+`1.93.3` for both native `/alpha/generate` and System One after comparing
+npm `command-code` `1.93.3` against `1.91.0` (`referenceReview20261124`).
+`dist/index.mjs` and the nine selected wire helpers (`toWireTools`,
+`toWireToolOutput`, `toWireMessages`, `toWireSystem`, `readStreamErrorEvent`,
+`normalizeStopReason`, `addUsage3`, `reasoningProviderOptions`,
+`toWirePermissionMode`) are byte-identical; transport constants (`/alpha/generate`,
+`64000`, `x-cmd-zdr`, `x-command-code-version`, `pause_turn`) match.
+`consumeStream` throws `AbortError` on `"abort"` without `"finish"`, which
+`src/generate_stream.go` already rejects with an error. `1.93.3` adds an
+opt-in `"zdr": true` flag for BYOK providers in `~/.commandcode/providers.json`;
+our agent planner leaves that field unset rather than claiming ZDR for an
+arbitrary gateway. Community `origin/main` at
+`e967ba4d946071c6c27a51cd5168b12ce832da5c` keeps the identical `0.1.24` tree
+(`305e867f7f675041d4905c951fb2495a9d00fcb3`), `patlux/pi-commandcode-provider`
+at `a063270a733768eea5d2fb56edc0c8c081308e34` (`0.8.7`) dropped `/alpha/generate`
+in `0.8.0` while our Go-plan path retains `geminiNullableTools`, and
+`CLIProxyAPI` at `85225381d89915595598ed13766cd79890c03a84` has zero
+`commandcode*` commits.
+
 Command Code `0.1.5` uses the SDK provider sign-in broker and keeps its
 account-details panel in Usage. Community `origin/main` at
 `836f2e4e4cd899318c422d67cc1b2b30baaf1e06` has the same `0.1.24` package tree

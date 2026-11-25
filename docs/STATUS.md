@@ -6,25 +6,34 @@ Community-плагины и исходники harness служат рефере
 
 | Пакет | Версия в исходниках | Минимум API | Исходные и дополнительно проверенные референсы |
 | --- | --- | --- | --- |
-| [Command Code](../packages/commandcode/README.md) | `0.1.5` | `1.12` + `provider-signin` | Community `0.1.24`. CLI `1.91.0` сверён с `1.89.2`. Native Generate и System One отправляют заголовок версии `1.91.0`. Nullable-схемы Gemini Go сверены с `pi-commandcode-provider` `0.7.1` |
-| [Devin](../packages/devin/README.md) | `0.8.3` | `1.12` + `provider-signin`, `provider-saved-signin` | Протокол Devin `3000.11.228` сверён на `b86869df`, изменения реконструкции просмотрены до `12bde35f`. Community `0.1.45` на `836f2e4e`. Фикстуры `provider.execute` покрывают stop 4 с поздним usage в Chat и Messages, а также `failed_precondition` до и после первой дельты. Многопользовательский перенос и откат проверены на локальном Connect. Живая проверка ожидает сборок |
-| [MiniMax](../packages/minimax/README.md) | `0.1.1` | `1.12` + `provider-signin` | Community `0.2.9` |
-| [OMP](../packages/omp/README.md) | `0.1.0` | `1.10` | OMP `18.22.2` проверен на `04a4c101`. Экспорт в Codex и Claude учитывает `custom_message` и сохраняет порядок реплик и результатов инструментов. Архив сохраняется побайтово |
-| [OpenCode](../packages/opencode/README.md) | `0.8.4` | `1.12` + `provider-signin` | Go, Zen и Zen Free подключаются через Providers. Референсы OpenCode `011f9043e8` и community Zen `0.1.28` сохранены |
-| [ZCode](../packages/zcode/README.md) | `0.16.1` | `1.20` + `provider-signin`, `provider-saved-signin` | Desktop `3.18.2` и CLI `0.17.1` на `fec97590`, Community `0.1.68` на `836f2e4e`. Поддерживаются проверяемые статические записи. Подписки с Desktop-follow остаются за Community |
+| [CodeArts](../packages/codearts/README.md) | `0.1.0` | `1.12` + `provider-signin`, `provider-saved-signin`, `request-policy` | Community `0.3.22` (`96467464` / C33 `818b4b65`, upstream `e967ba4d`). CodeArts и OfficeAce, OAuth PKCE/DPoP, HMAC, изоляция `:benefit`, usage и check-in |
+| [Command Code](../packages/commandcode/README.md) | `0.1.6` | `1.12` + `provider-signin` | Community `0.1.24` (`e967ba4d`). CLI `1.93.3` сверён с `1.91.0`; Native Generate и System One отправляют `1.93.3`. `pi-commandcode-provider` просмотрен до `0.8.7` (`a063270a`); nullable-схемы Gemini Go сохранены |
+| [Devin](../packages/devin/README.md) | `0.8.3` | `1.12` + `provider-signin`, `provider-saved-signin` | Протокол Devin `3000.11.228` сверён на `b86869df`, `Agents/devinapp` просмотрен до `5f067fdf`, `CLIProxyAPI` до `85225381`, Community `0.1.45` на `e967ba4d`. Connect `0x02` trailer после data-кадров и `failed_precondition` покрыты. Живая проверка ожидает сборок |
+| [Kimi Work](../packages/kimi-work/README.md) | `0.1.0` | `1.12` + `provider-signin`, `request-policy` | Community `0.1.17` (`e967ba4d`). Отдельный провайдер `kimi-work` по desktop sign-in, слияние каталога, нормализация схем и usage |
+| [MiniMax](../packages/minimax/README.md) | `0.1.1` | `1.12` + `provider-signin` | Community `0.2.9` (`e967ba4d`), `minimax-code` `3c21163c` (без изменений на 24 ноября) |
+| [OMP](../packages/omp/README.md) | `0.1.0` | `1.10` | OMP `18.22.2` (`04a4c101`), дополнительно проверены `oh-my-pi` `19.1.1+` (`692470ba`), `openai/codex` `9202c791` и `codex-infinity` `dfd6df91`. Экспорт учитывает `custom_message`, исключает `plan-mode-context` и сохраняет архив побайтово |
+| [OpenCode](../packages/opencode/README.md) | `0.8.5` | `1.12` + `provider-signin` | Go, Zen и Zen Free подключаются через Providers. Исходные pins `011f9043e8` и `zen-free` `0.1.28` сохранены; `anomalyco/opencode` `2.4.1` (`24449184`) проверен 24 ноября (`/zen/go/v1/usage` и фильтрация non-chat/retired подтверждены) |
+| [Qoder](../packages/qoder/README.md) | `0.1.0` | `1.12` + `provider-signin`, `provider-saved-signin`, `request-policy` | Community `0.2.73` (`e967ba4d`). Qoder, Qoder CN, QwenWork и QwenWork Enterprise, PKCE/PAT, enterprise VPC и check-in |
+| [WorkBuddy](../packages/workbuddy/README.md) | `0.1.0` | `1.12` + `provider-signin`, `provider-saved-signin`, `request-policy` | Community `0.2.37` (`96467464` C33, upstream `e967ba4d`). WorkBuddy и WorkBuddy AI, OAuth/desktop `.info`, кредиты, 24h free-window и check-in |
+| [ZCode](../packages/zcode/README.md) | `0.16.1` | `1.20` + `provider-signin`, `provider-saved-signin` | Desktop `3.18.2` и CLI `0.17.1` на `fec97590`, Community `0.1.69` (`fdbf261b` / `e967ba4d`). Из `4.0.0` (`a4b44451`) перенесены clock skew OAuth и проверка `IsProviderCodeShaped`. Подписки с Desktop-follow остаются за Community |
 
 Версия пакета, минимальная ревизия API и версия референса независимы. Все пакеты используют
 native ABI `1`. Точные исходные коммиты, версии, переносимое поведение,
 сравнения с обновлёнными референсами и границы проверок записаны в:
 
+- [CodeArts source-lock](../packages/codearts/docs/source-lock.json).
 - [Command Code source-lock](../packages/commandcode/docs/source-lock.json).
 - [Devin source-lock](../packages/devin/docs/source-lock.json).
+- [Kimi Work source-lock](../packages/kimi-work/docs/source-lock.json).
 - [MiniMax source-lock](../packages/minimax/docs/source-lock.json).
 - [OMP source-lock](../packages/omp/docs/source-lock.json).
 - [OpenCode source-lock](../packages/opencode/docs/source-lock.json).
+- [Qoder source-lock](../packages/qoder/docs/source-lock.json).
+- [WorkBuddy source-lock](../packages/workbuddy/docs/source-lock.json).
 - [ZCode source-lock](../packages/zcode/docs/source-lock.json).
 
-[Отчёт за 17 ноября](REFERENCE-UPDATES-2026-11-17.md) сохраняет сравнения
+[Отчёт за 24 ноября](REFERENCE-UPDATES-2026-11-24.md) и
+[отчёт за 17 ноября](REFERENCE-UPDATES-2026-11-17.md) сохраняют сравнения
 на дату прогона. Сравнения за 18 ноября записаны в source-lock пакетов
 Command Code, OMP и OpenCode. Сравнения локальных референсов и проверки
 Devin `0.8.2` и OpenCode `0.8.1` записаны в соответствующих пакетах.

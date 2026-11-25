@@ -1,5 +1,52 @@
 {
   "schema": 1,
+  "referenceReview20261124": {
+    "checkedAt": "2026-11-24",
+    "communityCommit": "e967ba4d946071c6c27a51cd5168b12ce832da5c",
+    "communityVersion": "0.1.24",
+    "communityPackageTree": "305e867f7f675041d4905c951fb2495a9d00fcb3",
+    "communityBehaviorDelta": false,
+    "officialPackage": "command-code",
+    "officialVersion": "1.93.3",
+    "comparedVersion": "1.91.0",
+    "registryTag": "latest",
+    "archiveSHA1": "eb794928692586be814036c65b643eb4c37c9b7b",
+    "archiveSHA256": "73d27cc2f0f86d44eabcbf889a7edc9914f168f4e426435540c053e45b68a07c",
+    "integrity": "sha512-iupga0dt7QghDZO0hMYMhGDXj0dJCWFQ8xBn4+YR1602JN0q7E3mY91NOlaa4W14p9pLHogpQZ3YAgn/tJzd1g==",
+    "files": {
+      "package.json": "351a0a506b57ef23a51eed66eea438861629655deb0166050caa8620e1a00ad0",
+      "dist/cli.mjs": "6c5d17c94132855df83b56737b82ad379f6d52da0b2a45b441d7d2d66b26597c",
+      "dist/index.mjs": "157feefa0140e78f060ef2c1f9c50d10de702196ea229dc73db6bbcc39a0bcbb",
+      "CHANGELOG.md": "a712ab489e38e1ea9a67e6444d4aacdcc49c955f15d302840397bd0eab5d1bce"
+    },
+    "byteIdentical": [
+      "dist/index.mjs",
+      "toWireTools",
+      "toWireToolOutput",
+      "toWireMessages",
+      "toWireSystem",
+      "readStreamErrorEvent",
+      "normalizeStopReason",
+      "addUsage3",
+      "reasoningProviderOptions",
+      "toWirePermissionMode"
+    ],
+    "piProviderReview": {
+      "repository": "https://github.com/patlux/pi-commandcode-provider",
+      "commit": "a063270a733768eea5d2fb56edc0c8c081308e34",
+      "version": "0.8.7",
+      "note": "Removed /alpha/generate fallback in 0.8.0; geminiNullableTools rule remains relevant for our native Go-plan path"
+    },
+    "cliProxyAPIReview": {
+      "repository": "https://github.com/router-for-me/CLIProxyAPI",
+      "commit": "85225381d89915595598ed13766cd79890c03a84",
+      "commandcodeCommits": 0
+    },
+    "wireOrConfigPortIdentified": false,
+    "headerVersionAlignment": "Native generation and System One share cliVersion 1.93.3; generate_stream.go already rejects abort frames without finish; BYOK providers.json does not fabricate zdr:true",
+    "artifactExecuted": false,
+    "extractionPinsChanged": false
+  },
   "geminiNullableTools": {
     "checkedAt": "2026-11-19",
     "repository": "https://github.com/patlux/pi-commandcode-provider",
@@ -98,7 +145,7 @@
   },
   "plugin": {
     "id": "protocol-commandcode",
-    "version": "0.1.5",
+    "version": "0.1.6",
     "sdkMinimum": "1.12",
     "requiredCapabilities": ["provider-signin"],
     "nativeABI": 1
