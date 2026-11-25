@@ -1,0 +1,7 @@
+{
+  "name": "kimi-work",
+  "version": "0.1.0",
+  "description": "Kimi Work subscription provider using the local desktop sign-in, separate from Kimi Code",
+  "private": true,
+  "magpie": {"name": "Kimi Work", "icon": "kimi"}
+}

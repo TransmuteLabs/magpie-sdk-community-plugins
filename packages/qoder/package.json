@@ -1,0 +1,9 @@
+{
+  "name": "qoder",
+  "version": "0.1.0",
+  "description": "Qoder, Qoder CN (public, PAT, enterprise VPC, dedicated domain & Lingma 1.0), QwenWork, and QwenWork Enterprise native SDK providers with COSY signing, body codec, queue waiting, XML/JSON tool splitting, usage, and daily check-in",
+  "private": true,
+  "magpie": {
+    "name": "Qoder"
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "plugin": {
+    "id": "codearts",
+    "version": "0.1.0",
+    "sdkMinimum": "1.12",
+    "nativeABI": 1
+  },
+  "sources": [
+    {
+      "id": "community-codearts",
+      "repository": "https://github.com/magpie-community/plugins",
+      "commit": "964674642899f4827ed3d38e4a91fdc344e6448c",
+      "c33Commit": "818b4b65f88751596a2768ea37f443d23201b236",
+      "upstreamCommit": "e967ba4d946071c6c27a51cd5168b12ce832da5c",
+      "version": "0.3.22",
+      "checkedAt": "2026-11-24",
+      "packageTree": "0f0764c1035669225ef1993d5fc685be0025c264",
+      "role": "source donor only; no community runtime dependency",
+      "files": {
+        "packages/codearts/LICENSE": "b6106cd7507454765bcd528da9198390ec5b5204bdcf508fc4218d4c362e20a9",
+        "packages/codearts/README.md": "070530f5b0a497081c4c1df80fc1e6bc8f20686f17dfe8352b9c657c781b2412",
+        "packages/codearts/index.mjs": "2a07c8da3f37015faec82a658e1715f896ea85054e70a2b56e77547589005668",
+        "packages/codearts/index.test.mjs": "1bc84bbc383063cd92c6d8a9dfd608f587824a61e8308fc652134261c3525d76",
+        "packages/codearts/opencode.mjs": "e44994599c1f6fdbc0e2898fb017195acc6630db0d4d2023ab15e8227b95563c",
+        "packages/codearts/opencode2.mjs": "062365696c3d64a6526f6514093a315ecb4d14be738ab779ffaf2394c4ead900",
+        "packages/codearts/package.json": "262ecb8421161f3c7cf99b4239957ab7c8ca46aadc8342ae897fc6dba80ac572"
+      }
+    }
+  ],
+  "limits": [
+    "No live vendor or real-account tests",
+    "OAuth, Huawei Cloud STS, Snap, OpenGW, and OfficeAce endpoints are exercised against synthetic loopback stubs"
+  ]
+}

@@ -1,6 +1,10 @@
 {
   "schema": 1,
   "packages": {
+    "codearts": {
+      "id": "codearts",
+      "checks": []
+    },
     "commandcode": {
       "id": "protocol-commandcode",
       "checks": [
@@ -30,6 +34,10 @@
           ]
         }
       ]
+    },
+    "kimi-work": {
+      "id": "kimi-work",
+      "checks": []
     },
     "minimax": {
       "id": "minimax",
@@ -70,6 +78,14 @@
           ]
         }
       ]
+    },
+    "qoder": {
+      "id": "qoder",
+      "checks": []
+    },
+    "workbuddy": {
+      "id": "workbuddy",
+      "checks": []
     },
     "zcode": {
       "id": "zcode",

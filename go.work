@@ -1,10 +1,14 @@
-go 1.26.8
+go 1.27.4
 
 use (
+	./packages/codearts/src
 	./packages/commandcode/src
 	./packages/devin/src
+	./packages/kimi-work/src
 	./packages/minimax/src
 	./packages/omp/src
 	./packages/opencode/src
+	./packages/qoder/src
+	./packages/workbuddy/src
 	./packages/zcode/src
 )

@@ -1,0 +1,9 @@
+{
+  "name": "workbuddy",
+  "version": "0.1.0",
+  "description": "Tencent WorkBuddy (CodeBuddy China) and WorkBuddy AI (International) native SDK providers with browser/desktop/API-key/import sign-in, Chat + Anthropic Messages execution, prompt/tool adaptation, billing/enterprise/free-window usage, and China daily check-in",
+  "private": true,
+  "magpie": {
+    "name": "WorkBuddy"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "name": "codearts",
+  "version": "0.1.0",
+  "description": "Huawei Cloud CodeArts (码道) and OfficeAce (AgentArts) native SDK providers with OAuth PKCE/DPoP, HMAC signing, benefit quota isolation, usage and daily check-in",
+  "private": true,
+  "magpie": {
+    "name": "CodeArts",
+    "maxConcurrency": 3
+  }
+}

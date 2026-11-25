@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "plugin": {
+    "id": "qoder",
+    "version": "0.1.0",
+    "sdkMinimum": "1.12",
+    "nativeABI": 1
+  },
+  "sources": [
+    {
+      "id": "community-qoder",
+      "repository": "https://github.com/magpie-community/plugins",
+      "commit": "e967ba4d946071c6c27a51cd5168b12ce832da5c",
+      "version": "0.2.73",
+      "checkedAt": "2026-11-24",
+      "packageTree": "45397b48d89ea7f1972158897dc9732a7adab536",
+      "role": "source donor only; no community runtime dependency",
+      "files": {
+        "LICENSE": "5e8730b694ba31696dd68d693f8bf5e2c75f7e40fd5f6fbc3f067cf9490b24fb",
+        "packages/qoder/LICENSE-CLIProxyAPI": "879792e89cf1bdd6a8d446033ec87e30496f97dcafc4656dc53f641509b346a6",
+        "packages/qoder/README.md": "72e0dd48972eeb23caa2af41581a500b350867363c76bce526e49b1ec9d2773c",
+        "packages/qoder/index.mjs": "d761219a6f7c14334fe1248dea97207c5423520282d5ee18131e1b237a396146",
+        "packages/qoder/package.json": "da659f8bedf101ec87d7c05b44db53ad51770525a34a06be19db15ec742bc7d7"
+      }
+    }
+  ]
+}
