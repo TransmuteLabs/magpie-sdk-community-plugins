@@ -103,4 +103,19 @@ func TestBusinessFailureTypes(t *testing.T) {
 	if _, _, failed := Failure([]byte(`{"code":0,"success":true,"content":[]}`)); failed {
 		t.Fatal("success converted to failure")
 	}
+	for _, nonCode := range []string{
+		`{"code":"<script>\nalert(1)\n</script>","content":[]}`,
+		`{"code":"not a provider code","content":[]}`,
+		`{"code":"` + strings.Repeat("a", 65) + `","content":[]}`,
+	} {
+		if _, _, failed := Failure([]byte(nonCode)); failed {
+			t.Fatalf("non-code-shaped code field misclassified as business failure: %s", nonCode)
+		}
+	}
+	if !IsProviderCodeShaped("3008") || !IsProviderCodeShaped("insufficient_quota:v1.0-a") ||
+		!IsProviderCodeShaped(strings.Repeat("a", 64)) ||
+		IsProviderCodeShaped("") || IsProviderCodeShaped(strings.Repeat("a", 65)) ||
+		IsProviderCodeShaped("<script>alert(1)</script>") || IsProviderCodeShaped("has space") {
+		t.Fatal("IsProviderCodeShaped drifted from ZCode 4.0.0 PROVIDER_CODE_SHAPE")
+	}
 }

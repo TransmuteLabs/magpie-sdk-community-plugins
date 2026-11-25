@@ -17,6 +17,21 @@ The Linux gateway test used a loopback vendor to check that Preview and paid
 GLM could still dispatch beside an exhausted Trial reserve. The source lock
 records the exact tested patch and receipt.
 
+The November 24 reference review of ZCode `4.0.0` / CLI `0.18.0`
+(`a4b4445141eb7d3b3e99eada9292775383bfc44e`, `vendor-zcode-provider-code-shape`)
+ports `IsProviderCodeShaped` (`^[A-Za-z0-9_.:-]{1,64}$`) from
+`model-execution.ts`, `failure-classifier.ts`, and
+`provider-finish-business-error.ts` into `src/protocol/response.go` and
+`src/request_policy.go` so malformed/HTML/script `code` fields (such as HTTP
+499 edge responses) never leak into `Facts.Code` or trigger business-error
+classification. Other `4.0.0` deltas (SQLite index `0026_dwf_run_parent_session_index`,
+additive V4 protocol fields, local credential-store lock generation, CDN
+synchronizer force-refresh queueing, OpenAI Responses encrypted-reasoning
+options for ZCode CLI's own OpenAI adapter) do not require SDK changes.
+`ClientVersion` stays `3.18.2` (`vendor-current-audit`) until a full `4.0.0`
+wire capture is audited. Community `origin/main` at `e967ba4d` preserves the
+already-ported `0.1.69` tree (`ee4de91f`).
+
 The earlier browser-only candidate used the release workflow SDK commit
 `1a478840fc13199bf302efcdc9cf9b987d821438`. Its subscription checks on
 Magpie `c5d5404f7` exercised initial sign-in, selected reauthorization and

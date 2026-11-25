@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
+	"slices"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -230,8 +231,8 @@ func TestStartQuotaSelectsBestBucketByModelWithoutInventingCapacity(t *testing.T
 	for _, window := range report.Windows {
 		if window.Aside {
 			aside++
-			if len(window.Models) != 0 || window.Used != 80 {
-				t.Fatal("redundant bucket became model allowance")
+			if !slices.Equal(window.Models, []string{"glm-5.3"}) || window.Used != 80 {
+				t.Fatalf("redundant bucket aside = %+v, want scoped glm-5.3 at 80%%", window)
 			}
 			continue
 		}

@@ -148,3 +148,36 @@ func TestPolicyResetUsesDocumentedBeijingMessageAndExactModelWindow(t *testing.T
 		}
 	}
 }
+
+func TestPolicyRejectsNonCodeShapedProviderCodes(t *testing.T) {
+	owner := &module{options: ModuleOptions{Now: func() time.Time { return fixtureNow }}}
+	script := "<script>\nalert('blocked')\n</script>"
+	overlong := string(bytes.Repeat([]byte("a"), 65))
+	for _, sample := range []struct {
+		name   string
+		status int
+		body   []byte
+	}{
+		{"http-499-script-code", 499, raw(map[string]any{"code": script, "msg": "blocked"})},
+		{"http-499-overlong-code", 499, raw(map[string]any{"code": overlong, "msg": "blocked"})},
+		{"http-429-nested-script-code", 429, raw(map[string]any{"code": 3008, "error": map[string]any{"code": script}})},
+	} {
+		t.Run(sample.name, func(t *testing.T) {
+			response := &http.Response{StatusCode: sample.status, Header: http.Header{"Content-Type": {"application/json"}},
+				Body: io.NopCloser(bytes.NewReader(sample.body))}
+			failure, err := owner.requestFailure(response, "paid-messages")
+			response.Body.Close()
+			if err != nil || failure.Facts.Status != sample.status || failure.Facts.Code != "" ||
+				failure.Facts.Complete || failure.Evidence != "" {
+				t.Fatalf("non-code-shaped code leaked into facts or replay evidence: %+v %v", failure, err)
+			}
+		})
+	}
+	response := &http.Response{StatusCode: 200, Header: http.Header{"Content-Type": {"application/json"}},
+		Body: io.NopCloser(bytes.NewReader(raw(map[string]any{"code": script})))}
+	failure, err := owner.requestFailure(response, "paid-messages")
+	response.Body.Close()
+	if err != nil || failure.Facts.Status != 0 || failure.Facts.Code != "" || failure.Evidence != "" {
+		t.Fatalf("HTTP 200 with non-code-shaped code became a business failure: %+v %v", failure, err)
+	}
+}

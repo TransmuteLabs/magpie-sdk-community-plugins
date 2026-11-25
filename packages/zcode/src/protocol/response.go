@@ -16,6 +16,23 @@ var ErrTruncated = errors.New("ZCode stream ended without a complete message_sto
 var ErrStreamFailure = errors.New("ZCode stream reported an error after dispatch")
 var ErrFrameTooLarge = errors.New("ZCode stream event exceeds its limit")
 
+func IsProviderCodeShaped(value string) bool {
+	if len(value) == 0 || len(value) > 64 {
+		return false
+	}
+	for index := 0; index < len(value); index++ {
+		character := value[index]
+		valid := character >= 'A' && character <= 'Z' ||
+			character >= 'a' && character <= 'z' ||
+			character >= '0' && character <= '9' ||
+			character == '_' || character == '.' || character == ':' || character == '-'
+		if !valid {
+			return false
+		}
+	}
+	return true
+}
+
 func Failure(body []byte) (int, []byte, bool) {
 	value, err := ReadObject(body)
 	if err != nil {
@@ -29,9 +46,13 @@ func Failure(body []byte) (int, []byte, bool) {
 	}
 	switch raw := rawCode.(type) {
 	case json.Number:
-		code = string(raw)
+		if trimmed := strings.TrimSpace(string(raw)); IsProviderCodeShaped(trimmed) {
+			code = trimmed
+		}
 	case string:
-		code = raw
+		if trimmed := strings.TrimSpace(raw); IsProviderCodeShaped(trimmed) {
+			code = trimmed
+		}
 	}
 	failure := value["success"] == false || code != "" && code != "0" && code != "200" ||
 		value["type"] == "error" || value["error"] != nil

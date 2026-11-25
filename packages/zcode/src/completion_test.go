@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"slices"
 	"strconv"
 	"strings"
 	"sync/atomic"
@@ -559,7 +560,7 @@ func TestCompletionGiftBucketsKeepPlanIdentityAndOnlyBestBucketControlsModel(t *
 			live = !window.Aside && window.Used == 25 && containsString(window.Models, "GLM-5.3-Trial")
 		}
 		if strings.Contains(window.Name, "Start Plan") {
-			spent = window.Aside && window.Used == 100 && len(window.Models) == 0
+			spent = window.Aside && window.Used == 100 && slices.Equal(window.Models, []string{"GLM-5.3-Trial", "GLM-5.3"})
 		}
 	}
 	if !live || !spent {

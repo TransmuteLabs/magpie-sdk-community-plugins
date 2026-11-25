@@ -64,7 +64,18 @@ func policyCode(value any) (string, bool) {
 	if number, valid := value.(json.Number); valid {
 		value = string(number)
 	}
-	return policyString(value, 256)
+	text, valid := policyString(value, 256)
+	if !valid {
+		return "", false
+	}
+	trimmed := strings.TrimSpace(text)
+	if trimmed == "" {
+		return "", true
+	}
+	if !protocol.IsProviderCodeShaped(trimmed) {
+		return "", false
+	}
+	return trimmed, true
 }
 
 func policyEnvelope(root map[string]any) bool {

@@ -20,6 +20,29 @@
   },
   "sources": [
     {
+      "id": "vendor-zcode-provider-code-shape",
+      "role": "provider-business-code-shape-guard",
+      "repository": "https://github.com/zai-org/ZCode",
+      "commit": "a4b4445141eb7d3b3e99eada9292775383bfc44e",
+      "version": "desktop 4.0.0 / CLI 0.18.0",
+      "checkedAt": "2026-11-24",
+      "paths": [
+        "apps/zcode-cli/packages/adapters/src/model/model-execution.ts",
+        "apps/zcode-cli/packages/adapters/src/model/failure-classifier.ts",
+        "apps/zcode-cli/packages/adapters/src/model/provider-finish-business-error.ts"
+      ],
+      "checkedFiles": {
+        "package.json": "fd92975dad5c18e2018871b4868195eeb2704a1e2f106302c24c9a59017c94a3",
+        "apps/zcode-cli/package.json": "48becb8f625fe395c4d7f25086803f1d2b71a3f43c87f08678632ab98e321f30",
+        "apps/zcode-cli/packages/adapters/src/model/model-execution.ts": "74c5b3f9de80dd7406088b20ca2832ee6267a3fc538aebd2fe29a630dfeaf34d",
+        "apps/zcode-cli/packages/adapters/src/model/failure-classifier.ts": "c1e6aaf85bd703ee5cef84b83e1fdf81b624b36be626e47cd985bfb37f2b8bdb",
+        "apps/zcode-cli/packages/adapters/src/model/provider-finish-business-error.ts": "a3d5a46502acdb45c9156e0fec16b8f92f34b15a9fbb25189339d2be3d92480a"
+      },
+      "limits": [
+        "Applies the exact PROVIDER_CODE_SHAPE (^[A-Za-z0-9_.:-]{1,64}$) guard to protocol.Failure and request_policy.go. ClientVersion remains 3.18.2 from vendor-current-audit until a full 4.0.0 desktop wire capture is audited."
+      ]
+    },
+    {
       "id": "vendor-zcode-oauth-clock-skew",
       "role": "browser-sign-in-init-server-relative-expiry",
       "repository": "https://github.com/zai-org/ZCode",
@@ -668,6 +691,22 @@
     }
   ],
   "watch": [
+    {
+      "source": "vendor-zcode-provider-code-shape",
+      "paths": [
+        "apps/zcode-cli/packages/adapters/src/model/model-execution.ts",
+        "apps/zcode-cli/packages/adapters/src/model/failure-classifier.ts",
+        "apps/zcode-cli/packages/adapters/src/model/provider-finish-business-error.ts"
+      ],
+      "behaviors": [
+        "PROVIDER_CODE_SHAPE (^[A-Za-z0-9_.:-]{1,64}$) rejects HTML/script/overlong code strings from business error classification",
+        "Non-code-shaped HTTP 499 error bodies fall back to HTTP status classification without leaking code text or authorizing replay"
+      ],
+      "tests": [
+        "src/protocol/response_test.go",
+        "src/request_policy_test.go"
+      ]
+    },
     {
       "source": "vendor-zcode-oauth-clock-skew",
       "paths": ["packages/services/src/oauth/oauthService.ts", "apps/zcode-cli/packages/adapters/src/auth/cli-oauth.ts", "apps/zcode-cli/packages/bootstrap/src/auth-login.ts"],
