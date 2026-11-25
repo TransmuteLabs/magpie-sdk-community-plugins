@@ -95,6 +95,17 @@ def sdk_source(explicit=None):
     return sdk
 
 
+def _go_directive(text):
+    match = re.search(r"(?m)^go\s+([0-9]+(?:\.[0-9]+){1,2})\s*$", text)
+    if not match:
+        return None
+    raw = match.group(1)
+    parts = [int(part) for part in raw.split(".")]
+    while len(parts) < 3:
+        parts.append(0)
+    return tuple(parts), raw
+
+
 @contextmanager
 def build_environment(package, sdk=None):
     """Select an SDK without writing go.mod/go.sum or downloading dependencies."""
@@ -106,6 +117,11 @@ def build_environment(package, sdk=None):
     data, count = re.subn(r"(?m)^replace github\.com/yetone/magpie => .*?$", lambda _: replacement, data)
     if count != 1:
         raise ValueError("Expected exactly one explicit Magpie SDK replacement")
+    sdk_mod = selected / "go.mod"
+    sdk_go = _go_directive(sdk_mod.read_text()) if sdk_mod.is_file() else None
+    pkg_go = _go_directive(data)
+    if sdk_go and pkg_go and sdk_go[0] > pkg_go[0]:
+        data, _ = re.subn(r"(?m)^go\s+[0-9]+(?:\.[0-9]+){1,2}\s*$", f"go {sdk_go[1]}", data, count=1)
     with tempfile.TemporaryDirectory(prefix="magpie-plugin-build-") as directory:
         modfile = Path(directory) / "plugin.mod"
         modfile.write_text(data)

@@ -159,6 +159,25 @@ class WorkspaceTests(unittest.TestCase):
             self.assertEqual((source / "go.mod").read_text(), original)
             self.assertEqual((source / "go.sum").read_text(), "")
 
+    def test_temporary_modfile_aligns_go_directive_for_newer_sdk(self):
+        with tempfile.TemporaryDirectory(prefix="sdk-go-upgrade-") as temporary:
+            root = Path(temporary)
+            sdk = root / "sdk"
+            package = root / "package"
+            source = package / "src"
+            (sdk / "pkg/extension").mkdir(parents=True)
+            source.mkdir(parents=True)
+            (sdk / "pkg/extension/contract.go").write_text("package extension\n")
+            (sdk / "go.mod").write_text("module github.com/yetone/magpie\n\ngo 1.27.4\n")
+            original = "module example.com/fixture\n\ngo 1.26.8\n\nrequire github.com/yetone/magpie v0.0.0\nreplace github.com/yetone/magpie => ../wrong-sdk\n"
+            (source / "go.mod").write_text(original)
+            (source / "go.sum").write_text("")
+            with build_environment(package, sdk) as (env, _):
+                modfile = Path(next(flag.removeprefix("-modfile=") for flag in shlex.split(env["GOFLAGS"])
+                                    if flag.startswith("-modfile=")))
+                self.assertIn("\ngo 1.27.4\n", modfile.read_text())
+            self.assertEqual((source / "go.mod").read_text(), original)
+
     def test_unknown_package_is_not_treated_as_all(self):
         with self.assertRaises(ValueError):
             packages("typo")
