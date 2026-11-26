@@ -599,6 +599,11 @@ func (owner *module) usage(ctx context.Context, call sdk.Call, stream *sdk.Strea
 	if len(call.Params) > 0 && decodeObject(call.Params, &request) != nil {
 		return nil, invalid("Invalid usage request")
 	}
+	if request.Revision != "" {
+		if _, err := sdk.ParseUsageRevision(request.Revision); err != nil {
+			return nil, invalid("Usage requires a canonical host revision")
+		}
+	}
 	provider := firstOf(call.Scope.Provider, CodeArtsProvider)
 	rawCreds := call.Auth
 	if !nonempty(rawCreds) {
@@ -609,14 +614,18 @@ func (owner *module) usage(ctx context.Context, call sdk.Call, stream *sdk.Strea
 		return nil, unauthenticated("Missing credentials")
 	}
 	if provider == OfficeAceProvider {
-		return owner.officeAceUsage(ctx, stream, cred), nil
+		result := owner.officeAceUsage(ctx, stream, cred)
+		result.Revision = request.Revision
+		return result, nil
 	}
 	if !cred.ValidSTS() {
 		return nil, unauthenticated("Invalid CodeArts credentials")
 	}
 	id, _ := AccountIdentityOf(cred)
 	st := owner.stateFor(firstOf(call.Scope.Account, id, cred.AccessKeyID))
-	return owner.codeArtsUsage(ctx, stream, cred, st), nil
+	result := owner.codeArtsUsage(ctx, stream, cred, st)
+	result.Revision = request.Revision
+	return result, nil
 }
 
 func (owner *module) snapRequest(ctx context.Context, stream *sdk.Stream, method, targetURL string, cred CodeArtsCredential, payload any) (ok bool, code int, data any, msg string) {

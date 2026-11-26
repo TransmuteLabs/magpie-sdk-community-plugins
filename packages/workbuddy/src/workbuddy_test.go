@@ -1124,13 +1124,16 @@ func TestUsageSplitsEnterpriseAndC33FreeWindow(t *testing.T) {
 	harness := newWBHarness(t, mod, nil)
 	cred := sampleOAuthCred(ProviderWorkBuddy, now.Add(time.Hour).UnixMilli())
 
-	usageFrame, _ := harness.invoke(sdk.MethodProviderUsage, sdk.Scope{Provider: ProviderWorkBuddy}, sdk.UsageRequest{}, &cred)
+	usageFrame, _ := harness.invoke(sdk.MethodProviderUsage, sdk.Scope{Provider: ProviderWorkBuddy}, sdk.UsageRequest{Revision: "17"}, &cred)
 	if usageFrame.Error != nil {
 		t.Fatalf("usage failed: %v", usageFrame.Error)
 	}
 	validated, _, err := sdk.ValidateUsageResult(Manifest(), usageFrame.Result)
 	if err != nil {
 		t.Fatalf("sdk.ValidateUsageResult rejected usage result: %v\nraw=%s", err, string(usageFrame.Result))
+	}
+	if validated.Revision != "17" {
+		t.Fatalf("WorkBuddy did not acknowledge usage revision 17: %q", validated.Revision)
 	}
 	byName := map[string]sdk.UsageWindow{}
 	for _, win := range validated.Windows {
@@ -1163,10 +1166,13 @@ func TestUsageSplitsEnterpriseAndC33FreeWindow(t *testing.T) {
 	}
 
 	enterpriseMode.Store(true)
-	entFrame, _ := harness.invoke(sdk.MethodProviderUsage, sdk.Scope{Provider: ProviderWorkBuddy}, sdk.UsageRequest{}, &cred)
+	entFrame, _ := harness.invoke(sdk.MethodProviderUsage, sdk.Scope{Provider: ProviderWorkBuddy}, sdk.UsageRequest{Revision: "18"}, &cred)
 	entVal, _, err := sdk.ValidateUsageResult(Manifest(), entFrame.Result)
 	if err != nil {
 		t.Fatalf("enterprise usage validation failed: %v", err)
+	}
+	if entVal.Revision != "18" {
+		t.Fatalf("enterprise Usage did not acknowledge revision 18: %q", entVal.Revision)
 	}
 	if len(entVal.Windows) != 1 || entVal.Windows[0].Display != "250 / 1000" {
 		t.Fatalf("unexpected enterprise usage windows: %+v", entVal.Windows)

@@ -564,23 +564,29 @@ func TestModelsExecuteRefusalAndUsage(t *testing.T) {
 	}
 
 	// Usage: missing amountUsedRatio defaults to 0%, kimiCodeUsedRatio displayed.
-	usageRes, _ := fixture.invoke(sdk.MethodProviderUsage, sdk.Scope{Provider: ProviderID, Account: uid}, sdk.UsageRequest{}, &creds)
+	usageRes, _ := fixture.invoke(sdk.MethodProviderUsage, sdk.Scope{Provider: ProviderID, Account: uid}, sdk.UsageRequest{Revision: "17"}, &creds)
 	if usageRes.Error != nil {
 		t.Fatalf("usage rpc error: %v", usageRes.Error)
 	}
 	var usage sdk.UsageResult
 	_ = json.Unmarshal(usageRes.Result, &usage)
+	if usage.Revision != "17" {
+		t.Fatalf("Kimi Work did not acknowledge usage revision 17: %q", usage.Revision)
+	}
 	if len(usage.Windows) != 1 || usage.Windows[0].Used != 0 || usage.Windows[0].Display != "Code 已用 12.5%（占总额）" {
 		t.Fatalf("unexpected usage result: %+v", usage)
 	}
 
 	// Usage away account returns non-fatal error without losing Work key.
-	awayUsageRes, _ := fixture.invoke(sdk.MethodProviderUsage, sdk.Scope{Provider: ProviderID, Account: otherUID}, sdk.UsageRequest{}, &awayCreds)
+	awayUsageRes, _ := fixture.invoke(sdk.MethodProviderUsage, sdk.Scope{Provider: ProviderID, Account: otherUID}, sdk.UsageRequest{Revision: "18"}, &awayCreds)
 	if awayUsageRes.Error != nil {
 		t.Fatalf("away usage rpc error: %v", awayUsageRes.Error)
 	}
 	var awayUsage sdk.UsageResult
 	_ = json.Unmarshal(awayUsageRes.Result, &awayUsage)
+	if awayUsage.Revision != "18" {
+		t.Fatalf("away account did not acknowledge usage revision 18: %q", awayUsage.Revision)
+	}
 	if awayUsage.Error == "" || len(awayUsage.Windows) != 0 {
 		t.Fatalf("expected away error, got %+v", awayUsage)
 	}

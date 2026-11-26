@@ -693,6 +693,11 @@ func (owner *module) usage(ctx context.Context, call sdk.Call, stream *sdk.Strea
 	if nonempty(call.Params) && decodeObject(call.Params, &req) != nil {
 		return nil, invalid("Usage request must be a JSON object")
 	}
+	if req.Revision != "" {
+		if _, err := sdk.ParseUsageRevision(req.Revision); err != nil {
+			return nil, invalid("Usage requires a canonical host revision")
+		}
+	}
 	site, ok := owner.siteFor(call.Scope.Provider)
 	if !ok {
 		return nil, invalid("Unknown WorkBuddy provider")
@@ -702,25 +707,26 @@ func (owner *module) usage(ctx context.Context, call sdk.Call, stream *sdk.Strea
 		rawAuth = req.Credentials
 	}
 	if !nonempty(rawAuth) {
-		return sdk.UsageResult{Error: "not signed in"}, nil
+		return sdk.UsageResult{Revision: req.Revision, Error: "not signed in"}, nil
 	}
 	var stored Credential
 	if decodeObject(rawAuth, &stored) != nil {
-		return sdk.UsageResult{Error: "not signed in"}, nil
+		return sdk.UsageResult{Revision: req.Revision, Error: "not signed in"}, nil
 	}
 	if stored.isAPIKey() {
 		base := strings.TrimSuffix(site.Keys, "/profile/keys")
 		return sdk.UsageResult{
-			Error: fmt.Sprintf("credits unknown with an API key (WorkBuddy's own client reads none with one); see %s", base),
+			Revision: req.Revision,
+			Error:    fmt.Sprintf("credits unknown with an API key (WorkBuddy's own client reads none with one); see %s", base),
 		}, nil
 	}
 	if !stored.isOAuth() || (stored.Access == "" && stored.Source == "") {
-		return sdk.UsageResult{Error: "not signed in"}, nil
+		return sdk.UsageResult{Revision: req.Revision, Error: "not signed in"}, nil
 	}
 
 	active, err := owner.current(ctx, stream, site, stored)
 	if err != nil {
-		return sdk.UsageResult{Error: err.Error()}, nil
+		return sdk.UsageResult{Revision: req.Revision, Error: err.Error()}, nil
 	}
 	sum, err := owner.meter(ctx, stream, site, active, summaryURI, map[string]any{})
 	if err != nil {
@@ -728,25 +734,25 @@ func (owner *module) usage(ctx context.Context, call sdk.Call, stream *sdk.Strea
 		if errors.As(err, &mErr) && mErr.Status == http.StatusUnauthorized {
 			reissue := owner.reissued(ctx, stream, site, active)
 			if !reissue.HasCred {
-				return sdk.UsageResult{Error: refusedText(site, active, reissue.Why, "")}, nil
+				return sdk.UsageResult{Revision: req.Revision, Error: refusedText(site, active, reissue.Why, "")}, nil
 			}
 			active = reissue.Cred
 			sum, err = owner.meter(ctx, stream, site, active, summaryURI, map[string]any{})
 			if err != nil {
 				var mErr2 *meterError
 				if errors.As(err, &mErr2) && mErr2.Status == http.StatusUnauthorized {
-					return sdk.UsageResult{Error: refusedText(site, active, "it refused the token renewed for it too", "")}, nil
+					return sdk.UsageResult{Revision: req.Revision, Error: refusedText(site, active, "it refused the token renewed for it too", "")}, nil
 				}
-				return sdk.UsageResult{Error: err.Error()}, nil
+				return sdk.UsageResult{Revision: req.Revision, Error: err.Error()}, nil
 			}
 		} else {
-			return sdk.UsageResult{Error: err.Error()}, nil
+			return sdk.UsageResult{Revision: req.Revision, Error: err.Error()}, nil
 		}
 	}
 
 	parsed, err := usageOf(sum, stored.Plan, site)
 	if err != nil {
-		return sdk.UsageResult{Error: err.Error()}, nil
+		return sdk.UsageResult{Revision: req.Revision, Error: err.Error()}, nil
 	}
 	nowMs := owner.nowMs()
 
@@ -756,7 +762,7 @@ func (owner *module) usage(ctx context.Context, call sdk.Call, stream *sdk.Strea
 			if entWin, parseErr := enterpriseUsageOf(entData); parseErr == nil && entWin != nil {
 				windows := []sdk.UsageWindow{*entWin}
 				owner.spareFree(ctx, stream, site, active, windows)
-				return sdk.UsageResult{Windows: windows}, nil
+				return sdk.UsageResult{Revision: req.Revision, Windows: windows}, nil
 			}
 		}
 	}
@@ -798,5 +804,5 @@ func (owner *module) usage(ctx context.Context, call sdk.Call, stream *sdk.Strea
 
 	owner.spareFree(ctx, stream, site, active, parsed.Windows)
 	parsed.Windows = owner.appendFreeWindows(site, active, nowMs, parsed.Windows)
-	return sdk.UsageResult{Windows: parsed.Windows}, nil
+	return sdk.UsageResult{Revision: req.Revision, Windows: parsed.Windows}, nil
 }

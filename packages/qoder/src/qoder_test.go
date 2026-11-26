@@ -990,12 +990,15 @@ func TestUsageSpareFreeRotationAndQwenWorkWallets(test *testing.T) {
 	cred := sampleCredential(now)
 
 	// Qoder usage: 401 rotates device token once, synthesizes Total credits with Aside on pools, spares qwen-free via NotModels.
-	frame, _ := harness.invoke(sdk.MethodProviderUsage, sdk.Scope{Provider: ProviderQoder}, sdk.UsageRequest{}, &cred)
+	frame, _ := harness.invoke(sdk.MethodProviderUsage, sdk.Scope{Provider: ProviderQoder}, sdk.UsageRequest{Revision: "17"}, &cred)
 	if frame.Error != nil {
 		test.Fatalf("usage failed: %v", frame.Error)
 	}
 	var uRes sdk.UsageResult
 	_ = json.Unmarshal(frame.Result, &uRes)
+	if uRes.Revision != "17" {
+		test.Fatalf("Qoder did not acknowledge usage revision 17: %q", uRes.Revision)
+	}
 	if rotated.Load() != 1 || len(uRes.Windows) != 3 {
 		test.Fatalf("expected 1 device rotation and 3 windows (Total + 2 aside), got rot=%d windows=%+v", rotated.Load(), uRes.Windows)
 	}
@@ -1022,12 +1025,15 @@ func TestUsageSpareFreeRotationAndQwenWorkWallets(test *testing.T) {
 	}
 
 	// QwenWork personal account context + wallets breakdown.
-	qwFrame, _ := harness.invoke(sdk.MethodProviderUsage, sdk.Scope{Provider: ProviderQwenWork}, sdk.UsageRequest{}, &cred)
+	qwFrame, _ := harness.invoke(sdk.MethodProviderUsage, sdk.Scope{Provider: ProviderQwenWork}, sdk.UsageRequest{Revision: "18"}, &cred)
 	if qwFrame.Error != nil {
 		test.Fatalf("qwenwork usage failed: %v", qwFrame.Error)
 	}
 	var qwRes sdk.UsageResult
 	_ = json.Unmarshal(qwFrame.Result, &qwRes)
+	if qwRes.Revision != "18" {
+		test.Fatalf("Qwen Work did not acknowledge usage revision 18: %q", qwRes.Revision)
+	}
 	if len(qwRes.Windows) != 1 || !strings.Contains(qwRes.Windows[0].Display, "150 credits (daily 50 · monthly 100)") {
 		test.Fatalf("unexpected qwenwork personal balance windows: %+v", qwRes.Windows)
 	}

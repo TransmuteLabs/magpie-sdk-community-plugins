@@ -576,12 +576,15 @@ func TestCodeArtsBenefitIsolationC33(t *testing.T) {
 	}
 
 	// 2. Usage reads fresh balance and scopes windows cleanly (notModels on credits, models on 免费额度).
-	uFrame, _ := fx.invoke(sdk.MethodProviderUsage, scope, sdk.UsageRequest{}, &cred)
+	uFrame, _ := fx.invoke(sdk.MethodProviderUsage, scope, sdk.UsageRequest{Revision: "17"}, &cred)
 	if uFrame.Error != nil {
 		t.Fatalf("usage failed: %v", uFrame.Error)
 	}
 	var uRes sdk.UsageResult
 	_ = json.Unmarshal(uFrame.Result, &uRes)
+	if uRes.Revision != "17" {
+		t.Fatalf("CodeArts did not acknowledge usage revision 17: %q", uRes.Revision)
+	}
 	var foundCredit, foundBenefit bool
 	for _, w := range uRes.Windows {
 		if w.Name == "总积分" {
@@ -935,12 +938,15 @@ func TestOfficeAceEndToEnd(t *testing.T) {
 		t.Fatalf("expected OA 401 refresh+retry success: status=%d calls=%d replaced=%d body=%s", eRes.Status, chatCalls.Load(), len(fx.replaced), string(data))
 	}
 
-	uFrame, _ := fx.invoke(sdk.MethodProviderUsage, scope, sdk.UsageRequest{}, &cred)
+	uFrame, _ := fx.invoke(sdk.MethodProviderUsage, scope, sdk.UsageRequest{Revision: "18"}, &cred)
 	if uFrame.Error != nil {
 		t.Fatalf("officeace usage failed: %v", uFrame.Error)
 	}
 	var uRes sdk.UsageResult
 	_ = json.Unmarshal(uFrame.Result, &uRes)
+	if uRes.Revision != "18" {
+		t.Fatalf("OfficeAce did not acknowledge usage revision 18: %q", uRes.Revision)
+	}
 	if len(uRes.Windows) < 2 {
 		t.Fatalf("expected OA usage windows + aggregate, got %+v", uRes.Windows)
 	}

@@ -32,6 +32,11 @@ func (owner *module) usage(ctx context.Context, call sdk.Call, stream *sdk.Strea
 	if len(call.Params) > 0 && decodeObject(call.Params, &request) != nil {
 		return nil, invalid("Invalid Kimi Work usage request")
 	}
+	if request.Revision != "" {
+		if _, err := sdk.ParseUsageRevision(request.Revision); err != nil {
+			return nil, invalid("Usage requires a canonical host revision")
+		}
+	}
 	rawCreds := call.Auth
 	if !nonempty(rawCreds) {
 		rawCreds = request.Credentials
@@ -49,13 +54,14 @@ func (owner *module) usage(ctx context.Context, call sdk.Call, stream *sdk.Strea
 		if err != nil {
 			var deskErr *DesktopError
 			if errors.As(err, &deskErr) && deskErr.SignIn == "kept" {
-				return sdk.UsageResult{Error: deskErr.Message}, nil
+				return sdk.UsageResult{Revision: request.Revision, Error: deskErr.Message}, nil
 			}
 			return nil, err
 		}
 		if session.Away {
 			return sdk.UsageResult{
-				Error: "这个账号不是 Kimi 桌面版当前登录的账号，切换到它后才能读取会员额度（对话不受影响）",
+				Revision: request.Revision,
+				Error:    "这个账号不是 Kimi 桌面版当前登录的账号，切换到它后才能读取会员额度（对话不受影响）",
 			}, nil
 		}
 		token = session.WebToken
@@ -74,11 +80,11 @@ func (owner *module) usage(ctx context.Context, call sdk.Call, stream *sdk.Strea
 		} else if errors.Is(err, context.DeadlineExceeded) {
 			why = "读取 Kimi 会员额度超时"
 		}
-		return sdk.UsageResult{Error: why}, nil
+		return sdk.UsageResult{Revision: request.Revision, Error: why}, nil
 	}
 	balance := pickObject(payload, "subscriptionBalance", "subscription_balance")
 	if balance == nil {
-		return sdk.UsageResult{Error: "Kimi 会员额度回复里没有共享额度（subscriptionBalance）"}, nil
+		return sdk.UsageResult{Revision: request.Revision, Error: "Kimi 会员额度回复里没有共享额度（subscriptionBalance）"}, nil
 	}
 	rawRatio := pickAny(balance, "amountUsedRatio", "amount_used_ratio")
 	if rawRatio == nil {
@@ -86,7 +92,7 @@ func (owner *module) usage(ctx context.Context, call sdk.Call, stream *sdk.Strea
 	}
 	used, ok := clampPercent(rawRatio)
 	if !ok {
-		return sdk.UsageResult{Error: "Kimi 会员额度回复里没有共享额度（subscriptionBalance）"}, nil
+		return sdk.UsageResult{Revision: request.Revision, Error: "Kimi 会员额度回复里没有共享额度（subscriptionBalance）"}, nil
 	}
 	window := sdk.UsageWindow{
 		Name: "本月",
@@ -97,6 +103,7 @@ func (owner *module) usage(ctx context.Context, call sdk.Call, stream *sdk.Strea
 		window.Display = fmt.Sprintf("Code 已用 %s%%（占总额）", strconv.FormatFloat(rounded, 'f', -1, 64))
 	}
 	return sdk.UsageResult{
-		Windows: []sdk.UsageWindow{window},
+		Revision: request.Revision,
+		Windows:  []sdk.UsageWindow{window},
 	}, nil
 }

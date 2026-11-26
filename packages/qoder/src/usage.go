@@ -669,8 +669,13 @@ func (owner *module) usage(ctx context.Context, call sdk.Call, stream *sdk.Strea
 		return nil, err
 	}
 	var req sdk.UsageRequest
-	if nonemptyRaw(call.Params) {
-		_ = json.Unmarshal(call.Params, &req)
+	if nonemptyRaw(call.Params) && json.Unmarshal(call.Params, &req) != nil {
+		return nil, invalid("Invalid Qoder usage request")
+	}
+	if req.Revision != "" {
+		if _, err := sdk.ParseUsageRevision(req.Revision); err != nil {
+			return nil, invalid("Usage requires a canonical host revision")
+		}
 	}
 	rawCred := call.Auth
 	if !nonemptyRaw(rawCred) {
@@ -678,7 +683,7 @@ func (owner *module) usage(ctx context.Context, call sdk.Call, stream *sdk.Strea
 	}
 	stored, hasCred := decodeCredential(rawCred)
 	if !hasCred || stored.Type != "oauth" || stored.Access == "" || stored.UID == "" {
-		return sdk.UsageResult{Error: fmt.Sprintf("%s: not signed in", site.Name)}, nil
+		return sdk.UsageResult{Revision: req.Revision, Error: fmt.Sprintf("%s: not signed in", site.Name)}, nil
 	}
 	cred, didRenew, err := owner.fresh(ctx, stream, "", site, state, stored)
 	if err != nil {
@@ -686,15 +691,15 @@ func (owner *module) usage(ctx context.Context, call sdk.Call, stream *sdk.Strea
 		if errors.As(err, &gone) && gone.Expired {
 			return nil, unauthenticated(gone.Message)
 		}
-		return sdk.UsageResult{Error: err.Error()}, nil
+		return sdk.UsageResult{Revision: req.Revision, Error: err.Error()}, nil
 	}
 	_ = didRenew || state.consumeUnsaid(cred)
 	if cred.Lingma {
-		return sdk.UsageResult{Windows: []sdk.UsageWindow{}}, nil
+		return sdk.UsageResult{Revision: req.Revision, Windows: []sdk.UsageWindow{}}, nil
 	}
 	resolved, err := siteOf(site, cred)
 	if err != nil {
-		return sdk.UsageResult{Error: err.Error()}, nil
+		return sdk.UsageResult{Revision: req.Revision, Error: err.Error()}, nil
 	}
 
 	if site.UsagePath != "" {
@@ -712,7 +717,7 @@ func (owner *module) usage(ctx context.Context, call sdk.Call, stream *sdk.Strea
 					if errors.As(rotErr, &gone) && gone.Expired {
 						return nil, unauthenticated(gone.Message)
 					}
-					return sdk.UsageResult{Error: rotErr.Error()}, nil
+					return sdk.UsageResult{Revision: req.Revision, Error: rotErr.Error()}, nil
 				}
 				token = rotatedToken
 				if nextSite, nextErr := siteOf(site, nextCred); nextErr == nil {
@@ -722,7 +727,7 @@ func (owner *module) usage(ctx context.Context, call sdk.Call, stream *sdk.Strea
 			}
 		}
 		if readErr != nil {
-			return sdk.UsageResult{Error: readErr.Error()}, nil
+			return sdk.UsageResult{Revision: req.Revision, Error: readErr.Error()}, nil
 		}
 		var wallets map[string]any
 		ctxData := unwrapAdapter(env)
@@ -735,9 +740,9 @@ func (owner *module) usage(ctx context.Context, call sdk.Call, stream *sdk.Strea
 		}
 		parsed := parseAccountContext(env, wallets)
 		if parsed.ErrorText != "" {
-			return sdk.UsageResult{Error: parsed.ErrorText}, nil
+			return sdk.UsageResult{Revision: req.Revision, Error: parsed.ErrorText}, nil
 		}
-		return sdk.UsageResult{Windows: parsed.Windows}, nil
+		return sdk.UsageResult{Revision: req.Revision, Windows: parsed.Windows}, nil
 	}
 
 	var env map[string]any
@@ -751,12 +756,12 @@ func (owner *module) usage(ctx context.Context, call sdk.Call, stream *sdk.Strea
 		if errors.As(err, &gone) && gone.Expired {
 			return nil, unauthenticated(gone.Message)
 		}
-		return sdk.UsageResult{Error: err.Error()}, nil
+		return sdk.UsageResult{Revision: req.Revision, Error: err.Error()}, nil
 	}
 	parsed := parseUsage(env)
 	if parsed.ErrorText != "" {
-		return sdk.UsageResult{Error: parsed.ErrorText}, nil
+		return sdk.UsageResult{Revision: req.Revision, Error: parsed.ErrorText}, nil
 	}
 	owner.spareFree(ctx, stream, "", site, state, cred, parsed.Windows)
-	return sdk.UsageResult{Windows: parsed.Windows}, nil
+	return sdk.UsageResult{Revision: req.Revision, Windows: parsed.Windows}, nil
 }
