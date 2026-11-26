@@ -230,6 +230,8 @@ func TestPublicSDKDeviceFlowModelsUsageAndScopedChat(t *testing.T) {
 			io.WriteString(w, `[{"id":"org-a","name":"Workspace A"}]`)
 		case "/zen/go/v1/usage":
 			io.WriteString(w, `{"usage":{"rolling":{"percent":23},"weekly":{"percent":75}}}`)
+		case "/inference/go/v1/models":
+			io.WriteString(w, `{"data":[{"id":"deepseek-v4.1-flash","go":{"monthly_usage":{"plus":1000}}},{"id":"gemini-4-argon","go":{"monthly_usage":{}}}]}`)
 		case "/inference/go/openai/v1/chat/completions":
 			mu.Lock()
 			seen = append(seen, r.Header.Clone())

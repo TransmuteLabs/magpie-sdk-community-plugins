@@ -43,6 +43,12 @@ func TestRequestPolicyOriginalFinalRefusal(t *testing.T) {
 		sends.Load() != 1 || len(body) != 0 || len(harness.headers) != 0 || harness.accepted["fixture-2"] {
 		t.Fatalf("refusal lost original facts or crossed acceptance/output: %+v body=%s sends=%d", final, body, sends.Load())
 	}
+	for _, rule := range final.Refusal.Rules {
+		if rule.ID == "opencode.go-limit" && rule.Scope == "model" {
+			return
+		}
+	}
+	t.Fatal("Go refusal did not confine the timed hold to the attempted model")
 }
 
 func TestOpenCodeKnownContentRefusalsStopBeforeAcceptance(t *testing.T) {
