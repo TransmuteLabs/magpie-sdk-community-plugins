@@ -47,10 +47,34 @@ jobs:
           ref: ${{ env.SDK_COMMIT }}
           path: sdk-source
           persist-credentials: false
+      - name: Resolve the Go version for the SDK and plugin
+        id: go
+        if: steps.pending.outputs.has-releases == 'true'
+        env:
+          PACKAGE: ${{ inputs.package }}
+        run: |
+          python3 -I - >> "$GITHUB_OUTPUT" <<'PY'
+          import os
+          from pathlib import Path
+          import re
+
+          def go_version(path):
+              match = re.search(
+                  r"(?m)^go[ \t]+([0-9]+)\.([0-9]+)(?:\.([0-9]+))?[ \t]*(?://[^\n]*)?$",
+                  path.read_text(),
+              )
+              if not match:
+                  raise SystemExit(f"Expected a stable Go version in {path}")
+              return tuple(int(part or "0") for part in match.groups())
+
+          plugin = Path("packages") / os.environ["PACKAGE"] / "src/go.mod"
+          version = max(go_version(Path("sdk-source/go.mod")), go_version(plugin))
+          print("version=" + ".".join(map(str, version)))
+          PY
       - uses: actions/setup-go@v6
         if: steps.pending.outputs.has-releases == 'true'
         with:
-          go-version-file: sdk-source/go.mod
+          go-version: ${{ steps.go.outputs.version }}
           cache-dependency-path: |
             packages/${{ inputs.package }}/src/go.sum
             sdk-source/go.sum
