@@ -686,12 +686,17 @@ func (owner *module) usage(ctx context.Context, call sdk.Call, stream *sdk.Strea
 	if err := state.headers.Session(headers, call.Scope.Account, owner.options.Now()); err != nil {
 		return nil, err
 	}
-	windows, err := owner.client(stream).Usage(ctx, credentials, headers)
+	client := owner.client(stream)
+	windows, err := client.Usage(ctx, credentials, headers)
 	if err != nil {
 		return nil, failure(err, "")
 	}
+	excluded := owner.goQuotaExclusions(ctx, call.Scope, client, state, credentials)
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
 	for _, window := range windows {
-		value := sdk.UsageWindow{Name: window.Name, Used: window.Used, Limit: 100}
+		value := sdk.UsageWindow{Name: window.Name, Used: window.Used, Limit: 100, NotModels: excluded}
 		if window.ResetsAt != nil {
 			value.ResetsAt = window.ResetsAt.UnixMilli()
 		}

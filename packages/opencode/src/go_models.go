@@ -1,6 +1,7 @@
 package opencode
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"slices"
@@ -8,15 +9,18 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+	"unicode/utf8"
 
 	sdk "github.com/yetone/magpie/pkg/extension"
 	"github.com/yetone/magpie/pkg/protocolext"
 )
 
 const (
-	goOpenAIBase    = "/inference/go/openai/v1"
-	goAnthropicBase = "/inference/go/anthropic/v1"
-	goGeminiBase    = "/inference/go/google/v1beta"
+	goOpenAIBase          = "/inference/go/openai/v1"
+	goAnthropicBase       = "/inference/go/anthropic/v1"
+	goGeminiBase          = "/inference/go/google/v1beta"
+	goCatalogTTL          = time.Minute
+	goQuotaCatalogTimeout = 3 * time.Second
 )
 
 type goCatalogKey struct {
@@ -26,8 +30,10 @@ type goCatalogKey struct {
 }
 
 type goCatalogEntry struct {
-	refresh chan struct{}
-	listing atomic.Pointer[modelListing]
+	refresh       chan struct{}
+	listing       atomic.Pointer[modelListing]
+	quotaKnown    bool
+	quotaExcluded []string
 }
 
 type goCatalog struct {
@@ -76,29 +82,103 @@ func (owner *module) goModels(ctx context.Context, call sdk.Call, stream *sdk.St
 
 func (owner *module) discoverGo(ctx context.Context, call sdk.Call, stream *sdk.Stream, state *instance, credentials Credentials) ([]sdk.Model, error) {
 	entry := state.goCatalog.entry(call.Scope, credentials, true)
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	if listing := entry.listing.Load(); listing != nil && owner.options.Now().Sub(listing.at) < goCatalogTTL {
+		return listing.models, nil
+	}
 	select {
 	case entry.refresh <- struct{}{}:
 		defer func() { <-entry.refresh }()
 	case <-ctx.Done():
 		return nil, ctx.Err()
 	}
-	previous := entry.listing.Load()
-	if previous != nil && owner.options.Now().Sub(previous.at) < time.Minute {
-		return previous.models, nil
+	listing, err := owner.loadGoListing(ctx, owner.client(stream), entry, credentials)
+	if err != nil {
+		return nil, err
 	}
-	client := owner.client(stream)
+	return listing.models, nil
+}
+
+func (owner *module) loadGoListing(ctx context.Context, client *Client, entry *goCatalogEntry, credentials Credentials) (*modelListing, error) {
+	previous := entry.listing.Load()
+	if previous != nil && owner.options.Now().Sub(previous.at) < goCatalogTTL {
+		return previous, nil
+	}
 	body := client.modelList(ctx, client.Endpoints.Console+"/api/v1/models", credentials.Access, "x-org-id", credentials.OrgID)
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
 	if models, ok := goDiscoverModels(body); ok {
-		entry.listing.Store(&modelListing{models: models, at: owner.options.Now()})
-		return models, nil
+		listing := &modelListing{models: models, at: owner.options.Now()}
+		entry.listing.Store(listing)
+		entry.quotaKnown, entry.quotaExcluded = false, nil
+		return listing, nil
 	}
 	if previous != nil {
-		return previous.models, nil
+		return previous, nil
 	}
 	return nil, &sdk.Error{Code: "upstream", Message: "OpenCode Go workspace catalog unavailable", Outcome: "not-started"}
+}
+
+func (owner *module) goQuotaExclusions(ctx context.Context, scope sdk.Scope, client *Client, state *instance, credentials Credentials) []string {
+	ctx, cancel := context.WithTimeout(ctx, goQuotaCatalogTimeout)
+	defer cancel()
+	entry := state.goCatalog.entry(scope, credentials, true)
+	select {
+	case entry.refresh <- struct{}{}:
+		defer func() { <-entry.refresh }()
+	case <-ctx.Done():
+		return nil
+	}
+	listing, err := owner.loadGoListing(ctx, client, entry, credentials)
+	now := owner.options.Now()
+	if err != nil || ctx.Err() != nil || credentials.Due(now) || now.Sub(listing.at) >= goCatalogTTL || len(listing.models) == 0 {
+		return nil
+	}
+	if entry.quotaKnown {
+		return entry.quotaExcluded
+	}
+	body := client.modelList(ctx, client.Endpoints.Inference+"/inference/go/v1/models", credentials.Access, "x-opencode-org-id", credentials.OrgID)
+	now = owner.options.Now()
+	if ctx.Err() != nil || credentials.Due(now) || now.Sub(listing.at) >= goCatalogTTL {
+		return nil
+	}
+	excluded, ok := goQuotaExemptModels(body, listing.models)
+	if !ok {
+		return nil
+	}
+	entry.quotaKnown, entry.quotaExcluded = true, excluded
+	return excluded
+}
+
+func goQuotaExemptModels(body []byte, workspace []sdk.Model) ([]string, bool) {
+	var reply struct {
+		Data []struct {
+			ID string          `json:"id"`
+			Go json.RawMessage `json:"go"`
+		} `json:"data"`
+	}
+	if !utf8.Valid(body) || !uniquePolicyJSON(body) || json.Unmarshal(body, &reply) != nil || reply.Data == nil {
+		return nil, false
+	}
+	confirmed := make(map[string]bool, len(reply.Data))
+	for _, entry := range reply.Data {
+		if _, duplicate := confirmed[entry.ID]; duplicate || !validInferenceModelID(entry.ID) {
+			return nil, false
+		}
+		var usage map[string]json.RawMessage
+		confirmed[entry.ID] = json.Unmarshal(entry.Go, &usage) == nil &&
+			bytes.Equal(bytes.TrimSpace(usage["monthly_usage"]), []byte("null"))
+	}
+	var excluded []string
+	for _, model := range workspace {
+		if confirmed[model.ID] {
+			excluded = append(excluded, model.ID)
+		}
+	}
+	return excluded, true
 }
 
 func goDiscoverModels(body []byte) ([]sdk.Model, bool) {

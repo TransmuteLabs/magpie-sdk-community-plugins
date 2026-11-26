@@ -1,6 +1,6 @@
 # OpenCode module source provenance
 
-OpenCode **0.8.5** uses public SDK API **1.12**, native ABI **1**, and the
+OpenCode **0.8.6** uses public SDK API **1.12**, native ABI **1**, and the
 Magpie `sessions` panel slot. It retains the Providers sign-in and Sessions
 placement from 0.8.3. Zen service-key names include a short account
 fingerprint. The provider and agent protocol sources remain the same.

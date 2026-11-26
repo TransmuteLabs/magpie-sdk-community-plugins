@@ -23,7 +23,7 @@ var errOpenCodeContentRefusal = errors.New("OpenCode upstream rejected the reque
 
 func opencodeFailureRules() []sdk.RequestFailureRule {
 	return []sdk.RequestFailureRule{
-		{ID: "opencode.go-limit", Status: []int{429}, Type: "GoUsageLimitError", Class: "quota", Scope: "account"},
+		{ID: "opencode.go-limit", Status: []int{429}, Type: "GoUsageLimitError", Class: "quota", Scope: "model"},
 		{ID: "opencode.credit", Status: []int{402}, Type: "CreditLimitExceeded", Class: "quota", Scope: "account"},
 		{ID: "opencode.free-limit", Status: []int{429}, Type: "FreeUsageLimitError", Class: "quota", Scope: "unknown"},
 		{ID: "opencode.free-client", Status: []int{403}, Type: "FreeTierError", Class: "request-refusal", Scope: "request"},
