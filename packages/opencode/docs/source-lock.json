@@ -249,9 +249,13 @@
   },
   "plugin": {
     "id": "opencode",
-    "version": "0.8.5",
+    "version": "0.8.6",
     "sdkMinimum": "1.12",
     "nativeABI": 1
+  },
+  "goQuotaRelease": {
+    "pluginSourceCommit": "d68fd6bbf9aec137ea6b4a1c89acc972e5b73567",
+    "releaseSDKCommit": "2930fd147249bd5ab8ea92a25a8dc1a357d97203"
   },
   "variant": "full",
   "providerSignInAdoption": {
@@ -263,7 +267,7 @@
     "retainsWindowBindings": true
   },
   "windowPlacement": {
-    "version": "0.8.3",
+    "version": "0.8.6",
     "slot": "sessions",
     "part": "window:panel:0",
     "signInPart": "provider:signin"
