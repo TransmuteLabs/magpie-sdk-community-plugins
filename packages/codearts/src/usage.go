@@ -177,14 +177,14 @@ func buildCreditWindow(name string, limit, remain, expiring float64, resetsAt in
 	}
 }
 
-func usageFromStatistics(raw map[string]any, benefit *sdk.UsageWindow, benefitIDs []string, benefitSetKnown bool, station Station) sdk.UsageResult {
+func usageFromStatistics(raw map[string]any, station Station) (sdk.UsageResult, string) {
 	if raw == nil {
-		return sdk.UsageResult{Error: "CodeArts could not be parsed"}
+		return sdk.UsageResult{Error: "CodeArts could not be parsed"}, ""
 	}
 	data := raw
 	if codeVal, hasCode := asFloat(raw["code"]); hasCode {
 		if int(codeVal) != 0 {
-			return sdk.UsageResult{Error: firstOf(strField(raw, "message", "msg"), fmt.Sprintf("CodeArts code %d", int(codeVal)))}
+			return sdk.UsageResult{Error: firstOf(strField(raw, "message", "msg"), fmt.Sprintf("CodeArts code %d", int(codeVal)))}, ""
 		}
 		if sub, ok := raw["data"].(map[string]any); ok {
 			data = sub
@@ -230,7 +230,8 @@ func usageFromStatistics(raw map[string]any, benefit *sdk.UsageWindow, benefitID
 		return 0
 	})
 
-	if isTok, _ := pkg["is_token_package"].(bool); isTok {
+	isTokenPackage, _ := pkg["is_token_package"].(bool)
+	if isTokenPackage {
 		gated := false
 		for _, w := range windows {
 			if !w.Aside {
@@ -276,6 +277,14 @@ func usageFromStatistics(raw map[string]any, benefit *sdk.UsageWindow, benefitID
 		}
 	}
 
+	result := sdk.UsageResult{Windows: windows}
+	if isTokenPackage {
+		return result, "该账号无 token 额度"
+	}
+	return result, "该账号无积分额度"
+}
+
+func benefitUsageWindows(windows []sdk.UsageWindow, benefit *sdk.UsageWindow, benefitIDs []string, benefitSetKnown bool) []sdk.UsageWindow {
 	var aliases []string
 	if benefitSetKnown {
 		for _, id := range benefitIDs {
@@ -314,13 +323,7 @@ func usageFromStatistics(raw map[string]any, benefit *sdk.UsageWindow, benefitID
 		})
 	}
 
-	if len(windows) > 0 {
-		return sdk.UsageResult{Windows: windows}
-	}
-	if isTok, _ := pkg["is_token_package"].(bool); isTok {
-		return sdk.UsageResult{Error: "该账号无 token 额度"}
-	}
-	return sdk.UsageResult{Error: "该账号无积分额度"}
+	return windows
 }
 
 func (owner *module) codeArtsUsage(ctx context.Context, stream *sdk.Stream, cred CodeArtsCredential, st *accountState) sdk.UsageResult {
@@ -392,8 +395,13 @@ func (owner *module) codeArtsUsage(ctx context.Context, stream *sdk.Stream, cred
 		}
 	}
 
-	today := beijingDay(owner.options.Now().UnixMilli())
+	result, emptyReason := usageFromStatistics(statsObj, station)
+	if result.Error != "" {
+		return result
+	}
 	st.mu.Lock()
+	defer st.mu.Unlock()
+	today := beijingDay(owner.options.Now().UnixMilli())
 	latest := st.dailyRead == reading && day == today
 	var current *dailyReadState
 	if st.daily != nil && st.daily.Day == today {
@@ -405,8 +413,6 @@ func (owner *module) codeArtsUsage(ctx context.Context, stream *sdk.Stream, cred
 	for id := range st.benefitModels {
 		currentBenefitIDs = append(currentBenefitIDs, id)
 	}
-	st.mu.Unlock()
-
 	var confirmed *sdk.UsageWindow
 	if latest && sameCatalog {
 		confirmed = measured
@@ -427,13 +433,15 @@ func (owner *module) codeArtsUsage(ctx context.Context, stream *sdk.Stream, cred
 		displayBenefit = &copied
 	}
 
-	result := usageFromStatistics(statsObj, displayBenefit, currentBenefitIDs, currentKnown, station)
-	if confirmed != nil && result.Error == "" {
+	result.Windows = benefitUsageWindows(result.Windows, displayBenefit, currentBenefitIDs, currentKnown)
+	if len(result.Windows) == 0 {
+		result.Error = emptyReason
+		return result
+	}
+	if confirmed != nil {
 		reading.Window = confirmed
 		reading.Fresh = true
-		st.mu.Lock()
 		st.daily = reading
-		st.mu.Unlock()
 	}
 	return result
 }
